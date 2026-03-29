@@ -11,7 +11,7 @@ import Landing from "@/pages/landing";
 import Units from "@/pages/units";
 import UnitLessons from "@/pages/unit-lessons";
 import LessonPage from "@/pages/lesson";
-import Tutor from "@/pages/tutor";
+import Practice from "@/pages/tutor";
 import ProgressPage from "@/pages/progress-page";
 
 function AppRouter() {
@@ -21,7 +21,7 @@ function AppRouter() {
       <Route path="/learn" component={Units} />
       <Route path="/learn/:unitId" component={UnitLessons} />
       <Route path="/learn/:unitId/:lessonId" component={LessonPage} />
-      <Route path="/tutor" component={Tutor} />
+      <Route path="/practice" component={Practice} />
       <Route path="/progress" component={ProgressPage} />
       <Route component={NotFound} />
     </Switch>

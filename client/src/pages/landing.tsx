@@ -10,8 +10,8 @@ const features = [
   },
   {
     icon: MessageCircle,
-    title: "AI Tutor",
-    desc: "Practice conversation with an intelligent Punjabi tutor that adapts to your level and corrects mistakes gently.",
+    title: "Interactive Practice",
+    desc: "Reinforce your learning with flashcard decks and quizzes that test your vocabulary across every topic.",
   },
   {
     icon: BarChart3,
@@ -38,7 +38,7 @@ export default function Landing() {
             </h1>
 
             <p className="text-base text-muted-foreground leading-relaxed mb-8 max-w-lg" data-testid="text-hero-desc">
-              Master Gurmukhi script, build vocabulary, and practice conversation with an AI tutor — all in one beautiful platform designed for heritage learners and beginners alike.
+              Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -48,10 +48,10 @@ export default function Landing() {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/tutor">
-                <Button size="lg" variant="secondary" className="gap-2" data-testid="button-hero-tutor">
+              <Link href="/practice">
+                <Button size="lg" variant="secondary" className="gap-2" data-testid="button-hero-practice">
                   <MessageCircle className="h-4 w-4" />
-                  Try AI Tutor
+                  Try Practice Mode
                 </Button>
               </Link>
             </div>
@@ -93,7 +93,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-12">
             <h2 className="text-xl font-bold mb-2" data-testid="text-features-title">Everything you need to learn Punjabi</h2>
-            <p className="text-sm text-muted-foreground max-w-lg">A complete learning system built for the modern learner — structured, interactive, and powered by AI.</p>
+            <p className="text-sm text-muted-foreground max-w-lg">A complete learning system built for the modern learner — structured, interactive, and effective.</p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">

@@ -2,9 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, db } from "./storage";
 import { units, lessons, userProgress, chatMessages } from "@shared/schema";
-import { Anthropic } from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
 
 function seedData() {
   const existingUnits = db.select().from(units).all();
@@ -305,7 +302,189 @@ function seedData() {
     },
   ];
 
-  const allLessons = [...unit1Lessons, ...unit2Lessons, ...unit3Lessons, ...unit4Lessons, ...unit5Lessons, ...unit6Lessons];
+  // Extra lessons for Unit 3 — Numbers & Time
+  const unit3Extra = [
+    {
+      unitId: 3, title: "Numbers 20-100", titlePunjabi: "ਅੰਕ ੨੦-੧੦੦", description: "Count larger numbers and learn the pattern",
+      order: 3, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Punjabi numbers above 20 follow patterns. Learning tens gives you the building blocks for any number.",
+        items: [
+          { gurmukhi: "੨੦ - ਵੀਹ", romanized: "veeh", english: "20 - twenty", audio: "twenty" },
+          { gurmukhi: "੩੦ - ਤੀਹ", romanized: "teeh", english: "30 - thirty", audio: "thirty" },
+          { gurmukhi: "੪੦ - ਚਾਲੀ", romanized: "chaali", english: "40 - forty", audio: "forty" },
+          { gurmukhi: "੫੦ - ਪੰਜਾਹ", romanized: "panjaah", english: "50 - fifty", audio: "fifty" },
+          { gurmukhi: "੬੦ - ਸੱਠ", romanized: "satth", english: "60 - sixty", audio: "sixty" },
+          { gurmukhi: "੭੦ - ਸੱਤਰ", romanized: "sattar", english: "70 - seventy", audio: "seventy" },
+          { gurmukhi: "੮੦ - ਅੱਸੀ", romanized: "assi", english: "80 - eighty", audio: "eighty" },
+          { gurmukhi: "੯੦ - ਨੱਬੇ", romanized: "nabbe", english: "90 - ninety", audio: "ninety" },
+          { gurmukhi: "੧੦੦ - ਸੌ", romanized: "sau", english: "100 - hundred", audio: "hundred" },
+        ],
+        exercises: [
+          { type: "choose", question: "What is ੫੦ in Punjabi?", options: ["ਤੀਹ","ਪੰਜਾਹ","ਸੱਠ","ਸੌ"], correct: 1 },
+          { type: "match", question: "Match the numbers", pairs: [["੩੦","teeh"],["੫੦","panjaah"],["੭੦","sattar"],["੧੦੦","sau"]] },
+        ]
+      })
+    },
+    {
+      unitId: 3, title: "Days & Months", titlePunjabi: "ਦਿਨ ਅਤੇ ਮਹੀਨੇ", description: "Learn days of the week and months of the year",
+      order: 4, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Knowing days and months helps you make plans, set meetings, and discuss events in Punjabi.",
+        items: [
+          { gurmukhi: "ਸੋਮਵਾਰ", romanized: "Somvaar", english: "Monday", audio: "monday" },
+          { gurmukhi: "ਮੰਗਲਵਾਰ", romanized: "Mangalvaar", english: "Tuesday", audio: "tuesday" },
+          { gurmukhi: "ਬੁੱਧਵਾਰ", romanized: "Buddhvaar", english: "Wednesday", audio: "wednesday" },
+          { gurmukhi: "ਵੀਰਵਾਰ", romanized: "Veervaar", english: "Thursday", audio: "thursday" },
+          { gurmukhi: "ਸ਼ੁੱਕਰਵਾਰ", romanized: "Shukarvaar", english: "Friday", audio: "friday" },
+          { gurmukhi: "ਸ਼ਨਿੱਚਰਵਾਰ", romanized: "Shanicharvaar", english: "Saturday", audio: "saturday" },
+          { gurmukhi: "ਐਤਵਾਰ", romanized: "Aitvaar", english: "Sunday", audio: "sunday" },
+          { gurmukhi: "ਅੱਜ", romanized: "Ajj", english: "Today", audio: "today" },
+          { gurmukhi: "ਕੱਲ੍ਹ", romanized: "Kall", english: "Yesterday / Tomorrow", audio: "yesterday" },
+        ],
+        exercises: [
+          { type: "choose", question: "What day is ਸ਼ੁੱਕਰਵਾਰ?", options: ["Monday","Thursday","Friday","Sunday"], correct: 2 },
+          { type: "match", question: "Match the days", pairs: [["ਸੋਮਵਾਰ","Monday"],["ਬੁੱਧਵਾਰ","Wednesday"],["ਸ਼ਨਿੱਚਰਵਾਰ","Saturday"],["ਐਤਵਾਰ","Sunday"]] },
+        ]
+      })
+    },
+  ];
+
+  // Extra lessons for Unit 4 — Family
+  const unit4Extra = [
+    {
+      unitId: 4, title: "Extended Family", titlePunjabi: "ਵੱਡਾ ਪਰਿਵਾਰ", description: "Aunts, uncles, cousins, and in-laws",
+      order: 2, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Punjabi has distinct words for maternal vs paternal relatives — much more specific than English.",
+        items: [
+          { gurmukhi: "ਤਾਇਆ", romanized: "Taaya", english: "Father's elder brother", audio: "taaya" },
+          { gurmukhi: "ਚਾਚੀ", romanized: "Chaachi", english: "Father's younger brother's wife", audio: "chaachi" },
+          { gurmukhi: "ਮਾਸੀ", romanized: "Maasi", english: "Mother's sister", audio: "maasi" },
+          { gurmukhi: "ਫੁੱਫੜ", romanized: "Phupharr", english: "Father's sister's husband", audio: "phupharr" },
+          { gurmukhi: "ਭੂਆ", romanized: "Bhua", english: "Father's sister", audio: "bhua" },
+          { gurmukhi: "ਮਾਮੀ", romanized: "Maami", english: "Mother's brother's wife", audio: "maami" },
+          { gurmukhi: "ਪੁੱਤ", romanized: "Putt", english: "Son", audio: "son" },
+          { gurmukhi: "ਧੀ", romanized: "Dhee", english: "Daughter", audio: "daughter" },
+        ],
+        exercises: [
+          { type: "choose", question: "What is 'ਭੂਆ'?", options: ["Mother's sister","Father's sister","Grandmother","Daughter"], correct: 1 },
+          { type: "match", question: "Match family", pairs: [["ਤਾਇਆ","Father's elder brother"],["ਮਾਸੀ","Mother's sister"],["ਪੁੱਤ","Son"],["ਧੀ","Daughter"]] },
+        ]
+      })
+    },
+    {
+      unitId: 4, title: "Describing People", titlePunjabi: "ਲੋਕਾਂ ਬਾਰੇ ਦੱਸਣਾ", description: "Adjectives for appearance and personality",
+      order: 3, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Describing people is a great way to practise adjectives. In Punjabi, adjectives usually come before the noun.",
+        items: [
+          { gurmukhi: "ਲੰਬਾ / ਲੰਬੀ", romanized: "Lamba / Lambi", english: "Tall (m/f)", audio: "tall" },
+          { gurmukhi: "ਛੋਟਾ / ਛੋਟੀ", romanized: "Chhota / Chhoti", english: "Short / Young (m/f)", audio: "short" },
+          { gurmukhi: "ਸੋਹਣਾ / ਸੋਹਣੀ", romanized: "Sohna / Sohni", english: "Handsome / Beautiful (m/f)", audio: "beautiful" },
+          { gurmukhi: "ਚੰਗਾ / ਚੰਗੀ", romanized: "Changa / Changi", english: "Good (m/f)", audio: "good" },
+          { gurmukhi: "ਬੁੱਢਾ / ਬੁੱਢੀ", romanized: "Buddah / Buddhi", english: "Old (m/f)", audio: "old" },
+          { gurmukhi: "ਜਵਾਨ", romanized: "Jawaan", english: "Young", audio: "young" },
+          { gurmukhi: "ਹੱਸਮੁੱਖ", romanized: "Hassmukh", english: "Cheerful / Smiley", audio: "cheerful" },
+        ],
+        exercises: [
+          { type: "choose", question: "How do you say 'Beautiful' (feminine)?", options: ["ਸੋਹਣਾ","ਸੋਹਣੀ","ਚੰਗੀ","ਲੰਬੀ"], correct: 1 },
+          { type: "match", question: "Match adjectives", pairs: [["ਲੰਬਾ","Tall"],["ਛੋਟਾ","Short"],["ਬੁੱਢਾ","Old"],["ਜਵਾਨ","Young"]] },
+        ]
+      })
+    },
+  ];
+
+  // Extra lessons for Unit 5 — Food
+  const unit5Extra = [
+    {
+      unitId: 5, title: "At the Restaurant", titlePunjabi: "ਰੈਸਟੋਰੈਂਟ ਵਿੱਚ", description: "Order food and ask about dishes",
+      order: 2, type: "phrases",
+      content: JSON.stringify({
+        intro: "Eating out is a big part of Punjabi social life. These phrases help you order food, ask for recommendations, and handle the bill.",
+        items: [
+          { gurmukhi: "ਮੈਨੂੰ ___ ਚਾਹੀਦਾ ਹੈ", romanized: "Mainu ___ chaahida hai", english: "I want / need ___", audio: "i want" },
+          { gurmukhi: "ਮੀਨੂ ਦਿਖਾਓ ਜੀ", romanized: "Menu dikhaao ji", english: "Please show the menu", audio: "menu" },
+          { gurmukhi: "ਬਹੁਤ ਸੁਆਦ ਹੈ!", romanized: "Bahut suaad hai!", english: "Very tasty!", audio: "tasty" },
+          { gurmukhi: "ਬਿੱਲ ਦੇ ਦਿਓ", romanized: "Bill de dio", english: "Give the bill please", audio: "bill" },
+          { gurmukhi: "ਤਿੱਖਾ", romanized: "Tikkha", english: "Spicy", audio: "spicy" },
+          { gurmukhi: "ਮਿੱਠਾ", romanized: "Mittha", english: "Sweet", audio: "sweet" },
+          { gurmukhi: "ਹੋਰ ਰੋਟੀ ਲਿਆਓ", romanized: "Hor roti lyaao", english: "Bring more roti", audio: "more roti" },
+        ],
+        exercises: [
+          { type: "choose", question: "How do you say 'Very tasty!'?", options: ["ਮੈਨੂੰ ਚਾਹੀਦਾ ਹੈ","ਬਹੁਤ ਸੁਆਦ ਹੈ!","ਬਿੱਲ ਦੇ ਦਿਓ","ਤਿੱਖਾ"], correct: 1 },
+          { type: "match", question: "Match food phrases", pairs: [["ਤਿੱਖਾ","Spicy"],["ਮਿੱਠਾ","Sweet"],["ਪਾਣੀ","Water"],["ਚਾਹ","Tea"]] },
+        ]
+      })
+    },
+    {
+      unitId: 5, title: "Cooking & Kitchen", titlePunjabi: "ਰਸੋਈ", description: "Kitchen items and cooking verbs",
+      order: 3, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Punjabi homes revolve around the kitchen. Learning cooking vocabulary connects you to family traditions.",
+        items: [
+          { gurmukhi: "ਰਸੋਈ", romanized: "Rasoi", english: "Kitchen", audio: "kitchen" },
+          { gurmukhi: "ਪਕਾਉਣਾ", romanized: "Pakauna", english: "To cook", audio: "to cook" },
+          { gurmukhi: "ਕੱਟਣਾ", romanized: "Kattna", english: "To cut / chop", audio: "to cut" },
+          { gurmukhi: "ਮਸਾਲਾ", romanized: "Masala", english: "Spice mix", audio: "masala" },
+          { gurmukhi: "ਲੂਣ", romanized: "Loon", english: "Salt", audio: "salt" },
+          { gurmukhi: "ਮਿਰਚ", romanized: "Mirch", english: "Chilli pepper", audio: "chilli" },
+          { gurmukhi: "ਘੀ", romanized: "Ghee", english: "Clarified butter", audio: "ghee" },
+          { gurmukhi: "ਤਵਾ", romanized: "Tava", english: "Flat griddle (for roti)", audio: "tava" },
+        ],
+        exercises: [
+          { type: "choose", question: "What does 'ਘੀ' mean?", options: ["Oil","Butter","Clarified butter","Cream"], correct: 2 },
+          { type: "match", question: "Match kitchen words", pairs: [["ਰਸੋਈ","Kitchen"],["ਲੂਣ","Salt"],["ਮਿਰਚ","Chilli"],["ਤਵਾ","Griddle"]] },
+        ]
+      })
+    },
+  ];
+
+  // Extra lessons for Unit 6 — Travel
+  const unit6Extra = [
+    {
+      unitId: 6, title: "Places & Landmarks", titlePunjabi: "ਥਾਵਾਂ", description: "Important places and buildings",
+      order: 2, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Whether visiting Punjab or navigating a Punjabi neighbourhood, knowing place names is essential.",
+        items: [
+          { gurmukhi: "ਗੁਰਦੁਆਰਾ", romanized: "Gurdwara", english: "Sikh temple", audio: "gurdwara" },
+          { gurmukhi: "ਬਜ਼ਾਰ", romanized: "Bazaar", english: "Market", audio: "market" },
+          { gurmukhi: "ਹਸਪਤਾਲ", romanized: "Haspataal", english: "Hospital", audio: "hospital" },
+          { gurmukhi: "ਸਕੂਲ", romanized: "School", english: "School", audio: "school" },
+          { gurmukhi: "ਘਰ", romanized: "Ghar", english: "Home / House", audio: "home" },
+          { gurmukhi: "ਰੇਲਵੇ ਸਟੇਸ਼ਨ", romanized: "Railway station", english: "Railway station", audio: "station" },
+          { gurmukhi: "ਹਵਾਈ ਅੱਡਾ", romanized: "Havai adda", english: "Airport", audio: "airport" },
+          { gurmukhi: "ਦੁਕਾਨ", romanized: "Dukaan", english: "Shop", audio: "shop" },
+        ],
+        exercises: [
+          { type: "choose", question: "What is 'ਗੁਰਦੁਆਰਾ'?", options: ["Market","School","Sikh temple","Hospital"], correct: 2 },
+          { type: "match", question: "Match places", pairs: [["ਬਜ਼ਾਰ","Market"],["ਘਰ","Home"],["ਹਵਾਈ ਅੱਡਾ","Airport"],["ਦੁਕਾਨ","Shop"]] },
+        ]
+      })
+    },
+    {
+      unitId: 6, title: "Emergency Phrases", titlePunjabi: "ਐਮਰਜੈਂਸੀ", description: "Essential phrases for urgent situations",
+      order: 3, type: "phrases",
+      content: JSON.stringify({
+        intro: "These phrases could be crucial when travelling. Knowing how to ask for help in Punjabi can make all the difference.",
+        items: [
+          { gurmukhi: "ਮਦਦ ਕਰੋ!", romanized: "Madad karo!", english: "Help!", audio: "help" },
+          { gurmukhi: "ਮੈਨੂੰ ਡਾਕਟਰ ਚਾਹੀਦਾ ਹੈ", romanized: "Mainu doctor chaahida hai", english: "I need a doctor", audio: "doctor" },
+          { gurmukhi: "ਪੁਲਿਸ ਨੂੰ ਬੁਲਾਓ", romanized: "Police nu bulaao", english: "Call the police", audio: "police" },
+          { gurmukhi: "ਮੈਂ ਗੁਆਚ ਗਿਆ/ਗਈ ਹਾਂ", romanized: "Mai guaach gya/gayi haan", english: "I am lost (m/f)", audio: "lost" },
+          { gurmukhi: "ਹਸਪਤਾਲ ਕਿੱਥੇ ਹੈ?", romanized: "Haspataal kitthe hai?", english: "Where is the hospital?", audio: "where hospital" },
+          { gurmukhi: "ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਈ", romanized: "Mainu samajh nahi aayi", english: "I don't understand", audio: "dont understand" },
+        ],
+        exercises: [
+          { type: "choose", question: "How do you say 'Help!'?", options: ["ਰੁਕੋ!","ਮਦਦ ਕਰੋ!","ਚੱਲੋ!","ਸੁਣੋ!"], correct: 1 },
+          { type: "match", question: "Match emergency phrases", pairs: [["ਮਦਦ ਕਰੋ!","Help!"],["ਮੈਂ ਗੁਆਚ ਗਿਆ ਹਾਂ","I am lost"],["ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਈ","I don't understand"],["ਪੁਲਿਸ ਨੂੰ ਬੁਲਾਓ","Call the police"]] },
+        ]
+      })
+    },
+  ];
+
+  const allLessons = [...unit1Lessons, ...unit2Lessons, ...unit3Lessons, ...unit3Extra, ...unit4Lessons, ...unit4Extra, ...unit5Lessons, ...unit5Extra, ...unit6Lessons, ...unit6Extra];
   for (const l of allLessons) {
     db.insert(lessons).values(l).run();
   }
@@ -351,81 +530,6 @@ export async function registerRoutes(
   app.post("/api/progress", async (req, res) => {
     const progress = await storage.upsertProgress(req.body);
     res.json(progress);
-  });
-
-  // Chat / AI Tutor
-  app.get("/api/chat", async (_req, res) => {
-    const messages = await storage.getChatMessages();
-    res.json(messages);
-  });
-
-  app.post("/api/chat", async (req, res) => {
-    const { content } = req.body;
-    if (!content) return res.status(400).json({ error: "Content required" });
-
-    // Save user message
-    await storage.addChatMessage({
-      role: "user",
-      content,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Get chat history for context
-    const history = await storage.getChatMessages();
-    const messages = history.map(m => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
-
-    try {
-      const response = await anthropic.messages.create({
-        model: "claude_sonnet_4_6",
-        max_tokens: 1024,
-        system: `You are a warm, encouraging Punjabi language tutor named PunjabAI. You help learners practice Punjabi (Gurmukhi script and spoken Punjabi).
-
-Key behaviors:
-- Always include Gurmukhi script alongside romanized text and English translations
-- Be encouraging and patient — celebrate small wins
-- Correct mistakes gently and explain why
-- Use simple vocabulary appropriate for beginners
-- Share cultural context when relevant (Punjabi traditions, food, music, etc.)
-- If asked about grammar, explain in simple terms with examples
-- Occasionally use Punjabi phrases naturally, then translate
-- Keep responses conversational and not too long
-- If the user tries speaking Punjabi, always acknowledge the effort positively
-
-Format Gurmukhi text clearly, like: ਸਤ ਸ੍ਰੀ ਅਕਾਲ (Sat Sri Akal) — Hello
-
-You are having a conversation in a learning context. The user may be at any level from absolute beginner to intermediate.`,
-        messages,
-      });
-
-      const assistantContent = response.content[0].type === "text"
-        ? response.content[0].text
-        : "I'm sorry, I couldn't generate a response. Please try again.";
-
-      const saved = await storage.addChatMessage({
-        role: "assistant",
-        content: assistantContent,
-        timestamp: new Date().toISOString(),
-      });
-
-      res.json(saved);
-    } catch (error: any) {
-      console.error("AI tutor error:", error);
-      // Fallback response if AI fails
-      const fallback = await storage.addChatMessage({
-        role: "assistant",
-        content: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! (Sat Sri Akal!) I'm having a moment — could you try asking me again? I'm here to help you learn Punjabi! 😊",
-        timestamp: new Date().toISOString(),
-      });
-      res.json(fallback);
-    }
-  });
-
-  app.delete("/api/chat", async (_req, res) => {
-    await storage.clearChatMessages();
-    res.json({ success: true });
   });
 
   return httpServer;
