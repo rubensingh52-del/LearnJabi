@@ -381,7 +381,7 @@ export async function registerRoutes(
       const response = await anthropic.messages.create({
         model: "claude_sonnet_4_6",
         max_tokens: 1024,
-        system: `You are a warm, encouraging Punjabi language tutor named Guru. You help learners practice Punjabi (Gurmukhi script and spoken Punjabi).
+        system: `You are a warm, encouraging Punjabi language tutor named PunjabAI. You help learners practice Punjabi (Gurmukhi script and spoken Punjabi).
 
 Key behaviors:
 - Always include Gurmukhi script alongside romanized text and English translations

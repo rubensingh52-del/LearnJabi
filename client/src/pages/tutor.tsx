@@ -84,7 +84,7 @@ export default function Tutor() {
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold" data-testid="text-tutor-title">Guru — AI Punjabi Tutor</h1>
+              <h1 className="text-sm font-semibold" data-testid="text-tutor-title">PunjabAI — AI Punjabi Tutor</h1>
               <p className="text-xs text-muted-foreground">Ask anything about Punjabi language and culture</p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function Tutor() {
               </div>
               <h2 className="text-base font-bold mb-1" data-testid="text-tutor-empty">ਸਤ ਸ੍ਰੀ ਅਕਾਲ!</h2>
               <p className="text-sm text-muted-foreground mb-6 max-w-md">
-                I'm Guru, your AI Punjabi tutor. Ask me anything — vocabulary, grammar, pronunciation, or Punjabi culture. I'm here to help you learn.
+                I'm PunjabAI, your AI Punjabi tutor. Ask me anything — vocabulary, grammar, pronunciation, or Punjabi culture. I'm here to help you learn.
               </p>
 
               <div className="grid gap-2 sm:grid-cols-2 w-full max-w-lg">
@@ -167,7 +167,7 @@ export default function Tutor() {
                   </div>
                   <div className="bg-card border border-card-border rounded-xl px-4 py-3 flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Guru is thinking...</span>
+                    <span className="text-xs text-muted-foreground">PunjabAI is thinking...</span>
                   </div>
                 </div>
               )}

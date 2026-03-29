@@ -24,11 +24,11 @@ export function NavHeader() {
           {/* Logo */}
           <Link href="/" data-testid="link-home">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="ShabadPath logo">
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="LearnJabi logo">
                 <rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" strokeWidth="2" className="text-primary" />
                 <text x="16" y="22" textAnchor="middle" className="gurmukhi" fill="currentColor" fontSize="16" fontWeight="700" style={{ fontFamily: "'Noto Sans Gurmukhi', sans-serif" }}>ਸ਼</text>
               </svg>
-              <span className="text-base font-bold tracking-tight" data-testid="text-logo">ShabadPath</span>
+              <span className="text-base font-bold tracking-tight" data-testid="text-logo">LearnJabi</span>
             </div>
           </Link>
 
