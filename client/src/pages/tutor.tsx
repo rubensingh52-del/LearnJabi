@@ -66,52 +66,52 @@ const flashcardSets = [
 const quizzes = [
   {
     question: "How do you say 'Hello' in Punjabi?",
-    options: ["ਸ਼ੁਕਰੀਆ", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", "ਅਲਵਿਦਾ", "ਕਿਦਾਂ"],
+    options: ["ਸ਼ੁਕਰੀਆ (Shukriya)", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ (Sat Sri Akal)", "ਅਲਵਿਦਾ (Alvida)", "ਕਿਦਾਂ (Kidaan)"],
     correct: 1,
   },
   {
-    question: "What does 'ਸ਼ੁਕਰੀਆ' mean?",
+    question: "What does 'ਸ਼ੁਕਰੀਆ (Shukriya)' mean?",
     options: ["Goodbye", "Sorry", "Thank you", "Please"],
     correct: 2,
   },
   {
     question: "Which is the Punjabi number for 5?",
-    options: ["ਤਿੰਨ", "ਪੰਜ", "ਸੱਤ", "ਦਸ"],
+    options: ["ਤਿੰਨ (Tinn)", "ਪੰਜ (Panj)", "ਸੱਤ (Satt)", "ਦਸ (Das)"],
     correct: 1,
   },
   {
-    question: "What does 'ਮਾਂ' mean?",
+    question: "What does 'ਮਾਂ (Maa)' mean?",
     options: ["Father", "Sister", "Mother", "Grandmother"],
     correct: 2,
   },
   {
     question: "How do you ask 'How are you?' informally?",
-    options: ["ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?", "ਕਿਦਾਂ?", "ਕਿੱਥੇ?", "ਕੀ ਹਾਲ ਹੈ?"],
+    options: ["ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ? (Tusi kive ho?)", "ਕਿਦਾਂ? (Kidaan?)", "ਕਿੱਥੇ? (Kitthe?)", "ਕੀ ਹਾਲ ਹੈ? (Ki haal hai?)"],
     correct: 1,
   },
   {
-    question: "What is 'ਦਾਲ'?",
+    question: "What is 'ਦਾਲ (Daal)'?",
     options: ["Rice", "Bread", "Lentil curry", "Yogurt drink"],
     correct: 2,
   },
   {
-    question: "What does 'ਜੀ' signify when added to a name?",
+    question: "What does 'ਜੀ (Ji)' signify when added to a name?",
     options: ["Anger", "Respect", "Question", "Farewell"],
     correct: 1,
   },
   {
     question: "Which Punjabi word means 'Water'?",
-    options: ["ਚਾਹ", "ਦੁੱਧ", "ਲੱਸੀ", "ਪਾਣੀ"],
+    options: ["ਚਾਹ (Chaah)", "ਦੁੱਧ (Duddh)", "ਲੱਸੀ (Lassi)", "ਪਾਣੀ (Paani)"],
     correct: 3,
   },
   {
-    question: "What does 'ਭੈਣ' mean?",
+    question: "What does 'ਭੈਣ (Bhain)' mean?",
     options: ["Brother", "Mother", "Sister", "Friend"],
     correct: 2,
   },
   {
     question: "How do you say 'Please' in Punjabi?",
-    options: ["ਅਲਵਿਦਾ", "ਕਿਰਪਾ ਕਰਕੇ", "ਮਾਫ਼ ਕਰਨਾ", "ਸ਼ੁਕਰੀਆ"],
+    options: ["ਅਲਵਿਦਾ (Alvida)", "ਕਿਰਪਾ ਕਰਕੇ (Kirpa karke)", "ਮਾਫ਼ ਕਰਨਾ (Maaf karna)", "ਸ਼ੁਕਰੀਆ (Shukriya)"],
     correct: 1,
   },
 ];

@@ -254,6 +254,11 @@ export default function LessonPage() {
                     classes += "border-border/40 opacity-50";
                   }
 
+                  // Check if option is Gurmukhi (contains Gurmukhi Unicode range)
+                  const isGurmukhi = /[\u0A00-\u0A7F]/.test(option);
+                  // Try to find pronunciation from content items
+                  const matchedItem = isGurmukhi ? content?.items.find(item => option.includes(item.gurmukhi)) : null;
+
                   return (
                     <button
                       key={i}
@@ -263,7 +268,10 @@ export default function LessonPage() {
                       data-testid={`button-option-${i}`}
                     >
                       <span className="flex items-center gap-3">
-                        <span className="gurmukhi">{option}</span>
+                        <span>
+                          <span className="gurmukhi">{option}</span>
+                          {matchedItem && <span className="block text-xs text-primary/70 italic mt-0.5">{matchedItem.romanized}</span>}
+                        </span>
                         {showResult && isCorrect && <CheckCircle2 className="h-4 w-4 ml-auto text-green-600" />}
                         {showResult && isSelected && !isCorrect && <XCircle className="h-4 w-4 ml-auto text-red-500" />}
                       </span>
@@ -277,23 +285,27 @@ export default function LessonPage() {
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  {currentExercise.pairs.map((pair, i) => (
-                    <button
-                      key={`l-${i}`}
-                      onClick={() => handleMatchClick("left", i)}
-                      disabled={matchedPairs.has(i)}
-                      className={`w-full p-3 rounded-lg border text-sm text-left font-medium transition-all gurmukhi ${
-                        matchedPairs.has(i)
-                          ? "border-green-500 bg-green-50 dark:bg-green-950/30 opacity-60"
-                          : matchSelection?.side === "left" && matchSelection.index === i
-                          ? "border-primary bg-primary/10"
-                          : "border-border/60 hover:border-primary/40 cursor-pointer"
-                      }`}
-                      data-testid={`button-match-left-${i}`}
-                    >
-                      {pair[0]}
-                    </button>
-                  ))}
+                  {currentExercise.pairs.map((pair, i) => {
+                    const matchedItem = content?.items.find(item => pair[0].includes(item.gurmukhi));
+                    return (
+                      <button
+                        key={`l-${i}`}
+                        onClick={() => handleMatchClick("left", i)}
+                        disabled={matchedPairs.has(i)}
+                        className={`w-full p-3 rounded-lg border text-sm text-left font-medium transition-all ${
+                          matchedPairs.has(i)
+                            ? "border-green-500 bg-green-50 dark:bg-green-950/30 opacity-60"
+                            : matchSelection?.side === "left" && matchSelection.index === i
+                            ? "border-primary bg-primary/10"
+                            : "border-border/60 hover:border-primary/40 cursor-pointer"
+                        }`}
+                        data-testid={`button-match-left-${i}`}
+                      >
+                        <span className="gurmukhi">{pair[0]}</span>
+                        {matchedItem && <span className="block text-xs text-primary/70 italic mt-0.5 font-normal">{matchedItem.romanized}</span>}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => (
