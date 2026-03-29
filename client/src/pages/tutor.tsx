@@ -10,12 +10,12 @@ const flashcardSets = [
     titlePunjabi: "ਜ਼ਰੂਰੀ ਸ਼ੁਭ ਇੱਛਾਵਾਂ",
     color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     cards: [
-      { front: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", back: "Hello (Sat Sri Akal)", hint: "The most common Sikh greeting" },
-      { front: "ਕਿਦਾਂ?", back: "How are you? (Kidaan?)", hint: "Informal — use with friends" },
-      { front: "ਸ਼ੁਕਰੀਆ", back: "Thank you (Shukriya)", hint: "Used universally" },
-      { front: "ਅਲਵਿਦਾ", back: "Goodbye (Alvida)", hint: "Formal farewell" },
-      { front: "ਕਿਰਪਾ ਕਰਕੇ", back: "Please (Kirpa karke)", hint: "Shows politeness" },
-      { front: "ਮਾਫ਼ ਕਰਨਾ", back: "Sorry (Maaf karna)", hint: "Also means 'excuse me'" },
+      { front: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", pronunciation: "Sat Sri Akal", back: "Hello", hint: "The most common Sikh greeting" },
+      { front: "ਕਿਦਾਂ?", pronunciation: "Kidaan?", back: "How are you? (informal)", hint: "Use with friends and peers" },
+      { front: "ਸ਼ੁਕਰੀਆ", pronunciation: "Shukriya", back: "Thank you", hint: "Used universally" },
+      { front: "ਅਲਵਿਦਾ", pronunciation: "Alvida", back: "Goodbye", hint: "Formal farewell" },
+      { front: "ਕਿਰਪਾ ਕਰਕੇ", pronunciation: "Kirpa karke", back: "Please", hint: "Shows politeness" },
+      { front: "ਮਾਫ਼ ਕਰਨਾ", pronunciation: "Maaf karna", back: "Sorry / Excuse me", hint: "" },
     ],
   },
   {
@@ -23,16 +23,16 @@ const flashcardSets = [
     titlePunjabi: "ਅੰਕ ੧-੧੦",
     color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     cards: [
-      { front: "੧ — ਇੱਕ", back: "One (Ikk)", hint: "" },
-      { front: "੨ — ਦੋ", back: "Two (Do)", hint: "" },
-      { front: "੩ — ਤਿੰਨ", back: "Three (Tinn)", hint: "" },
-      { front: "੪ — ਚਾਰ", back: "Four (Chaar)", hint: "" },
-      { front: "੫ — ਪੰਜ", back: "Five (Panj)", hint: "Punjab = Land of 5 rivers" },
-      { front: "੬ — ਛੇ", back: "Six (Chhe)", hint: "" },
-      { front: "੭ — ਸੱਤ", back: "Seven (Satt)", hint: "" },
-      { front: "੮ — ਅੱਠ", back: "Eight (Atth)", hint: "" },
-      { front: "੯ — ਨੌਂ", back: "Nine (NauN)", hint: "" },
-      { front: "੧੦ — ਦਸ", back: "Ten (Das)", hint: "" },
+      { front: "੧ — ਇੱਕ", pronunciation: "Ikk", back: "One", hint: "" },
+      { front: "੨ — ਦੋ", pronunciation: "Do", back: "Two", hint: "" },
+      { front: "੩ — ਤਿੰਨ", pronunciation: "Tinn", back: "Three", hint: "" },
+      { front: "੪ — ਚਾਰ", pronunciation: "Chaar", back: "Four", hint: "" },
+      { front: "੫ — ਪੰਜ", pronunciation: "Panj", back: "Five", hint: "Punjab = Land of 5 rivers" },
+      { front: "੬ — ਛੇ", pronunciation: "Chhe", back: "Six", hint: "" },
+      { front: "੭ — ਸੱਤ", pronunciation: "Satt", back: "Seven", hint: "" },
+      { front: "੮ — ਅੱਠ", pronunciation: "Atth", back: "Eight", hint: "" },
+      { front: "੯ — ਨੌਂ", pronunciation: "NauN", back: "Nine", hint: "" },
+      { front: "੧੦ — ਦਸ", pronunciation: "Das", back: "Ten", hint: "" },
     ],
   },
   {
@@ -40,12 +40,12 @@ const flashcardSets = [
     titlePunjabi: "ਪਰਿਵਾਰਕ ਮੈਂਬਰ",
     color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     cards: [
-      { front: "ਮਾਂ", back: "Mother (Maa)", hint: "" },
-      { front: "ਪਿਤਾ ਜੀ", back: "Father (Pita ji)", hint: "'Ji' shows respect" },
-      { front: "ਭੈਣ", back: "Sister (Bhain)", hint: "" },
-      { front: "ਭਰਾ", back: "Brother (Bhra)", hint: "" },
-      { front: "ਦਾਦੀ", back: "Paternal grandmother (Daadi)", hint: "Father's mother" },
-      { front: "ਨਾਨੀ", back: "Maternal grandmother (Naani)", hint: "Mother's mother" },
+      { front: "ਮਾਂ", pronunciation: "Maa", back: "Mother", hint: "" },
+      { front: "ਪਿਤਾ ਜੀ", pronunciation: "Pita ji", back: "Father (respectful)", hint: "'Ji' shows respect" },
+      { front: "ਭੈਣ", pronunciation: "Bhain", back: "Sister", hint: "" },
+      { front: "ਭਰਾ", pronunciation: "Bhra", back: "Brother", hint: "" },
+      { front: "ਦਾਦੀ", pronunciation: "Daadi", back: "Paternal grandmother", hint: "Father's mother" },
+      { front: "ਨਾਨੀ", pronunciation: "Naani", back: "Maternal grandmother", hint: "Mother's mother" },
     ],
   },
   {
@@ -53,12 +53,12 @@ const flashcardSets = [
     titlePunjabi: "ਖਾਣਾ ਪੀਣਾ",
     color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
     cards: [
-      { front: "ਰੋਟੀ", back: "Flatbread / Chapati (Roti)", hint: "Staple of every meal" },
-      { front: "ਦਾਲ", back: "Lentil curry (Daal)", hint: "Daal roti = classic combo" },
-      { front: "ਚਾਹ", back: "Tea (Chaah)", hint: "Punjabi chai culture" },
-      { front: "ਪਾਣੀ", back: "Water (Paani)", hint: "" },
-      { front: "ਲੱਸੀ", back: "Yogurt drink (Lassi)", hint: "Sweet or salted" },
-      { front: "ਮੱਖਣ", back: "Butter (Makkhan)", hint: "" },
+      { front: "ਰੋਟੀ", pronunciation: "Roti", back: "Flatbread / Chapati", hint: "Staple of every meal" },
+      { front: "ਦਾਲ", pronunciation: "Daal", back: "Lentil curry", hint: "Daal roti = classic combo" },
+      { front: "ਚਾਹ", pronunciation: "Chaah", back: "Tea", hint: "Punjabi chai culture" },
+      { front: "ਪਾਣੀ", pronunciation: "Paani", back: "Water", hint: "" },
+      { front: "ਲੱਸੀ", pronunciation: "Lassi", back: "Yogurt drink", hint: "Sweet or salted" },
+      { front: "ਮੱਖਣ", pronunciation: "Makkhan", back: "Butter", hint: "" },
     ],
   },
 ];
@@ -168,12 +168,14 @@ function FlashcardDeck({ set, onBack }: { set: (typeof flashcardSets)[0]; onBack
       >
         {!flipped ? (
           <>
-            <p className="gurmukhi text-3xl sm:text-4xl font-bold mb-4">{card.front}</p>
-            <p className="text-xs text-muted-foreground">Tap to reveal</p>
+            <p className="gurmukhi text-3xl sm:text-4xl font-bold mb-2">{card.front}</p>
+            <p className="text-sm font-medium text-primary/80 italic mb-3">{card.pronunciation}</p>
+            <p className="text-xs text-muted-foreground">Tap to reveal meaning</p>
           </>
         ) : (
           <>
-            <p className="gurmukhi text-2xl font-bold text-muted-foreground mb-2">{card.front}</p>
+            <p className="gurmukhi text-2xl font-bold text-muted-foreground mb-1">{card.front}</p>
+            <p className="text-sm font-medium text-primary/70 italic mb-2">{card.pronunciation}</p>
             <p className="text-lg font-semibold text-primary mb-1">{card.back}</p>
             {card.hint && <p className="text-xs text-muted-foreground mt-1">{card.hint}</p>}
           </>
