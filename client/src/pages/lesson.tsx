@@ -6,10 +6,25 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Trophy } from "lucide-react";
-import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Trophy, Volume2 } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 
 type LessonStep = "learn" | "exercise" | "complete";
+
+function speakText(text: string) {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  // Use a Hindi/Punjabi voice if available, otherwise default
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(
+    (v) => v.lang.startsWith("pa") || v.lang.startsWith("hi") || v.lang.startsWith("en")
+  );
+  if (preferred) utterance.voice = preferred;
+  utterance.rate = 0.85;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
+}
 
 export default function LessonPage() {
   const params = useParams<{ unitId: string; lessonId: string }>();
@@ -29,6 +44,7 @@ export default function LessonPage() {
   const [score, setScore] = useState(0);
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [matchSelection, setMatchSelection] = useState<{ side: "left" | "right"; index: number } | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const content: LessonContent | null = useMemo(() => {
     if (!lesson) return null;
@@ -48,8 +64,14 @@ export default function LessonPage() {
   const currentExercise = exercises[exerciseIndex];
   const totalExercises = exercises.length;
 
-  // Find next lesson
   const nextLesson = allLessons?.find(l => l.order === (lesson?.order || 0) + 1);
+
+  const handleSpeak = useCallback((item: { gurmukhi: string; romanized: string; english: string }) => {
+    setIsSpeaking(true);
+    // Speak the romanized pronunciation so users hear the correct Punjabi sound
+    speakText(item.romanized + ". " + item.english);
+    setTimeout(() => setIsSpeaking(false), 1500);
+  }, []);
 
   const handleChooseAnswer = (optionIndex: number) => {
     if (showResult) return;
@@ -73,13 +95,11 @@ export default function LessonPage() {
       return;
     }
 
-    // Check if match is correct
     const pairs = currentExercise?.pairs || [];
     const leftIdx = side === "left" ? index : matchSelection.index;
     const rightIdx = side === "right" ? index : matchSelection.index;
 
     if (pairs[leftIdx] && pairs[leftIdx][1] === pairs[rightIdx]?.[1]) {
-      // Correct match (same pair index)
       if (leftIdx === rightIdx) {
         setMatchedPairs(prev => new Set([...prev, leftIdx]));
         setScore(s => s + 1);
@@ -96,7 +116,6 @@ export default function LessonPage() {
       setMatchedPairs(new Set());
       setMatchSelection(null);
     } else {
-      // Complete lesson
       setStep("complete");
       saveMutation.mutate({ lessonId, completed: true, score });
     }
@@ -127,154 +146,140 @@ export default function LessonPage() {
   if (!content) {
     return (
       <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12 text-center">
-        <p className="text-muted-foreground">Could not load lesson content.</p>
-        <Link href={`/learn/${unitId}`}>
-          <Button variant="secondary" className="mt-4">Back to Unit</Button>
+        <p className="text-muted-foreground">Content unavailable.</p>
+        <Link href="/">
+          <Button variant="outline" className="mt-4">Back to Home</Button>
         </Link>
       </div>
     );
   }
 
+  const items = content.items || [];
+  const currentItem = items[currentItemIndex];
   const progressPercent = step === "learn"
-    ? ((currentItemIndex + 1) / content.items.length) * 50
+    ? ((currentItemIndex + 1) / Math.max(items.length, 1)) * 50
     : step === "exercise"
     ? 50 + ((exerciseIndex + 1) / Math.max(totalExercises, 1)) * 50
     : 100;
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Navigation */}
-      <Link href={`/learn/${unitId}`}>
-        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground cursor-pointer mb-6" data-testid="link-back-unit">
-          <ChevronLeft className="h-4 w-4" />
-          {unit?.title || "Back to Unit"}
-        </span>
+      {/* Back link */}
+      <Link href={`/unit/${unitId}`}>
+        <Button variant="ghost" size="sm" className="mb-6 -ml-2 text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Back to {unit?.title || "Unit"}
+        </Button>
       </Link>
 
       {/* Progress bar */}
       <div className="mb-6">
-        <Progress value={progressPercent} className="h-1.5" data-testid="progress-lesson" />
-        <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+        <div className="flex justify-between text-xs text-muted-foreground mb-2">
           <span>{lesson?.title}</span>
           <span>{Math.round(progressPercent)}%</span>
         </div>
+        <Progress value={progressPercent} className="h-2" />
       </div>
 
       {/* LEARN STEP */}
-      {step === "learn" && (
-        <div>
-          <div className="mb-6">
-            <h1 className="text-lg font-bold mb-1" data-testid="text-lesson-title">{lesson?.title}</h1>
-            <p className="gurmukhi text-sm text-muted-foreground">{lesson?.titlePunjabi}</p>
-          </div>
+      {step === "learn" && currentItem && (
+        <div className="space-y-6">
+          <p className="text-muted-foreground text-sm">{content.intro}</p>
 
-          {/* Intro */}
-          {currentItemIndex === 0 && (
-            <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/10">
-              <p className="text-sm leading-relaxed" data-testid="text-lesson-intro">{content.intro}</p>
-            </div>
-          )}
+          <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
+            {/* Speak button */}
+            <button
+              onClick={() => handleSpeak(currentItem)}
+              aria-label="Pronounce this word"
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+                isSpeaking
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+              }`}
+            >
+              <Volume2 className="h-5 w-5" />
+            </button>
 
-          {/* Vocab card */}
-          <div className="bg-card border border-card-border rounded-xl p-6 sm:p-8 text-center mb-6" data-testid="card-vocab-item">
-            <p className="gurmukhi text-4xl sm:text-5xl font-bold mb-4 text-foreground">
-              {content.items[currentItemIndex]?.gurmukhi}
+            <div className="text-6xl font-bold leading-tight">{currentItem.gurmukhi}</div>
+            <div className="text-2xl text-primary font-semibold">{currentItem.romanized}</div>
+            <div className="text-lg text-muted-foreground">{currentItem.english}</div>
+
+            {/* Tap-to-pronounce hint */}
+            <p className="text-xs text-muted-foreground pt-2">
+              Tap 🔊 to hear the pronunciation
             </p>
-            <p className="text-base font-semibold mb-1">{content.items[currentItemIndex]?.romanized}</p>
-            <p className="text-sm text-muted-foreground">{content.items[currentItemIndex]?.english}</p>
           </div>
 
-          {/* Item dots */}
-          <div className="flex justify-center gap-1.5 mb-6">
-            {content.items.map((_, i) => (
+          {/* Item counter */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              {currentItemIndex + 1} / {items.length}
+            </span>
+            <div className="flex gap-2">
+              {currentItemIndex > 0 && (
+                <Button variant="outline" size="sm" onClick={() => setCurrentItemIndex(i => i - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              )}
+              {currentItemIndex < items.length - 1 ? (
+                <Button size="sm" onClick={() => setCurrentItemIndex(i => i + 1)}>
+                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : (
+                <Button size="sm" onClick={() => setStep("exercise")}>
+                  Start Quiz <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Dot navigation */}
+          <div className="flex justify-center gap-1.5 pt-2">
+            {items.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentItemIndex(i)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  i === currentItemIndex ? "bg-primary w-6" : i < currentItemIndex ? "bg-primary/40" : "bg-muted"
+                aria-label={`Go to item ${i + 1}`}
+                className={`h-2 rounded-full transition-all ${
+                  i === currentItemIndex ? "w-4 bg-primary" : "w-2 bg-muted"
                 }`}
-                data-testid={`dot-item-${i}`}
               />
             ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between gap-4">
-            <Button
-              variant="secondary"
-              onClick={() => setCurrentItemIndex(i => Math.max(0, i - 1))}
-              disabled={currentItemIndex === 0}
-              data-testid="button-prev-item"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-
-            {currentItemIndex < content.items.length - 1 ? (
-              <Button onClick={() => setCurrentItemIndex(i => i + 1)} data-testid="button-next-item">
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : (
-              <Button onClick={() => { setStep("exercise"); }} data-testid="button-start-exercises">
-                Start Exercises
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            )}
           </div>
         </div>
       )}
 
       {/* EXERCISE STEP */}
       {step === "exercise" && currentExercise && (
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-semibold">Exercise {exerciseIndex + 1} of {totalExercises}</h2>
-            <span className="text-xs text-muted-foreground">Score: {score}</span>
+        <div className="space-y-6">
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Question {exerciseIndex + 1} of {totalExercises}</span>
+            <span>Score: {score}</span>
           </div>
 
-          <div className="bg-card border border-card-border rounded-xl p-6 mb-6" data-testid="card-exercise">
-            <p className="text-sm font-semibold mb-4">{currentExercise.question}</p>
+          <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
+            <p className="font-semibold text-lg">{currentExercise.question}</p>
 
             {/* Multiple choice */}
             {currentExercise.type === "choose" && currentExercise.options && (
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {currentExercise.options.map((option, i) => {
-                  const isSelected = selectedAnswer === i;
-                  const isCorrect = i === currentExercise.correct;
-
-                  let classes = "w-full text-left p-3 rounded-lg border text-sm font-medium transition-all ";
-                  if (!showResult) {
-                    classes += "border-border/60 hover:border-primary/40 cursor-pointer";
-                  } else if (isCorrect) {
-                    classes += "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400";
-                  } else if (isSelected && !isCorrect) {
-                    classes += "border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400";
-                  } else {
-                    classes += "border-border/40 opacity-50";
+                  let variant: "outline" | "default" | "destructive" | "secondary" = "outline";
+                  let extra = "";
+                  if (showResult) {
+                    if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
+                    else if (i === selectedAnswer) extra = "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300";
                   }
-
-                  // Check if option is Gurmukhi (contains Gurmukhi Unicode range)
-                  const isGurmukhi = /[\u0A00-\u0A7F]/.test(option);
-                  // Try to find pronunciation from content items
-                  const matchedItem = isGurmukhi ? content?.items.find(item => option.includes(item.gurmukhi)) : null;
-
                   return (
                     <button
                       key={i}
                       onClick={() => handleChooseAnswer(i)}
-                      className={classes}
                       disabled={showResult}
-                      data-testid={`button-option-${i}`}
+                      className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition-all
+                        ${showResult ? "cursor-default" : "hover:border-primary hover:bg-accent"}
+                        ${!extra ? "border-border" : ""} ${extra}`}
                     >
-                      <span className="flex items-center gap-3">
-                        <span>
-                          <span className="gurmukhi">{option}</span>
-                          {matchedItem && <span className="block text-xs text-primary/70 italic mt-0.5">{matchedItem.romanized}</span>}
-                        </span>
-                        {showResult && isCorrect && <CheckCircle2 className="h-4 w-4 ml-auto text-green-600" />}
-                        {showResult && isSelected && !isCorrect && <XCircle className="h-4 w-4 ml-auto text-red-500" />}
-                      </span>
+                      {option}
                     </button>
                   );
                 })}
@@ -285,42 +290,30 @@ export default function LessonPage() {
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  {currentExercise.pairs.map((pair, i) => {
-                    const matchedItem = content?.items.find(item => pair[0].includes(item.gurmukhi));
-                    return (
-                      <button
-                        key={`l-${i}`}
-                        onClick={() => handleMatchClick("left", i)}
-                        disabled={matchedPairs.has(i)}
-                        className={`w-full p-3 rounded-lg border text-sm text-left font-medium transition-all ${
-                          matchedPairs.has(i)
-                            ? "border-green-500 bg-green-50 dark:bg-green-950/30 opacity-60"
-                            : matchSelection?.side === "left" && matchSelection.index === i
-                            ? "border-primary bg-primary/10"
-                            : "border-border/60 hover:border-primary/40 cursor-pointer"
-                        }`}
-                        data-testid={`button-match-left-${i}`}
-                      >
-                        <span className="gurmukhi">{pair[0]}</span>
-                        {matchedItem && <span className="block text-xs text-primary/70 italic mt-0.5 font-normal">{matchedItem.romanized}</span>}
-                      </button>
-                    );
-                  })}
+                  {currentExercise.pairs.map((pair, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleMatchClick("left", i)}
+                      disabled={matchedPairs.has(i)}
+                      className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all
+                        ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                        ${matchSelection?.side === "left" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
+                        ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
+                    >
+                      {pair[0]}
+                    </button>
+                  ))}
                 </div>
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => (
                     <button
-                      key={`r-${i}`}
+                      key={i}
                       onClick={() => handleMatchClick("right", i)}
                       disabled={matchedPairs.has(i)}
-                      className={`w-full p-3 rounded-lg border text-sm text-left font-medium transition-all ${
-                        matchedPairs.has(i)
-                          ? "border-green-500 bg-green-50 dark:bg-green-950/30 opacity-60"
-                          : matchSelection?.side === "right" && matchSelection.index === i
-                          ? "border-primary bg-primary/10"
-                          : "border-border/60 hover:border-primary/40 cursor-pointer"
-                      }`}
-                      data-testid={`button-match-right-${i}`}
+                      className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all
+                        ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                        ${matchSelection?.side === "right" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
+                        ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
                     >
                       {pair[1]}
                     </button>
@@ -328,46 +321,57 @@ export default function LessonPage() {
                 </div>
               </div>
             )}
+
+            {/* Result feedback */}
+            {showResult && (
+              <div className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
+                selectedAnswer === currentExercise.correct
+                  ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300"
+                  : "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+              }`}>
+                {selectedAnswer === currentExercise.correct
+                  ? <><CheckCircle2 className="h-4 w-4" /> Correct! Well done.</>
+                  : <><XCircle className="h-4 w-4" /> The correct answer was: {currentExercise.options?.[currentExercise.correct ?? 0]}</>
+                }
+              </div>
+            )}
           </div>
 
-          {/* Exercise navigation */}
-          {(showResult || (currentExercise.type === "match" && matchedPairs.size === (currentExercise.pairs?.length || 0))) && (
-            <Button onClick={handleNextExercise} className="w-full" data-testid="button-next-exercise">
-              {exerciseIndex < totalExercises - 1 ? "Next Exercise" : "Complete Lesson"}
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+          {(showResult || currentExercise.type === "match") && (
+            <div className="flex justify-end">
+              <Button onClick={handleNextExercise}>
+                {exerciseIndex < totalExercises - 1 ? "Next Question" : "Finish Lesson"}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           )}
         </div>
       )}
 
       {/* COMPLETE STEP */}
       {step === "complete" && (
-        <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Trophy className="h-8 w-8 text-primary" />
+        <div className="text-center space-y-6 py-8">
+          <div className="text-6xl">🎉</div>
+          <Trophy className="h-16 w-16 text-amber-500 mx-auto" />
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Lesson Complete!</h2>
+            <p className="text-muted-foreground">
+              You scored {score} out of {totalExercises}
+            </p>
           </div>
-          <h2 className="text-lg font-bold mb-1" data-testid="text-lesson-complete">Lesson Complete!</h2>
-          <p className="gurmukhi text-xl text-primary mb-2">ਬਹੁਤ ਵਧੀਆ!</p>
-          <p className="text-sm text-muted-foreground mb-1">Bahut vadhia! — Excellent!</p>
-          <p className="text-sm text-muted-foreground mb-6">You scored {score} out of {totalExercises} exercises</p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Button variant="secondary" onClick={handleRestart} data-testid="button-retry-lesson">
-              <RotateCcw className="h-4 w-4 mr-1" />
-              Practice Again
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={handleRestart}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Restart Lesson
             </Button>
             {nextLesson ? (
-              <Link href={`/learn/${unitId}/${nextLesson.id}`}>
-                <Button onClick={handleRestart} data-testid="button-next-lesson">
-                  Next Lesson
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
+              <Button onClick={() => setLocation(`/unit/${unitId}/lesson/${nextLesson.id}`)}>
+                Next Lesson <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             ) : (
-              <Link href={`/learn/${unitId}`}>
-                <Button data-testid="button-back-to-unit">
-                  Back to Unit
-                </Button>
+              <Link href={`/unit/${unitId}`}>
+                <Button>Back to Unit</Button>
               </Link>
             )}
           </div>
