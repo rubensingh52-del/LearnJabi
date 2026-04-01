@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight } from "lucide-react";
+import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle } from "lucide-react";
 
 const features = [
   {
@@ -21,6 +22,29 @@ const features = [
 ];
 
 export default function Landing() {
+  const [formState, setFormState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFormState("sending");
+    try {
+      const res = await fetch("https://formspree.io/f/xpwzgkbq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        setFormState("sent");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        setFormState("error");
+      }
+    } catch {
+      setFormState("error");
+    }
+  }
+
   return (
     <div className="page-enter">
       {/* Hero */}
@@ -171,6 +195,81 @@ export default function Landing() {
               <div className="absolute -right-12 -top-12 gurmukhi text-[200px] text-primary-foreground font-bold">ੴ</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Contact Form */}
+      <section className="border-t border-border/60 bg-card/30 py-16 sm:py-20" id="contact">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mx-auto mb-4">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Contact Us</h2>
+            <p className="text-sm text-muted-foreground">Have a question, suggestion, or just want to say hello? We'd love to hear from you.</p>
+          </div>
+
+          {formState === "sent" ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <CheckCircle className="h-10 w-10 text-primary" />
+              <p className="text-base font-semibold">Message sent!</p>
+              <p className="text-sm text-muted-foreground">Thanks for reaching out — we'll get back to you soon.</p>
+              <button
+                className="mt-2 text-sm text-primary underline underline-offset-2"
+                onClick={() => setFormState("idle")}
+              >
+                Send another message
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="contact-name" className="text-sm font-medium">Name</label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    placeholder="Your name"
+                    value={formData.name}
+                    onChange={e => setFormData(d => ({ ...d, name: e.target.value }))}
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="contact-email" className="text-sm font-medium">Email</label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={e => setFormData(d => ({ ...d, email: e.target.value }))}
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="contact-message" className="text-sm font-medium">Message</label>
+                <textarea
+                  id="contact-message"
+                  required
+                  rows={5}
+                  placeholder="Write your message here..."
+                  value={formData.message}
+                  onChange={e => setFormData(d => ({ ...d, message: e.target.value }))}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
+                />
+              </div>
+              {formState === "error" && (
+                <p className="text-sm text-destructive">Something went wrong. Please try again or email us directly at rubensingh52@gmail.com.</p>
+              )}
+              <Button type="submit" disabled={formState === "sending"} className="self-end gap-2">
+                {formState === "sending" ? "Sending..." : "Send Message"}
+                <Mail className="h-4 w-4" />
+              </Button>
+            </form>
+          )}
         </div>
       </section>
 
