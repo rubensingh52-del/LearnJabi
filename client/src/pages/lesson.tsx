@@ -7,22 +7,50 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Trophy, Volume2 } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 
 type LessonStep = "learn" | "exercise" | "complete";
 
-function speakText(text: string) {
+/**
+ * Speak Punjabi text accurately:
+ * 1. Try to find a pa-IN (Punjabi India) voice — most accurate
+ * 2. Fall back to hi-IN (Hindi) — phonetically much closer than English
+ * 3. Last resort: speak romanized with default voice at slow rate
+ * Never speaks the English translation.
+ */
+function speakPunjabi(gurmukhi: string, romanized: string) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  // Use a Hindi/Punjabi voice if available, otherwise default
+
   const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(
-    (v) => v.lang.startsWith("pa") || v.lang.startsWith("hi") || v.lang.startsWith("en")
-  );
-  if (preferred) utterance.voice = preferred;
-  utterance.rate = 0.85;
+
+  // Prefer native Punjabi voice
+  const paVoice = voices.find((v) => v.lang.startsWith("pa"));
+  // Second choice: Hindi (same script family, correct phonetics)
+  const hiVoice = voices.find((v) => v.lang.startsWith("hi"));
+
+  const utterance = new SpeechSynthesisUtterance();
+  utterance.rate = 0.8;
   utterance.pitch = 1;
+  utterance.volume = 1;
+
+  if (paVoice) {
+    // Native Punjabi TTS — speak Gurmukhi directly
+    utterance.voice = paVoice;
+    utterance.lang = paVoice.lang;
+    utterance.text = gurmukhi;
+  } else if (hiVoice) {
+    // Hindi voice — speak romanized, phonetics are close enough
+    utterance.voice = hiVoice;
+    utterance.lang = hiVoice.lang;
+    utterance.text = romanized;
+  } else {
+    // No South Asian voice available — set lang hint and speak romanized
+    // Setting lang="pa-IN" prompts the browser to use the best available voice
+    utterance.lang = "pa-IN";
+    utterance.text = romanized;
+  }
+
   window.speechSynthesis.speak(utterance);
 }
 
@@ -45,6 +73,7 @@ export default function LessonPage() {
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [matchSelection, setMatchSelection] = useState<{ side: "left" | "right"; index: number } | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const content: LessonContent | null = useMemo(() => {
     if (!lesson) return null;
@@ -66,11 +95,11 @@ export default function LessonPage() {
 
   const nextLesson = allLessons?.find(l => l.order === (lesson?.order || 0) + 1);
 
-  const handleSpeak = useCallback((item: { gurmukhi: string; romanized: string; english: string }) => {
+  const handleSpeak = useCallback((item: { gurmukhi: string; romanized: string }) => {
+    if (speakTimer.current) clearTimeout(speakTimer.current);
     setIsSpeaking(true);
-    // Speak the romanized pronunciation so users hear the correct Punjabi sound
-    speakText(item.romanized + ". " + item.english);
-    setTimeout(() => setIsSpeaking(false), 1500);
+    speakPunjabi(item.gurmukhi, item.romanized);
+    speakTimer.current = setTimeout(() => setIsSpeaking(false), 2000);
   }, []);
 
   const handleChooseAnswer = (optionIndex: number) => {
@@ -187,13 +216,13 @@ export default function LessonPage() {
           <p className="text-muted-foreground text-sm">{content.intro}</p>
 
           <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
-            {/* Speak button */}
+            {/* Speak button — speaks only the Punjabi, not English */}
             <button
               onClick={() => handleSpeak(currentItem)}
-              aria-label="Pronounce this word"
+              aria-label="Pronounce this word in Punjabi"
               className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
                 isSpeaking
-                  ? "bg-primary/20 text-primary"
+                  ? "bg-primary/20 text-primary animate-pulse"
                   : "text-muted-foreground hover:text-primary hover:bg-primary/10"
               }`}
             >
@@ -204,9 +233,8 @@ export default function LessonPage() {
             <div className="text-2xl text-primary font-semibold">{currentItem.romanized}</div>
             <div className="text-lg text-muted-foreground">{currentItem.english}</div>
 
-            {/* Tap-to-pronounce hint */}
             <p className="text-xs text-muted-foreground pt-2">
-              Tap 🔊 to hear the pronunciation
+              Tap 🔊 to hear the Punjabi pronunciation
             </p>
           </div>
 
@@ -264,7 +292,6 @@ export default function LessonPage() {
             {currentExercise.type === "choose" && currentExercise.options && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {currentExercise.options.map((option, i) => {
-                  let variant: "outline" | "default" | "destructive" | "secondary" = "outline";
                   let extra = "";
                   if (showResult) {
                     if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
