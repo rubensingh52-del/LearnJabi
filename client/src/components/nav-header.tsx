@@ -19,7 +19,6 @@ export function NavHeader() {
   const [showTutorToast, setShowTutorToast] = useState(false);
   const { user, loading, signOut } = useAuth();
 
-  const isLanding = location === "/" || location === "";
   const displayName = user?.user_metadata?.username || user?.email?.split("@")[0] || "You";
 
   const handleTutorClick = () => {
@@ -94,6 +93,7 @@ export function NavHeader() {
 
             {!loading && (
               user ? (
+                /* Logged in: show name + sign out */
                 <div className="hidden sm:flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Hi, <span className="font-medium text-foreground">{displayName}</span></span>
                   <Button size="sm" variant="ghost" onClick={signOut} className="gap-1.5" data-testid="button-sign-out">
@@ -102,12 +102,20 @@ export function NavHeader() {
                   </Button>
                 </div>
               ) : (
-                <Link href="/login">
-                  <Button size="sm" className="hidden sm:inline-flex gap-1.5" data-testid="button-sign-in">
-                    <LogIn className="h-3.5 w-3.5" />
-                    {isLanding ? "Start Learning" : "Sign in"}
-                  </Button>
-                </Link>
+                /* Logged out: two separate buttons */
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link href="/login">
+                    <Button size="sm" variant="outline" className="gap-1.5" data-testid="button-log-in">
+                      <LogIn className="h-3.5 w-3.5" />
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link href="/learn">
+                    <Button size="sm" className="gap-1.5" data-testid="button-sign-in">
+                      Start Learning
+                    </Button>
+                  </Link>
+                </div>
               )
             )}
 
@@ -154,14 +162,23 @@ export function NavHeader() {
                     </button>
                   </div>
                 ) : (
-                  <Link href="/login">
-                    <span onClick={() => setMobileOpen(false)}>
-                      <Button size="sm" className="w-full mt-2" data-testid="button-mobile-sign-in">
-                        <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                        Sign in / Register
-                      </Button>
-                    </span>
-                  </Link>
+                  <div className="mt-2 pt-2 border-t border-border/40 flex flex-col gap-2">
+                    <Link href="/login">
+                      <span onClick={() => setMobileOpen(false)}>
+                        <Button size="sm" variant="outline" className="w-full gap-1.5" data-testid="button-mobile-log-in">
+                          <LogIn className="h-3.5 w-3.5" />
+                          Log In
+                        </Button>
+                      </span>
+                    </Link>
+                    <Link href="/learn">
+                      <span onClick={() => setMobileOpen(false)}>
+                        <Button size="sm" className="w-full" data-testid="button-mobile-start">
+                          Start Learning
+                        </Button>
+                      </span>
+                    </Link>
+                  </div>
                 )
               )}
             </div>
