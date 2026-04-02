@@ -1,18 +1,22 @@
-import {
-  type User, type InsertUser, users,
-  type Unit, units,
-  type Lesson, lessons,
-  type UserProgress, userProgress, type InsertProgress,
-  type ChatMessage, chatMessages, type InsertChatMessage,
+import { createClient } from '@supabase/supabase-js';
+import type {
+  User, InsertUser,
+  Unit,
+  Lesson,
+  UserProgress, InsertProgress,
+  ChatMessage, InsertChatMessage,
 } from "@shared/schema";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import { eq, asc, desc } from "drizzle-orm";
 
-const sqlite = new Database("data.db");
-sqlite.pragma("journal_mode = WAL");
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const db = drizzle(sqlite);
+if (!supabaseUrl || !supabaseKey) {
+  console.error('[Storage] Missing Supabase env vars. Set VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+}
+
+export const db = createClient(supabaseUrl, supabaseKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -32,64 +36,136 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return db.select().from(users).where(eq(users.id, id)).get();
+    const { data } = await db.from('users').select('*').eq('id', id).single();
+    return data ?? undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return db.select().from(users).where(eq(users.username, username)).get();
+    const { data } = await db.from('users').select('*').eq('username', username).single();
+    return data ?? undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    return db.insert(users).values(insertUser).returning().get();
+  async createUser(user: InsertUser): Promise<User> {
+    const { data, error } = await db.from('users').insert(user).select().single();
+    if (error) throw new Error(error.message);
+    return data;
   }
 
   async getUnits(): Promise<Unit[]> {
-    return db.select().from(units).orderBy(asc(units.order)).all();
+    const { data, error } = await db.from('units').select('*').order('order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(mapUnit);
   }
 
   async getUnit(id: number): Promise<Unit | undefined> {
-    return db.select().from(units).where(eq(units.id, id)).get();
+    const { data } = await db.from('units').select('*').eq('id', id).single();
+    return data ? mapUnit(data) : undefined;
   }
 
   async getLessonsByUnit(unitId: number): Promise<Lesson[]> {
-    return db.select().from(lessons).where(eq(lessons.unitId, unitId)).orderBy(asc(lessons.order)).all();
+    const { data, error } = await db.from('lessons').select('*').eq('unit_id', unitId).order('order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(mapLesson);
   }
 
   async getLesson(id: number): Promise<Lesson | undefined> {
-    return db.select().from(lessons).where(eq(lessons.id, id)).get();
+    const { data } = await db.from('lessons').select('*').eq('id', id).single();
+    return data ? mapLesson(data) : undefined;
   }
 
   async getProgress(): Promise<UserProgress[]> {
-    return db.select().from(userProgress).all();
+    const { data, error } = await db.from('user_progress').select('*');
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(mapProgress);
   }
 
   async getProgressByLesson(lessonId: number): Promise<UserProgress | undefined> {
-    return db.select().from(userProgress).where(eq(userProgress.lessonId, lessonId)).get();
+    const { data } = await db.from('user_progress').select('*').eq('lesson_id', lessonId).single();
+    return data ? mapProgress(data) : undefined;
   }
 
   async upsertProgress(progress: InsertProgress): Promise<UserProgress> {
     const existing = await this.getProgressByLesson(progress.lessonId);
     if (existing) {
-      db.update(userProgress)
-        .set({ completed: progress.completed, score: progress.score, lastAccessed: progress.lastAccessed })
-        .where(eq(userProgress.id, existing.id))
-        .run();
-      return db.select().from(userProgress).where(eq(userProgress.id, existing.id)).get()!;
+      const { data, error } = await db
+        .from('user_progress')
+        .update({
+          completed: progress.completed,
+          score: progress.score,
+          last_accessed: progress.lastAccessed,
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return mapProgress(data);
     }
-    return db.insert(userProgress).values(progress).returning().get();
+    const { data, error } = await db
+      .from('user_progress')
+      .insert({
+        lesson_id: progress.lessonId,
+        completed: progress.completed,
+        score: progress.score,
+        last_accessed: progress.lastAccessed,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return mapProgress(data);
   }
 
   async getChatMessages(): Promise<ChatMessage[]> {
-    return db.select().from(chatMessages).orderBy(asc(chatMessages.id)).all();
+    const { data, error } = await db.from('chat_messages').select('*').order('id', { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
   }
 
   async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    return db.insert(chatMessages).values(message).returning().get();
+    const { data, error } = await db.from('chat_messages').insert(message).select().single();
+    if (error) throw new Error(error.message);
+    return data;
   }
 
   async clearChatMessages(): Promise<void> {
-    db.delete(chatMessages).run();
+    const { error } = await db.from('chat_messages').delete().neq('id', 0);
+    if (error) throw new Error(error.message);
   }
+}
+
+// Supabase uses snake_case column names — map back to camelCase for the app
+function mapUnit(row: any): Unit {
+  return {
+    id: row.id,
+    title: row.title,
+    titlePunjabi: row.title_punjabi,
+    description: row.description,
+    icon: row.icon,
+    order: row.order,
+    color: row.color,
+  };
+}
+
+function mapLesson(row: any): Lesson {
+  return {
+    id: row.id,
+    unitId: row.unit_id,
+    title: row.title,
+    titlePunjabi: row.title_punjabi,
+    description: row.description,
+    order: row.order,
+    type: row.type,
+    content: row.content,
+  };
+}
+
+function mapProgress(row: any): UserProgress {
+  return {
+    id: row.id,
+    lessonId: row.lesson_id,
+    completed: row.completed,
+    score: row.score,
+    lastAccessed: row.last_accessed,
+  };
 }
 
 export const storage = new DatabaseStorage();
