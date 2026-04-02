@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { type Server } from "http";
+import { createServer, type Server } from "http";
 import { storage, db } from "./storage";
 import { units, lessons, userProgress, chatMessages } from "@shared/schema";
 
@@ -441,14 +441,19 @@ function seedData() {
       content: JSON.stringify({
         intro: "Now let's use emotion words in real sentences. The key structure is 'ਮੈਨੂੰ ___ ਹੈ' (I have/feel ___) or 'ਮੈਂ ___ ਹਾਂ' (I am ___).",
         items: [
-          { gurmukhi: "ਮੈਂ ਖੁਸ਼ ਹਾਂ", romanized: "Mai khush haan", english: "I am happy", audio: "mai khush haan" },
+          { gurmukhi: "ਮੈਂ ਖੁਸ਼ ਹਾਂ", romanized: "Mai khush haan", english: "I am happy", audio: "mai khush" },
+          { gurmukhi: "ਮੈਂ ਉਦਾਸ ਹਾਂ", romanized: "Mai udaas haan", english: "I am sad", audio: "mai udaas" },
+          { gurmukhi: "ਮੈਨੂੰ ਗੁੱਸਾ ਆ ਰਿਹਾ ਹੈ", romanized: "Mainu gussa aa riha hai", english: "I am getting angry", audio: "gussa aa riha" },
           { gurmukhi: "ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ", romanized: "Mainu bhukh laggi hai", english: "I am hungry", audio: "bhukh laggi" },
           { gurmukhi: "ਮੈਨੂੰ ਪਿਆਸ ਲੱਗੀ ਹੈ", romanized: "Mainu pyaas laggi hai", english: "I am thirsty", audio: "pyaas laggi" },
           { gurmukhi: "ਮੈਂ ਥੱਕਿਆ ਹਾਂ", romanized: "Mai thakkya haan", english: "I am tired (male)", audio: "thakkya haan" },
+          { gurmukhi: "ਮੈਂ ਥੱਕੀ ਹਾਂ", romanized: "Mai thakki haan", english: "I am tired (female)", audio: "thakki haan" },
           { gurmukhi: "ਮੈਨੂੰ ਚਿੰਤਾ ਹੈ", romanized: "Mainu chinta hai", english: "I am worried", audio: "chinta hai" },
-          { gurmukhi: "ਮੈਂ ਉਦਾਸ ਹਾਂ", romanized: "Mai udaas haan", english: "I am sad", audio: "udaas haan" },
-          { gurmukhi: "ਮੈਨੂੰ ਖੁਸ਼ੀ ਹੈ", romanized: "Mainu khushi hai", english: "I am joyful", audio: "khushi hai" },
-          { gurmukhi: "ਮੈਂ ਡਰਿਆ ਹਾਂ", romanized: "Mai darya haan", english: "I am scared (male)", audio: "darya haan" },
+          { gurmukhi: "ਮੈਂ ਹੈਰਾਨ ਹਾਂ", romanized: "Mai hairaan haan", english: "I am surprised", audio: "hairaan haan" },
+          { gurmukhi: "ਮੈਂ ਠੀਕ ਹਾਂ", romanized: "Mai theek haan", english: "I am fine / OK", audio: "theek haan" },
+          { gurmukhi: "ਮੈਂ ਬਹੁਤ ਖੁਸ਼ ਹਾਂ", romanized: "Mai bahut khush haan", english: "I am very happy", audio: "bahut khush" },
+          { gurmukhi: "ਮੈਂ ਬਿਲਕੁਲ ਠੀਕ ਨਹੀਂ", romanized: "Mai bilkul theek nahi", english: "I am not well at all", audio: "bilkul theek nahi" },
+          { gurmukhi: "ਤੂੰ ਕਿਵੇਂ ਮਹਿਸੂਸ ਕਰ ਰਿਹਾ/ਰਹੀ ਹੈਂ?", romanized: "Tu kive mahsoos kar riha/rahi hain?", english: "How are you feeling?", audio: "kive mahsoos" },
         ],
         exercises: [
           { type: "choose", question: "How do you say 'I am happy'?", options: ["ਮੈਂ ਉਦਾਸ ਹਾਂ","ਮੈਂ ਖੁਸ਼ ਹਾਂ","ਮੈਨੂੰ ਚਿੰਤਾ ਹੈ","ਮੈਂ ਥੱਕਿਆ ਹਾਂ"], correct: 1 },
@@ -459,8 +464,179 @@ function seedData() {
     },
   ];
 
+  // ── UNIT 7: Family & People ───────────────────────────────────────────────
+  const unit7Lessons = [
+    {
+      unitId: 7, title: "Family Members", titlePunjabi: "ਪਰਿਵਾਰਕ ਮੈਂਬਰ", description: "Learn words for family members in Punjabi",
+      order: 1, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Punjabi has very specific words for family members, often distinguishing maternal vs paternal relatives. Family (ਪਰਿਵਾਰ — parivaar) is central to Punjabi culture.",
+        items: [
+          { gurmukhi: "ਮਾਂ", romanized: "maan", english: "Mother", audio: "maan" },
+          { gurmukhi: "ਪਿਤਾ / ਬਾਪੂ", romanized: "pita / baapoo", english: "Father", audio: "pita" },
+          { gurmukhi: "ਭਰਾ", romanized: "bhara", english: "Brother", audio: "bhara" },
+          { gurmukhi: "ਭੈਣ", romanized: "bhain", english: "Sister", audio: "bhain" },
+          { gurmukhi: "ਦਾਦਾ", romanized: "daada", english: "Paternal grandfather", audio: "daada" },
+          { gurmukhi: "ਦਾਦੀ", romanized: "daadi", english: "Paternal grandmother", audio: "daadi" },
+          { gurmukhi: "ਨਾਨਾ", romanized: "naana", english: "Maternal grandfather", audio: "naana" },
+          { gurmukhi: "ਨਾਨੀ", romanized: "naani", english: "Maternal grandmother", audio: "naani" },
+          { gurmukhi: "ਚਾਚਾ", romanized: "chacha", english: "Paternal uncle (father's brother)", audio: "chacha" },
+          { gurmukhi: "ਚਾਚੀ", romanized: "chaachi", english: "Paternal aunt (uncle's wife)", audio: "chaachi" },
+          { gurmukhi: "ਮਾਮਾ", romanized: "maama", english: "Maternal uncle (mother's brother)", audio: "maama" },
+          { gurmukhi: "ਮਾਮੀ", romanized: "maami", english: "Maternal aunt (uncle's wife)", audio: "maami" },
+          { gurmukhi: "ਪੁੱਤਰ", romanized: "puttar", english: "Son", audio: "puttar" },
+          { gurmukhi: "ਧੀ", romanized: "dhi", english: "Daughter", audio: "dhi" },
+          { gurmukhi: "ਪਤੀ", romanized: "pati", english: "Husband", audio: "pati" },
+          { gurmukhi: "ਪਤਨੀ", romanized: "patni", english: "Wife", audio: "patni" },
+        ],
+        exercises: [
+          { type: "choose", question: "What does 'ਦਾਦਾ' mean?", options: ["Maternal grandfather","Father","Paternal grandfather","Uncle"], correct: 2 },
+          { type: "choose", question: "How do you say 'Sister' in Punjabi?", options: ["ਭਰਾ","ਧੀ","ਭੈਣ","ਮਾਂ"], correct: 2 },
+          { type: "choose", question: "What is 'ਮਾਮਾ'?", options: ["Paternal uncle","Maternal uncle","Father","Brother"], correct: 1 },
+          { type: "match", question: "Match family members", pairs: [["ਮਾਂ","Mother"],["ਪਿਤਾ","Father"],["ਭਰਾ","Brother"],["ਭੈਣ","Sister"]] },
+        ]
+      })
+    },
+    {
+      unitId: 7, title: "Talking About Family", titlePunjabi: "ਪਰਿਵਾਰ ਬਾਰੇ ਦੱਸਣਾ", description: "Describe your family in Punjabi",
+      order: 2, type: "phrases",
+      content: JSON.stringify({
+        intro: "Now let's use family vocabulary in sentences. You'll be able to introduce and describe your family members in Punjabi.",
+        items: [
+          { gurmukhi: "ਮੇਰੇ ਪਰਿਵਾਰ ਵਿੱਚ ਚਾਰ ਜਣੇ ਹਨ", romanized: "Mere parivaar vich chaar jane han", english: "There are four people in my family", audio: "parivaar vich" },
+          { gurmukhi: "ਮੇਰੀ ਮਾਂ ਦਾ ਨਾਮ ___ ਹੈ", romanized: "Meri maan da naam ___ hai", english: "My mother's name is ___", audio: "maan da naam" },
+          { gurmukhi: "ਮੇਰੇ ਦੋ ਭਰਾ ਹਨ", romanized: "Mere do bhara han", english: "I have two brothers", audio: "do bhara" },
+          { gurmukhi: "ਮੇਰੀ ਇੱਕ ਭੈਣ ਹੈ", romanized: "Meri ikk bhain hai", english: "I have one sister", audio: "ikk bhain" },
+          { gurmukhi: "ਮੇਰੇ ਦਾਦਾ ਜੀ ਬਹੁਤ ਬਜ਼ੁਰਗ ਹਨ", romanized: "Mere daada ji bahut bazurg han", english: "My grandfather is very old", audio: "daada bazurg" },
+          { gurmukhi: "ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਵਿੱਚ ਕਿੰਨੇ ਜਣੇ ਹਨ?", romanized: "Tuhaade parivaar vich kinne jane han?", english: "How many people are in your family?", audio: "kinne jane" },
+          { gurmukhi: "ਮੇਰੇ ਮਾਤਾ-ਪਿਤਾ ਪੰਜਾਬ ਤੋਂ ਹਨ", romanized: "Mere maata-pita Punjab to han", english: "My parents are from Punjab", audio: "maata-pita Punjab" },
+          { gurmukhi: "ਮੇਰਾ ਛੋਟਾ ਭਰਾ ਸਕੂਲ ਜਾਂਦਾ ਹੈ", romanized: "Mera chhota bhara skool jaanda hai", english: "My younger brother goes to school", audio: "chhota bhara" },
+        ],
+        exercises: [
+          { type: "choose", question: "How do you say 'I have two brothers'?", options: ["ਮੇਰੀ ਇੱਕ ਭੈਣ ਹੈ","ਮੇਰੇ ਦੋ ਭਰਾ ਹਨ","ਮੇਰੇ ਚਾਰ ਜਣੇ ਹਨ","ਮੇਰੇ ਦਾਦਾ ਜੀ ਹਨ"], correct: 1 },
+          { type: "choose", question: "What does 'ਮੇਰੇ ਮਾਤਾ-ਪਿਤਾ' mean?", options: ["My grandparents","My siblings","My parents","My children"], correct: 2 },
+          { type: "match", question: "Match family phrases", pairs: [["ਮਾਂ","Mother"],["ਦਾਦਾ","Paternal grandfather"],["ਭੈਣ","Sister"],["ਪੁੱਤਰ","Son"]] },
+        ]
+      })
+    },
+    {
+      unitId: 7, title: "Describing People", titlePunjabi: "ਲੋਕਾਂ ਦਾ ਵਰਣਨ", description: "Describe people's appearance and personality",
+      order: 3, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Describing people (ਲੋਕ — lok) is useful in everyday conversation. Adjectives in Punjabi often change form based on gender.",
+        items: [
+          { gurmukhi: "ਲੰਮਾ / ਲੰਮੀ", romanized: "lamma / lammi", english: "Tall (male/female)", audio: "lamma" },
+          { gurmukhi: "ਨਾਟਾ / ਨਾਟੀ", romanized: "naata / naati", english: "Short (male/female)", audio: "naata" },
+          { gurmukhi: "ਮੋਟਾ / ਮੋਟੀ", romanized: "mota / moti", english: "Fat / Chubby (male/female)", audio: "mota" },
+          { gurmukhi: "ਪਤਲਾ / ਪਤਲੀ", romanized: "patla / patli", english: "Thin / Slim (male/female)", audio: "patla" },
+          { gurmukhi: "ਸੋਹਣਾ / ਸੋਹਣੀ", romanized: "sohna / sohni", english: "Handsome / Beautiful", audio: "sohna" },
+          { gurmukhi: "ਬੁੱਢਾ / ਬੁੱਢੀ", romanized: "buddha / buddhi", english: "Old (male/female)", audio: "buddha" },
+          { gurmukhi: "ਜਵਾਨ", romanized: "javaan", english: "Young", audio: "javaan" },
+          { gurmukhi: "ਚੁਸਤ", romanized: "chust", english: "Smart / Clever", audio: "chust" },
+          { gurmukhi: "ਮਿਹਨਤੀ", romanized: "mihnatee", english: "Hard-working", audio: "mihnatee" },
+          { gurmukhi: "ਦਿਆਲੂ", romanized: "dayaloo", english: "Kind / Generous", audio: "dayaloo" },
+          { gurmukhi: "ਮਜ਼ਾਕੀਆ", romanized: "mazaakia", english: "Funny / Humorous", audio: "mazaakia" },
+          { gurmukhi: "ਸ਼ਰਮੀਲਾ / ਸ਼ਰਮੀਲੀ", romanized: "sharmeela / sharmeeli", english: "Shy (male/female)", audio: "sharmeela" },
+        ],
+        exercises: [
+          { type: "choose", question: "What does 'ਸੋਹਣਾ' mean?", options: ["Tall","Handsome","Old","Shy"], correct: 1 },
+          { type: "choose", question: "How do you say 'Hard-working' in Punjabi?", options: ["ਦਿਆਲੂ","ਚੁਸਤ","ਮਿਹਨਤੀ","ਜਵਾਨ"], correct: 2 },
+          { type: "match", question: "Match descriptions", pairs: [["ਲੰਮਾ","Tall"],["ਨਾਟਾ","Short"],["ਜਵਾਨ","Young"],["ਚੁਸਤ","Clever"]] },
+        ]
+      })
+    },
+  ];
+
+  // ── UNIT 8: Food & Dining ────────────────────────────────────────────────
+  const unit8Lessons = [
+    {
+      unitId: 8, title: "Punjabi Foods", titlePunjabi: "ਪੰਜਾਬੀ ਖਾਣੇ", description: "Essential Punjabi food vocabulary",
+      order: 1, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "Punjabi cuisine (ਪੰਜਾਬੀ ਖਾਣਾ — Punjabi khaana) is world-famous. From buttery dal makhani to crispy parathas, food is at the heart of Punjabi culture.",
+        items: [
+          { gurmukhi: "ਰੋਟੀ", romanized: "roti", english: "Flatbread / Chapati", audio: "roti" },
+          { gurmukhi: "ਪਰਾਉਂਠਾ", romanized: "paraauntha", english: "Paratha (fried flatbread)", audio: "paraauntha" },
+          { gurmukhi: "ਦਾਲ", romanized: "daal", english: "Lentils", audio: "daal" },
+          { gurmukhi: "ਸਬਜ਼ੀ", romanized: "sabzi", english: "Vegetables / Vegetable dish", audio: "sabzi" },
+          { gurmukhi: "ਚਾਵਲ", romanized: "chaaval", english: "Rice", audio: "chaaval" },
+          { gurmukhi: "ਚਿਕਨ", romanized: "chikkan", english: "Chicken", audio: "chikkan" },
+          { gurmukhi: "ਮੱਛੀ", romanized: "machchi", english: "Fish", audio: "machchi" },
+          { gurmukhi: "ਪਨੀਰ", romanized: "paneer", english: "Paneer (Indian cheese)", audio: "paneer" },
+          { gurmukhi: "ਲੱਸੀ", romanized: "lassi", english: "Yoghurt drink", audio: "lassi" },
+          { gurmukhi: "ਚਾਹ", romanized: "chaa", english: "Tea", audio: "chaa" },
+          { gurmukhi: "ਪਾਣੀ", romanized: "paani", english: "Water", audio: "paani" },
+          { gurmukhi: "ਮੱਖਣ", romanized: "makkhan", english: "Butter", audio: "makkhan" },
+          { gurmukhi: "ਸਰੋਂ ਦਾ ਸਾਗ", romanized: "saroan da saag", english: "Mustard leaf curry", audio: "saroan da saag" },
+          { gurmukhi: "ਮੱਕੀ ਦੀ ਰੋਟੀ", romanized: "makki di roti", english: "Cornbread", audio: "makki di roti" },
+          { gurmukhi: "ਖੀਰ", romanized: "kheer", english: "Rice pudding dessert", audio: "kheer" },
+          { gurmukhi: "ਜਲੇਬੀ", romanized: "jalebi", english: "Jalebi (sweet fried dessert)", audio: "jalebi" },
+        ],
+        exercises: [
+          { type: "choose", question: "What is 'ਲੱਸੀ'?", options: ["Tea","Rice","Yoghurt drink","Bread"], correct: 2 },
+          { type: "choose", question: "How do you say 'Water' in Punjabi?", options: ["ਚਾਹ","ਲੱਸੀ","ਪਾਣੀ","ਦਾਲ"], correct: 2 },
+          { type: "choose", question: "What does 'ਸਰੋਂ ਦਾ ਸਾਗ' refer to?", options: ["Rice pudding","Cornbread","Mustard leaf curry","Lentils"], correct: 2 },
+          { type: "match", question: "Match foods", pairs: [["ਰੋਟੀ","Flatbread"],["ਦਾਲ","Lentils"],["ਚਾਵਲ","Rice"],["ਪਾਣੀ","Water"]] },
+        ]
+      })
+    },
+    {
+      unitId: 8, title: "Ordering Food", titlePunjabi: "ਖਾਣਾ ਮੰਗਣਾ", description: "Order food and drinks in Punjabi",
+      order: 2, type: "phrases",
+      content: JSON.stringify({
+        intro: "Whether at a dhaba (roadside restaurant) or a family home, knowing how to ask for food in Punjabi will earn you plenty of smiles.",
+        items: [
+          { gurmukhi: "ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ", romanized: "Mainu bhukh laggi hai", english: "I am hungry", audio: "bhukh laggi" },
+          { gurmukhi: "ਖਾਣਾ ਤਿਆਰ ਹੈ?", romanized: "Khaana taiyaar hai?", english: "Is the food ready?", audio: "khaana taiyaar" },
+          { gurmukhi: "ਮੈਨੂੰ ___ ਚਾਹੀਦਾ ਹੈ", romanized: "Mainu ___ chaahida hai", english: "I want / I need ___", audio: "chaahida hai" },
+          { gurmukhi: "ਇਹ ਬਹੁਤ ਸੁਆਦ ਹੈ", romanized: "Ih bahut suaad hai", english: "This is very tasty", audio: "bahut suaad" },
+          { gurmukhi: "ਹੋਰ ਦੇਵੋ", romanized: "Hor devo", english: "Give me more", audio: "hor devo" },
+          { gurmukhi: "ਮੈਂ ਰੱਜ ਗਿਆ / ਗਈ ਹਾਂ", romanized: "Mai rajj gya / gayi haan", english: "I am full (male/female)", audio: "rajj gya" },
+          { gurmukhi: "ਕੀ ਤੁਸੀਂ ਕੁਝ ਖਾਓਗੇ?", romanized: "Ki tusi kuch khaoge?", english: "Will you eat something?", audio: "kuch khaoge" },
+          { gurmukhi: "ਬਹੁਤ ਮਸਾਲੇਦਾਰ ਨਾ ਕਰੋ", romanized: "Bahut masaaledaar na karo", english: "Don't make it too spicy", audio: "masaaledaar na karo" },
+          { gurmukhi: "ਪਾਣੀ ਲਿਆਓ", romanized: "Paani liyaao", english: "Bring water", audio: "paani liyaao" },
+          { gurmukhi: "ਚਾਹ ਪੀਓਗੇ?", romanized: "Chaa peeoge?", english: "Will you have tea?", audio: "chaa peeoge" },
+          { gurmukhi: "ਬਿੱਲ ਲਿਆਓ", romanized: "Bill liyaao", english: "Bring the bill", audio: "bill liyaao" },
+          { gurmukhi: "ਕਿੰਨੇ ਪੈਸੇ ਹੋਏ?", romanized: "Kinne paise hoe?", english: "How much does it cost?", audio: "kinne paise" },
+        ],
+        exercises: [
+          { type: "choose", question: "How do you say 'This is very tasty'?", options: ["ਹੋਰ ਦੇਵੋ","ਇਹ ਬਹੁਤ ਸੁਆਦ ਹੈ","ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ","ਖਾਣਾ ਤਿਆਰ ਹੈ?"], correct: 1 },
+          { type: "choose", question: "What does 'ਮੈਂ ਰੱਜ ਗਿਆ ਹਾਂ' mean?", options: ["I am hungry","I want more","I am full","The food is ready"], correct: 2 },
+          { type: "choose", question: "How do you ask for the bill?", options: ["ਪਾਣੀ ਲਿਆਓ","ਹੋਰ ਦੇਵੋ","ਬਿੱਲ ਲਿਆਓ","ਚਾਹ ਪੀਓਗੇ?"], correct: 2 },
+          { type: "match", question: "Match food phrases", pairs: [["ਹੋਰ ਦੇਵੋ","Give me more"],["ਪਾਣੀ ਲਿਆਓ","Bring water"],["ਬਿੱਲ ਲਿਆਓ","Bring the bill"],["ਮੈਂ ਰੱਜ ਗਿਆ ਹਾਂ","I am full"]] },
+        ]
+      })
+    },
+    {
+      unitId: 8, title: "Cooking & Kitchen", titlePunjabi: "ਰਸੋਈ", description: "Kitchen vocabulary and cooking terms",
+      order: 3, type: "vocabulary",
+      content: JSON.stringify({
+        intro: "The kitchen (ਰਸੋਈ — rasoyi) is the heart of a Punjabi home. Learning cooking vocabulary will help you in conversations about food preparation.",
+        items: [
+          { gurmukhi: "ਰਸੋਈ", romanized: "rasoyi", english: "Kitchen", audio: "rasoyi" },
+          { gurmukhi: "ਪਕਾਉਣਾ", romanized: "pakauna", english: "To cook", audio: "pakauna" },
+          { gurmukhi: "ਤੇਲ", romanized: "tel", english: "Oil", audio: "tel" },
+          { gurmukhi: "ਮਸਾਲਾ", romanized: "masaala", english: "Spice / Spices", audio: "masaala" },
+          { gurmukhi: "ਨਮਕ", romanized: "namak", english: "Salt", audio: "namak" },
+          { gurmukhi: "ਖੰਡ", romanized: "khand", english: "Sugar", audio: "khand" },
+          { gurmukhi: "ਆਟਾ", romanized: "aata", english: "Flour", audio: "aata" },
+          { gurmukhi: "ਪਿਆਜ਼", romanized: "piyaaz", english: "Onion", audio: "piyaaz" },
+          { gurmukhi: "ਲਸਣ", romanized: "lasan", english: "Garlic", audio: "lasan" },
+          { gurmukhi: "ਅਦਰਕ", romanized: "adrak", english: "Ginger", audio: "adrak" },
+          { gurmukhi: "ਟਮਾਟਰ", romanized: "tamaatar", english: "Tomato", audio: "tamaatar" },
+          { gurmukhi: "ਮਿਰਚ", romanized: "mirach", english: "Chilli / Pepper", audio: "mirach" },
+        ],
+        exercises: [
+          { type: "choose", question: "What is 'ਰਸੋਈ'?", options: ["Food","Kitchen","Spice","Cooking"], correct: 1 },
+          { type: "choose", question: "How do you say 'Salt' in Punjabi?", options: ["ਖੰਡ","ਮਸਾਲਾ","ਨਮਕ","ਤੇਲ"], correct: 2 },
+          { type: "match", question: "Match kitchen words", pairs: [["ਤੇਲ","Oil"],["ਨਮਕ","Salt"],["ਖੰਡ","Sugar"],["ਆਟਾ","Flour"]] },
+        ]
+      })
+    },
+  ];
+
   // Insert all lessons
-  const allLessons = [...unit1Lessons, ...unit2Lessons, ...unit3Lessons, ...unit4Lessons, ...unit5Lessons, ...unit6Lessons];
+  const allLessons = [...unit1Lessons, ...unit2Lessons, ...unit3Lessons, ...unit4Lessons, ...unit5Lessons, ...unit6Lessons, ...unit7Lessons, ...unit8Lessons];
   for (const lesson of allLessons) {
     db.insert(lessons).values(lesson).run();
   }
