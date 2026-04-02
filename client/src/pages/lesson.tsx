@@ -65,7 +65,6 @@ export default function LessonPage() {
   const handleExerciseSpeak = useCallback((question: string) => {
     if (exerciseSpeakTimer.current) clearTimeout(exerciseSpeakTimer.current);
     setIsExerciseSpeaking(true);
-    // Extract Gurmukhi characters from the question string for TTS
     const gurmukhiMatch = question.match(/[\u0A00-\u0A7F\s]+/g);
     const gurmukhiText = gurmukhiMatch ? gurmukhiMatch.join(" ").trim() : question;
     speakPunjabi(gurmukhiText, question);
@@ -177,7 +176,8 @@ export default function LessonPage() {
         <div className="space-y-6">
           <p className="text-muted-foreground text-sm">{content.intro}</p>
 
-          <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
+          <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-2">
+            {/* Audio button */}
             <button
               onClick={() => handleSpeak(currentItem)}
               aria-label="Pronounce this word in Punjabi"
@@ -190,12 +190,19 @@ export default function LessonPage() {
               <Volume2 className="h-5 w-5" />
             </button>
 
-            <div className="text-6xl font-bold leading-tight">{currentItem.gurmukhi}</div>
-            <div className="text-2xl text-primary font-semibold">{currentItem.romanized}</div>
-            <div className="text-lg text-muted-foreground">{currentItem.english}</div>
+            {/* Gurmukhi script — large display */}
+            <div className="text-5xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
 
-            <p className="text-xs text-muted-foreground pt-2">
-              Tap 🔊 to hear the Punjabi pronunciation
+            {/* Romanized pronunciation — shown immediately below, prominent */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-lg">
+              {currentItem.romanized}
+            </div>
+
+            {/* English meaning */}
+            <div className="text-base text-muted-foreground pt-1">{currentItem.english}</div>
+
+            <p className="text-xs text-muted-foreground pt-3 border-t border-border/40 mt-2">
+              <span className="font-medium text-foreground/60">Pronunciation guide</span> · Gurmukhi above, romanised spelling in green · Tap 🔊 to hear it spoken
             </p>
           </div>
 
@@ -246,8 +253,15 @@ export default function LessonPage() {
 
           <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
             <div className="flex items-start gap-2">
-              <p className="font-semibold text-lg flex-1">{currentExercise.question}</p>
-              {/* Audio button for exercise question — speaks any Gurmukhi in the question */}
+              <div className="flex-1">
+                <p className="font-semibold text-lg">{currentExercise.question}</p>
+                {/* If the question contains Gurmukhi, show a pronunciation hint */}
+                {/[\u0A00-\u0A7F]/.test(currentExercise.question) && (
+                  <p className="text-xs text-muted-foreground mt-1 italic">
+                    Gurmukhi script shown — romanised pronunciation appears in each answer option
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => handleExerciseSpeak(currentExercise.question)}
                 aria-label="Hear the Punjabi in this question"
@@ -269,16 +283,25 @@ export default function LessonPage() {
                     if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
                     else if (i === selectedAnswer) extra = "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300";
                   }
+                  // Split gurmukhi and romanized if option contains both e.g. "ਸ਼ੁਕਰੀਆ (Shukriya)"
+                  const parenMatch = option.match(/^(.+?)\s*\((.+?)\)$/);
                   return (
                     <button
                       key={i}
                       onClick={() => handleChooseAnswer(i)}
                       disabled={showResult}
-                      className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition-all
+                      className={`rounded-xl border-2 px-4 py-3 text-left transition-all
                         ${showResult ? "cursor-default" : "hover:border-primary hover:bg-accent"}
                         ${!extra ? "border-border" : ""} ${extra}`}
                     >
-                      {option}
+                      {parenMatch ? (
+                        <span className="flex flex-col gap-0.5">
+                          <span className="gurmukhi text-sm font-semibold">{parenMatch[1].trim()}</span>
+                          <span className="text-xs text-primary/80 font-medium italic">{parenMatch[2].trim()}</span>
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium">{option}</span>
+                      )}
                     </button>
                   );
                 })}

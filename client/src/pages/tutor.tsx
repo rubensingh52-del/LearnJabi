@@ -59,6 +59,7 @@ const flashcardSets = [
   {
     title: "Essential Greetings",
     titlePunjabi: "ਜ਼ਰੂਰੀ ਸ਼ੁਭ ਇੱਛਾਵਾਂ",
+    titleRomanized: "Zaruri Shubh Ichhavaan",
     color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     cards: [
       { front: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", pronunciation: "Sat Sri Akal", back: "Hello", hint: "The most common Sikh greeting" },
@@ -72,6 +73,7 @@ const flashcardSets = [
   {
     title: "Numbers 1-10",
     titlePunjabi: "ਅੰਕ ੧-੧੦",
+    titleRomanized: "Ank 1-10",
     color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     cards: [
       { front: "੧ — ਇੱਕ", pronunciation: "Ikk", back: "One", hint: "" },
@@ -89,6 +91,7 @@ const flashcardSets = [
   {
     title: "Family Members",
     titlePunjabi: "ਪਰਿਵਾਰਕ ਮੈਂਬਰ",
+    titleRomanized: "Parivarak Member",
     color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     cards: [
       { front: "ਮਾਂ", pronunciation: "Maa", back: "Mother", hint: "" },
@@ -102,6 +105,7 @@ const flashcardSets = [
   {
     title: "Food & Drinks",
     titlePunjabi: "ਖਾਣਾ ਪੀਣਾ",
+    titleRomanized: "Khaana Peena",
     color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
     cards: [
       { front: "ਰੋਟੀ", pronunciation: "Roti", back: "Flatbread / Chapati", hint: "Staple of every meal" },
@@ -217,15 +221,17 @@ function FlashcardDeck({ set, onBack }: { set: (typeof flashcardSets)[0]; onBack
       >
         {!flipped ? (
           <>
-            <p className="gurmukhi text-3xl sm:text-4xl font-bold mb-2">{card.front}</p>
-            <p className="text-sm font-medium text-primary/80 italic mb-3">{card.pronunciation}</p>
+            {/* Gurmukhi script */}
+            <p className="gurmukhi text-3xl sm:text-4xl font-bold mb-1">{card.front}</p>
+            {/* Romanized pronunciation — always visible, not hidden behind flip */}
+            <p className="text-base font-semibold text-primary mb-3">{card.pronunciation}</p>
             <p className="text-xs text-muted-foreground">Tap to reveal meaning</p>
           </>
         ) : (
           <>
-            <p className="gurmukhi text-2xl font-bold text-muted-foreground mb-1">{card.front}</p>
-            <p className="text-sm font-medium text-primary/70 italic mb-2">{card.pronunciation}</p>
-            <p className="text-lg font-semibold text-primary mb-1">{card.back}</p>
+            <p className="gurmukhi text-2xl font-bold text-muted-foreground mb-0.5">{card.front}</p>
+            <p className="text-sm font-semibold text-primary mb-2">{card.pronunciation}</p>
+            <p className="text-xl font-bold text-foreground mb-1">{card.back}</p>
             {card.hint && <p className="text-xs text-muted-foreground mt-1">{card.hint}</p>}
           </>
         )}
@@ -282,7 +288,6 @@ function QuizMode({ onBack }: { onBack: () => void }) {
     if (idx === q.correct) {
       setScore(s => s + 1);
       setCorrectAnim(true);
-      // Fire confetti from click position relative to canvas
       if (canvasRef.current) {
         const rect = canvasRef.current.getBoundingClientRect();
         burst(e.clientX - rect.left, e.clientY - rect.top);
@@ -340,7 +345,6 @@ function QuizMode({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="mx-auto max-w-xl relative" ref={containerRef}>
-      {/* Confetti canvas — overlays entire quiz area */}
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 w-full h-full z-10"
@@ -378,6 +382,8 @@ function QuizMode({ onBack }: { onBack: () => void }) {
               iconEl = <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />;
             }
           }
+          // Split "ਗੁਰਮੁਖੀ (Romanized)" into two lines
+          const parenMatch = opt.match(/^(.+?)\s*\((.+?)\)$/);
           return (
             <button
               key={i}
@@ -385,7 +391,14 @@ function QuizMode({ onBack }: { onBack: () => void }) {
               className={`w-full text-left p-4 rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-between gap-3 ${cls} ${!answered ? "cursor-pointer" : "cursor-default"}`}
               data-testid={`button-quiz-option-${i}`}
             >
-              <span className="gurmukhi">{opt}</span>
+              {parenMatch ? (
+                <span className="flex flex-col gap-0.5">
+                  <span className="gurmukhi text-sm font-semibold">{parenMatch[1].trim()}</span>
+                  <span className="text-xs text-primary/80 font-medium italic">{parenMatch[2].trim()}</span>
+                </span>
+              ) : (
+                <span>{opt}</span>
+              )}
               {iconEl}
             </button>
           );
@@ -436,7 +449,7 @@ export default function Practice() {
     <div className="page-enter mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
       <div className="mb-8">
         <h1 className="text-xl font-bold mb-1" data-testid="text-practice-title">Practice</h1>
-        <p className="text-sm text-muted-foreground">Reinforce what you've learned with flashcards and quizzes</p>
+        <p className="text-sm text-muted-foreground">Reinforce what you've learned with flashcards and quizzes. Every Gurmukhi word shows its <span className="text-primary font-medium">romanised pronunciation</span> — no prior reading knowledge needed.</p>
       </div>
 
       <button
@@ -464,7 +477,7 @@ export default function Practice() {
           <BookOpen className="h-4 w-4 text-muted-foreground" />
           Flashcard Decks
         </h2>
-        <p className="text-xs text-muted-foreground mb-4">Tap a deck to start reviewing</p>
+        <p className="text-xs text-muted-foreground mb-4">Each card shows the Gurmukhi script with its romanised pronunciation below — tap to reveal the English meaning</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -482,7 +495,9 @@ export default function Practice() {
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
             </div>
             <h3 className="text-sm font-semibold mb-0.5">{set.title}</h3>
+            {/* Show Gurmukhi + romanized side by side */}
             <p className="gurmukhi text-xs text-muted-foreground">{set.titlePunjabi}</p>
+            <p className="text-xs text-primary/70 italic">{set.titleRomanized}</p>
           </button>
         ))}
       </div>

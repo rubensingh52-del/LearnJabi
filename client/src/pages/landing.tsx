@@ -5,6 +5,7 @@ import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mai
 
 const features = [
   { icon: BookOpen, title: "Structured Curriculum", desc: "From Gurmukhi script basics to conversational fluency, learn through carefully sequenced units and lessons." },
+  { icon: Volume2, title: "Pronunciation Built In", desc: "Every Gurmukhi word includes its romanised pronunciation (e.g. ਸਤ ਸ੍ਰੀ ਅਕਾਲ → Sat Sri Akal) — no prior script knowledge needed." },
   { icon: MessageCircle, title: "Interactive Practice", desc: "Reinforce your learning with flashcard decks and quizzes that test your vocabulary across every topic." },
   { icon: BarChart3, title: "Track Your Progress", desc: "See how far you've come with detailed progress tracking across every unit and lesson." },
 ];
@@ -26,7 +27,7 @@ const lessonCards = [
     desc: "Say hello, introduce yourself, and be polite",
     accent: "text-emerald-500",
     border: "border-emerald-500/20",
-    preview: [{ p: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", e: "Hello" }, { p: "ਧੰਨਵਾਦ", e: "Thank you" }],
+    preview: [{ p: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", r: "Sat Sri Akal", e: "Hello" }, { p: "ਧੰਨਵਾਦ", r: "Dhanvaad", e: "Thank you" }],
   },
   {
     emoji: "🔢",
@@ -35,7 +36,7 @@ const lessonCards = [
     desc: "Count from 1 to 100 in Punjabi",
     accent: "text-orange-500",
     border: "border-orange-500/20",
-    preview: [{ p: "ਇੱਕ", e: "One" }, { p: "ਦੋ", e: "Two" }, { p: "ਤਿੰਨ", e: "Three" }],
+    preview: [{ p: "ਇੱਕ", r: "Ikk", e: "One" }, { p: "ਦੋ", r: "Do", e: "Two" }, { p: "ਤਿੰਨ", r: "Tinn", e: "Three" }],
   },
   {
     emoji: "👨‍👩‍👧",
@@ -44,7 +45,7 @@ const lessonCards = [
     desc: "Talk about your loved ones in Punjabi",
     accent: "text-rose-500",
     border: "border-rose-500/20",
-    preview: [{ p: "ਮਾਂ", e: "Mother" }, { p: "ਪਿਤਾ", e: "Father" }, { p: "ਭੈਣ", e: "Sister" }],
+    preview: [{ p: "ਮਾਂ", r: "Maa", e: "Mother" }, { p: "ਪਿਤਾ", r: "Pita", e: "Father" }, { p: "ਭੈਣ", r: "Bhain", e: "Sister" }],
   },
   {
     emoji: "🍛",
@@ -53,7 +54,7 @@ const lessonCards = [
     desc: "Vocabulary for Punjabi cuisine and traditions",
     accent: "text-yellow-600",
     border: "border-yellow-500/20",
-    preview: [{ p: "ਰੋਟੀ", e: "Bread" }, { p: "ਦਾਲ", e: "Lentils" }, { p: "ਮੱਖਣ", e: "Butter" }],
+    preview: [{ p: "ਰੋਟੀ", r: "Roti", e: "Bread" }, { p: "ਦਾਲ", r: "Daal", e: "Lentils" }, { p: "ਮੱਖਣ", r: "Makkhan", e: "Butter" }],
   },
   {
     emoji: "📍",
@@ -62,7 +63,7 @@ const lessonCards = [
     desc: "Navigate cities, ask for directions, describe locations",
     accent: "text-sky-500",
     border: "border-sky-500/20",
-    preview: [{ p: "ਘਰ", e: "Home" }, { p: "ਸਕੂਲ", e: "School" }, { p: "ਬਾਜ਼ਾਰ", e: "Market" }],
+    preview: [{ p: "ਘਰ", r: "Ghar", e: "Home" }, { p: "ਸਕੂਲ", r: "Skool", e: "School" }, { p: "ਬਾਜ਼ਾਰ", r: "Baazaar", e: "Market" }],
   },
   {
     emoji: "🎭",
@@ -71,7 +72,7 @@ const lessonCards = [
     desc: "Express how you feel in everyday Punjabi",
     accent: "text-fuchsia-500",
     border: "border-fuchsia-500/20",
-    preview: [{ p: "ਖੁਸ਼ੀ", e: "Happy" }, { p: "ਦੁਟਿਆ", e: "Sad" }, { p: "ਥੱਕਾ", e: "Tired" }],
+    preview: [{ p: "ਖੁਸ਼ੀ", r: "Khushi", e: "Happy" }, { p: "ਦੁਟਿਆ", r: "Dukhi", e: "Sad" }, { p: "ਥੱਕਾ", r: "Thakka", e: "Tired" }],
   },
   {
     emoji: "⏰",
@@ -80,7 +81,7 @@ const lessonCards = [
     desc: "Talk about days, weeks, and your daily schedule",
     accent: "text-teal-500",
     border: "border-teal-500/20",
-    preview: [{ p: "ਸਵੇਰ", e: "Morning" }, { p: "ਸ਼ਾਮ", e: "Evening" }, { p: "ਅੱਜ", e: "Today" }],
+    preview: [{ p: "ਸਵੇਰ", r: "Saver", e: "Morning" }, { p: "ਸ਼ਾਮ", r: "Shaam", e: "Evening" }, { p: "ਅੱਜ", r: "Ajj", e: "Today" }],
   },
 ];
 
@@ -116,7 +117,6 @@ export default function Landing() {
     <div className="page-enter">
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Animated glow blobs */}
         <div className="pointer-events-none select-none" aria-hidden="true">
           <div
             className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px]"
@@ -162,15 +162,24 @@ export default function Landing() {
                 <span className="text-primary">connect with your roots</span>
               </h1>
 
-              <p className="text-base text-muted-foreground leading-relaxed mb-6 max-w-lg">
-                Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
+              <p className="text-base text-muted-foreground leading-relaxed mb-3 max-w-lg">
+                Master Punjabi vocabulary and phrases through structured lessons — no Gurmukhi reading experience needed. Every word shows its <span className="font-semibold text-foreground">romanised pronunciation</span> right next to the script.
               </p>
+
+              {/* Pronunciation example pill */}
+              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-lg bg-card border border-border/60 text-sm">
+                <span className="gurmukhi font-semibold">ਸਤ ਸ੍ਰੀ ਅਕਾਲ</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="text-primary font-medium italic">Sat Sri Akal</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="font-medium">Hello</span>
+              </div>
 
               {/* Stats row */}
               <div className="flex flex-wrap gap-5 mb-8">
                 {[
                   { icon: BookOpen, val: "50+",  label: "Lessons" },
-                  { icon: Volume2,  val: "400+", label: "Words" },
+                  { icon: Volume2,  val: "400+", label: "Words with pronunciation" },
                   { icon: Zap,      val: "8",    label: "Units" },
                   { icon: Star,     val: "Free", label: "Always" },
                 ].map(s => (
@@ -203,13 +212,11 @@ export default function Landing() {
             {/* Right — animated lesson showcase */}
             <div className="flex-shrink-0 w-full max-w-xs lg:max-w-sm">
               <div className="relative">
-                {/* Glow behind card */}
                 <div
                   className="absolute inset-0 rounded-2xl blur-2xl opacity-30 transition-all duration-700"
                   style={{ background: `linear-gradient(135deg, hsl(var(--primary)), transparent)` }}
                 />
 
-                {/* Card */}
                 <div
                   key={activeCard}
                   className={`card-animate relative rounded-2xl border bg-card p-6 shadow-lg ${card.border}`}
@@ -235,9 +242,12 @@ export default function Landing() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2 mb-4">
-                      {(card.preview ?? []).map((item, i) => (
+                      {((card as any).preview ?? []).map((item: any, i: number) => (
                         <div key={i} className="flex items-center justify-between rounded-lg bg-background border border-border/50 px-3 py-2">
-                          <span className="gurmukhi text-sm font-semibold">{item.p}</span>
+                          <div className="flex flex-col">
+                            <span className="gurmukhi text-sm font-semibold">{item.p}</span>
+                            {item.r && <span className="text-xs text-primary/70 italic">{item.r}</span>}
+                          </div>
                           <span className={`text-xs font-medium ${card.accent}`}>{item.e}</span>
                         </div>
                       ))}
@@ -252,7 +262,6 @@ export default function Landing() {
                   </div>
                 </div>
 
-                {/* Dot indicators */}
                 <div className="flex justify-center gap-1.5 mt-4">
                   {lessonCards.map((_, i) => (
                     <button
@@ -277,16 +286,24 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16">
           <div className="text-center mb-10">
             <h2 className="text-xl font-bold mb-2">The Beauty of Gurmukhi</h2>
-            <p className="text-sm text-muted-foreground">The script used to write Punjabi — elegant, phonetic, and deeply cultural</p>
+            <p className="text-sm text-muted-foreground">The script used to write Punjabi — elegant, phonetic, and deeply cultural. Don't worry about reading it fluently; every lesson includes the romanised pronunciation.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-            {["ਸ","ਹ","ਕ","ਖ","ਗ","ਘ","ਚ","ਛ","ਜ","ਝ","ਟ","ਠ","ਡ","ਢ","ਣ"].map((char, i) => (
+            {[
+              { ch: "ਸ", r: "Sa" }, { ch: "ਹ", r: "Ha" }, { ch: "ਕ", r: "Ka" }, { ch: "ਖ", r: "Kha" },
+              { ch: "ਗ", r: "Ga" }, { ch: "ਘ", r: "Gha" }, { ch: "ਚ", r: "Cha" }, { ch: "ਛ", r: "Chha" },
+              { ch: "ਜ", r: "Ja" }, { ch: "ਝ", r: "Jha" }, { ch: "ਟ", r: "Ta" }, { ch: "ਠ", r: "Tha" },
+              { ch: "ਡ", r: "Da" }, { ch: "ਢ", r: "Dha" }, { ch: "ਣ", r: "Na" },
+            ].map(({ ch, r }, i) => (
               <div
-                key={char}
-                className="gurmukhi w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background border border-border/60 flex items-center justify-center text-lg sm:text-xl font-semibold text-foreground/80 transition-all duration-200 hover:border-primary/40 hover:text-primary hover:scale-105"
+                key={ch}
+                className="flex flex-col items-center gap-0.5 w-12 sm:w-14 transition-all duration-200 hover:scale-105 group"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                {char}
+                <div className="gurmukhi w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background border border-border/60 flex items-center justify-center text-lg sm:text-xl font-semibold text-foreground/80 transition-all group-hover:border-primary/40 group-hover:text-primary">
+                  {ch}
+                </div>
+                <span className="text-[10px] text-muted-foreground italic">{r}</span>
               </div>
             ))}
           </div>
@@ -298,9 +315,9 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-12">
             <h2 className="text-xl font-bold mb-2">Everything you need to learn Punjabi</h2>
-            <p className="text-sm text-muted-foreground max-w-lg">A complete learning system built for the modern learner — structured, interactive, and effective.</p>
+            <p className="text-sm text-muted-foreground max-w-lg">A complete learning system built for heritage learners and beginners — structured, interactive, and effective.</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
               <div key={f.title} className="group p-6 rounded-xl bg-card border border-card-border transition-all duration-200 hover:border-primary/30" data-testid={`card-feature-${i}`}>
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -319,7 +336,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-10">
             <h2 className="text-xl font-bold mb-2">Start speaking from day one</h2>
-            <p className="text-sm text-muted-foreground">Here's a taste of what you'll learn in your first lessons</p>
+            <p className="text-sm text-muted-foreground">Here's a taste of what you'll learn — Gurmukhi script, romanised pronunciation, and English meaning together</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
@@ -333,8 +350,8 @@ export default function Landing() {
               <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-background border border-border/50">
                 <div className="flex-1 min-w-0">
                   <p className="gurmukhi text-lg font-semibold text-foreground mb-0.5">{phrase.p}</p>
-                  <p className="text-sm text-muted-foreground italic">{phrase.r}</p>
-                  <p className="text-sm font-medium text-primary mt-1">{phrase.e}</p>
+                  <p className="text-sm text-primary font-medium italic mb-1">{phrase.r}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{phrase.e}</p>
                 </div>
               </div>
             ))}
