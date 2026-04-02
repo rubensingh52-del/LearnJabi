@@ -26,15 +26,34 @@ const typeLabels: Record<string, string> = {
 export default function UnitLessons() {
   const params = useParams<{ unitId: string }>();
   const [, navigate] = useLocation();
-  const { user } = useAuth();
+  // IMPORTANT: destructure loading — never redirect until auth is resolved
+  const { user, loading } = useAuth();
   const unitId = parseInt(params.unitId || "1");
 
-  // If not logged in and trying to access unit 2+, redirect to login
+  // Still resolving session — show skeleton, do NOT redirect yet
+  if (loading) {
+    return (
+      <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
+        <Skeleton className="h-5 w-24 mb-6" />
+        <Skeleton className="h-7 w-64 mb-2" />
+        <Skeleton className="h-4 w-96 mb-8" />
+        <div className="space-y-3">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  // Auth resolved: if still no user and unit is locked, send to login
   if (!user && unitId > 1) {
     navigate("/login");
     return null;
   }
 
+  return <UnitLessonsContent unitId={unitId} user={user} navigate={navigate} />;
+}
+
+function UnitLessonsContent({ unitId, user, navigate }: { unitId: number; user: any; navigate: any }) {
   const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
   const { data: lessons, isLoading: lessonsLoading } = useQuery<Lesson[]>({ queryKey: ["/api/units", unitId, "lessons"] });
   const { data: progress } = useQuery<UserProgress[]>({ queryKey: ["/api/progress"] });
@@ -94,7 +113,7 @@ export default function UnitLessons() {
         </div>
       )}
 
-      {/* Lesson list — all lessons freely accessible in unit 1 */}
+      {/* Lesson list */}
       <div className="space-y-3">
         {lessons?.map((lesson, index) => {
           const isCompleted = completedLessons.has(lesson.id);
