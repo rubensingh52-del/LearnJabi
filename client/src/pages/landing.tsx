@@ -65,19 +65,24 @@ export default function Landing() {
               Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
             </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 items-center">
+              {/* Primary CTA */}
               <Link href="/learn">
                 <Button size="lg" className="gap-2" data-testid="button-hero-start">
-                  Start Learning Free
+                  Get Started
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
+
+              {/* Sign In — outline so it’s visually distinct */}
               <Link href="/login">
-                <Button size="lg" className="gap-2" data-testid="button-hero-signin">
+                <Button size="lg" variant="outline" className="gap-2" data-testid="button-hero-signin">
                   <LogIn className="h-4 w-4" />
-                  Sign In
+                  Log In
                 </Button>
               </Link>
+
+              {/* Secondary */}
               <Link href="/practice">
                 <Button size="lg" variant="secondary" className="gap-2" data-testid="button-hero-practice">
                   <MessageCircle className="h-4 w-4" />
@@ -196,7 +201,6 @@ export default function Landing() {
                 </Button>
               </Link>
             </div>
-            {/* Subtle pattern */}
             <div className="absolute inset-0 opacity-10" aria-hidden="true">
               <div className="absolute -right-12 -top-12 gurmukhi text-[200px] text-primary-foreground font-bold">ੴ</div>
             </div>
