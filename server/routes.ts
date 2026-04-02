@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import { type Server } from "http";
 import { storage, db } from "./storage";
 import { units, lessons, userProgress, chatMessages } from "@shared/schema";
 
@@ -466,7 +466,7 @@ function seedData() {
   }
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(httpServer: Server, app: Express): Promise<void> {
   seedData();
 
   app.get("/api/units", async (req, res) => {
@@ -530,7 +530,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update progress" });
     }
   });
-
-  const httpServer = createServer(app);
-  return httpServer;
 }
