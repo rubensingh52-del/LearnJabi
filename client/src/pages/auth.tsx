@@ -3,9 +3,8 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, BookOpen } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
 });
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
 }).refine((d) => d.password === d.confirmPassword, {
@@ -34,46 +34,53 @@ export default function AuthPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [loginPending, setLoginPending] = useState(false);
+  const [registerPending, setRegisterPending] = useState(false);
 
   const loginForm = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
   const registerForm = useForm<RegisterData>({ resolver: zodResolver(registerSchema) });
 
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginData) => apiRequest("POST", "/api/login", data),
-    onSuccess: () => {
+  async function onLogin(data: LoginData) {
+    setLoginPending(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+    setLoginPending(false);
+    if (error) {
+      toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "Welcome back!", description: "You have logged in successfully." });
       navigate("/learn");
-    },
-    onError: (err: any) => {
-      toast({ title: "Login failed", description: err.message ?? "Invalid username or password.", variant: "destructive" });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: (data: Omit<RegisterData, "confirmPassword">) => apiRequest("POST", "/api/register", data),
-    onSuccess: () => {
-      toast({ title: "Account created!", description: "You can now log in." });
-      setActiveTab("login");
-      loginForm.setValue("username", registerForm.getValues("username"));
-    },
-    onError: (err: any) => {
-      toast({ title: "Registration failed", description: err.message ?? "Could not create account.", variant: "destructive" });
-    },
-  });
-
-  function onLogin(data: LoginData) {
-    loginMutation.mutate(data);
+    }
   }
 
-  function onRegister(data: RegisterData) {
-    const { confirmPassword: _, ...payload } = data;
-    registerMutation.mutate(payload);
+  async function onRegister(data: RegisterData) {
+    setRegisterPending(true);
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: { username: data.username },
+      },
+    });
+    setRegisterPending(false);
+    if (error) {
+      toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "Account created!",
+        description: "Check your email to confirm your account, then log in.",
+      });
+      setActiveTab("login");
+      loginForm.setValue("email", data.email);
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        {/* Logo / brand */}
+        {/* Brand */}
         <div className="flex flex-col items-center gap-2 mb-8">
           <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 text-white shadow-lg">
             <BookOpen className="w-7 h-7" />
@@ -90,7 +97,7 @@ export default function AuthPage() {
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
 
-          {/* ── LOGIN ── */}
+          {/* LOGIN */}
           <TabsContent value="login">
             <Card>
               <CardHeader>
@@ -100,15 +107,16 @@ export default function AuthPage() {
               <CardContent>
                 <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
                   <div className="space-y-1">
-                    <Label htmlFor="login-username">Username</Label>
+                    <Label htmlFor="login-email">Email</Label>
                     <Input
-                      id="login-username"
-                      placeholder="yourname"
-                      autoComplete="username"
-                      {...loginForm.register("username")}
+                      id="login-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      {...loginForm.register("email")}
                     />
-                    {loginForm.formState.errors.username && (
-                      <p className="text-xs text-destructive">{loginForm.formState.errors.username.message}</p>
+                    {loginForm.formState.errors.email && (
+                      <p className="text-xs text-destructive">{loginForm.formState.errors.email.message}</p>
                     )}
                   </div>
                   <div className="space-y-1">
@@ -124,8 +132,8 @@ export default function AuthPage() {
                       <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                    {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full" disabled={loginPending}>
+                    {loginPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Log In
                   </Button>
                 </form>
@@ -133,7 +141,7 @@ export default function AuthPage() {
             </Card>
           </TabsContent>
 
-          {/* ── REGISTER ── */}
+          {/* REGISTER */}
           <TabsContent value="register">
             <Card>
               <CardHeader>
@@ -152,6 +160,19 @@ export default function AuthPage() {
                     />
                     {registerForm.formState.errors.username && (
                       <p className="text-xs text-destructive">{registerForm.formState.errors.username.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="reg-email">Email</Label>
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      {...registerForm.register("email")}
+                    />
+                    {registerForm.formState.errors.email && (
+                      <p className="text-xs text-destructive">{registerForm.formState.errors.email.message}</p>
                     )}
                   </div>
                   <div className="space-y-1">
@@ -180,8 +201,8 @@ export default function AuthPage() {
                       <p className="text-xs text-destructive">{registerForm.formState.errors.confirmPassword.message}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                    {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full" disabled={registerPending}>
+                    {registerPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Account
                   </Button>
                 </form>
