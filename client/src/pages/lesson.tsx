@@ -1,8 +1,9 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams, Link, useLocation } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { type Lesson, type Unit } from "@shared/schema";
 import { type LessonContent, type Exercise } from "@/lib/curriculum";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { speakPunjabi } from "@/lib/tts";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,35 +11,6 @@ import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Trophy, Vo
 import { useState, useMemo, useCallback, useRef } from "react";
 
 type LessonStep = "learn" | "exercise" | "complete";
-
-function speakPunjabi(gurmukhi: string, romanized: string) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-
-  const voices = window.speechSynthesis.getVoices();
-  const paVoice = voices.find((v) => v.lang.startsWith("pa"));
-  const hiVoice = voices.find((v) => v.lang.startsWith("hi"));
-
-  const utterance = new SpeechSynthesisUtterance();
-  utterance.rate = 0.8;
-  utterance.pitch = 1;
-  utterance.volume = 1;
-
-  if (paVoice) {
-    utterance.voice = paVoice;
-    utterance.lang = paVoice.lang;
-    utterance.text = gurmukhi;
-  } else if (hiVoice) {
-    utterance.voice = hiVoice;
-    utterance.lang = hiVoice.lang;
-    utterance.text = romanized;
-  } else {
-    utterance.lang = "pa-IN";
-    utterance.text = romanized;
-  }
-
-  window.speechSynthesis.speak(utterance);
-}
 
 export default function LessonPage() {
   const params = useParams<{ unitId: string; lessonId: string }>();
@@ -85,7 +57,7 @@ export default function LessonPage() {
     if (speakTimer.current) clearTimeout(speakTimer.current);
     setIsSpeaking(true);
     speakPunjabi(item.gurmukhi, item.romanized);
-    speakTimer.current = setTimeout(() => setIsSpeaking(false), 2000);
+    speakTimer.current = setTimeout(() => setIsSpeaking(false), 2500);
   }, []);
 
   const handleChooseAnswer = (optionIndex: number) => {
@@ -99,21 +71,11 @@ export default function LessonPage() {
 
   const handleMatchClick = (side: "left" | "right", index: number) => {
     if (matchedPairs.has(index) && side === "left") return;
-
-    if (!matchSelection) {
-      setMatchSelection({ side, index });
-      return;
-    }
-
-    if (matchSelection.side === side) {
-      setMatchSelection({ side, index });
-      return;
-    }
-
+    if (!matchSelection) { setMatchSelection({ side, index }); return; }
+    if (matchSelection.side === side) { setMatchSelection({ side, index }); return; }
     const pairs = currentExercise?.pairs || [];
     const leftIdx = side === "left" ? index : matchSelection.index;
     const rightIdx = side === "right" ? index : matchSelection.index;
-
     if (pairs[leftIdx] && pairs[leftIdx][1] === pairs[rightIdx]?.[1]) {
       if (leftIdx === rightIdx) {
         setMatchedPairs(prev => new Set([...prev, leftIdx]));
@@ -179,7 +141,7 @@ export default function LessonPage() {
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Back button — uses navigate() to prevent hash routing crash */}
+      {/* Back button */}
       <button
         onClick={() => navigate(`/learn/${unitId}`)}
         className="inline-flex items-center gap-1 mb-6 -ml-1 text-sm text-muted-foreground hover:text-foreground bg-transparent border-none cursor-pointer p-1 rounded transition-colors hover:bg-accent"

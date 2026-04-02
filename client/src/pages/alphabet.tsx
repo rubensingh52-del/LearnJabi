@@ -1,20 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Volume2 } from "lucide-react";
-
-function speakChar(gurmukhi: string, romanized: string) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const voices = window.speechSynthesis.getVoices();
-  const paVoice = voices.find(v => v.lang.startsWith("pa"));
-  const hiVoice = voices.find(v => v.lang.startsWith("hi"));
-  const u = new SpeechSynthesisUtterance();
-  u.rate = 0.8; u.pitch = 1; u.volume = 1;
-  if (paVoice) { u.voice = paVoice; u.lang = paVoice.lang; u.text = gurmukhi; }
-  else if (hiVoice) { u.voice = hiVoice; u.lang = hiVoice.lang; u.text = romanized; }
-  else { u.lang = "pa-IN"; u.text = romanized; }
-  window.speechSynthesis.speak(u);
-}
+import { speakPunjabi } from "@/lib/tts";
 
 const VOWELS = [
   { g: "ਅ", r: "a", e: "as in 'about'" },
@@ -30,40 +17,33 @@ const VOWELS = [
 ];
 
 const CONSONANTS = [
-  // Row 1
   { g: "ਸ", r: "sa", e: "s — sun" },
   { g: "ਹ", r: "ha", e: "h — hat" },
-  // Row 2
   { g: "ਕ", r: "ka", e: "k — kit" },
   { g: "ਖ", r: "kha", e: "kh — aspirated k" },
   { g: "ਗ", r: "ga", e: "g — go" },
   { g: "ਘ", r: "gha", e: "gh — aspirated g" },
   { g: "ਙ", r: "nga", e: "ng — sing" },
-  // Row 3
   { g: "ਚ", r: "cha", e: "ch — chat" },
   { g: "ਛ", r: "chha", e: "chh — aspirated ch" },
   { g: "ਜ", r: "ja", e: "j — jam" },
   { g: "ਝ", r: "jha", e: "jh — aspirated j" },
   { g: "ਞ", r: "nya", e: "ny — canyon" },
-  // Row 4
   { g: "ਟ", r: "ṭa", e: "ṭ — retroflex t" },
   { g: "ਠ", r: "ṭha", e: "ṭh — aspirated retroflex t" },
   { g: "ਡ", r: "ḍa", e: "ḍ — retroflex d" },
   { g: "ਢ", r: "ḍha", e: "ḍh — aspirated retroflex d" },
   { g: "ਣ", r: "ṇa", e: "ṇ — retroflex n" },
-  // Row 5
   { g: "ਤ", r: "ta", e: "t — soft t" },
   { g: "ਥ", r: "tha", e: "th — aspirated t" },
   { g: "ਦ", r: "da", e: "d — day" },
   { g: "ਧ", r: "dha", e: "dh — aspirated d" },
   { g: "ਨ", r: "na", e: "n — no" },
-  // Row 6
   { g: "ਪ", r: "pa", e: "p — pen" },
   { g: "ਫ", r: "pha", e: "ph — aspirated p" },
   { g: "ਬ", r: "ba", e: "b — bed" },
   { g: "ਭ", r: "bha", e: "bh — aspirated b" },
   { g: "ਮ", r: "ma", e: "m — mat" },
-  // Row 7
   { g: "ਯ", r: "ya", e: "y — yes" },
   { g: "ਰ", r: "ra", e: "r — rolled r" },
   { g: "ਲ", r: "la", e: "l — love" },
@@ -110,7 +90,7 @@ export default function AlphabetPage() {
 
   const handleCardClick = (item: { g: string; r: string; e: string }) => {
     setSelected(item);
-    speakChar(item.g, item.r);
+    speakPunjabi(item.g, item.r);
   };
 
   const data = activeTab === "vowels" ? VOWELS
@@ -169,7 +149,7 @@ export default function AlphabetPage() {
             <div className="text-xl font-semibold text-primary">{selected.r}</div>
             <div className="text-sm text-muted-foreground">{selected.e}</div>
             <button
-              onClick={() => speakChar(selected.g, selected.r)}
+              onClick={() => speakPunjabi(selected.g, selected.r)}
               className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
             >
               <Volume2 className="h-3.5 w-3.5" />
