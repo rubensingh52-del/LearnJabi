@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle, LogIn } from "lucide-react";
+import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle } from "lucide-react";
 
 const features = [
   {
@@ -65,24 +65,13 @@ export default function Landing() {
               Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
             </p>
 
-            <div className="flex flex-wrap gap-3 items-center">
-              {/* Primary CTA */}
+            <div className="flex flex-wrap gap-3">
               <Link href="/learn">
                 <Button size="lg" className="gap-2" data-testid="button-hero-start">
-                  Get Started
+                  Start Learning Free
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
-
-              {/* Sign In — outline so it’s visually distinct */}
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="gap-2" data-testid="button-hero-signin">
-                  <LogIn className="h-4 w-4" />
-                  Log In
-                </Button>
-              </Link>
-
-              {/* Secondary */}
               <Link href="/practice">
                 <Button size="lg" variant="secondary" className="gap-2" data-testid="button-hero-practice">
                   <MessageCircle className="h-4 w-4" />
