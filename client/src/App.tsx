@@ -1,4 +1,4 @@
-import { Switch, Route, Router, Redirect } from "wouter";
+import { Switch, Route, Router, Redirect, useLocation } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -20,22 +20,21 @@ import AuthPage from "@/pages/auth";
 // Hard redirect if not logged in
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <div className="min-h-screen" />;
   if (!user) return <Redirect to="/login" />;
   return <Component />;
 }
 
-// Unit 1 lessons are free — only protect units 2+
-function LessonRoute() {
+// Lesson route: unit 1 is free, all others require login.
+// Uses wouter params rather than parsing window.location.hash directly
+// to avoid a stale-hash race that caused an infinite redirect loop.
+function LessonRoute({ unitId }: { unitId: string }) {
   const { user, loading } = useAuth();
-  // Parse unitId from current hash location
-  const hash = window.location.hash;
-  const match = hash.match(/#\/learn\/(\d+)\/(\d+)/);
-  const unitId = match ? parseInt(match[1]) : 1;
+  const parsedUnitId = parseInt(unitId ?? "1", 10);
 
-  if (loading) return null;
-  // Unit 1 is always accessible without login
-  if (unitId === 1) return <LessonPage />;
+  if (loading) return <div className="min-h-screen" />;
+  // Unit 1 is always free
+  if (parsedUnitId === 1) return <LessonPage />;
   // All other units require login
   if (!user) return <Redirect to="/login" />;
   return <LessonPage />;
@@ -47,11 +46,13 @@ function AppRouter() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={AuthPage} />
       <Route path="/register" component={AuthPage} />
-      {/* Unit list + unit detail are intentionally NOT protected — paywall is inline */}
+      {/* Unit list + unit detail are intentionally NOT protected */}
       <Route path="/learn" component={Units} />
       <Route path="/learn/:unitId" component={UnitLessons} />
       {/* Unit 1 lessons are free; all other lessons require login */}
-      <Route path="/learn/:unitId/:lessonId">{() => <LessonRoute />}</Route>
+      <Route path="/learn/:unitId/:lessonId">
+        {(params) => <LessonRoute unitId={params.unitId ?? "1"} />}
+      </Route>
       <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice">{() => <ProtectedRoute component={Practice} />}</Route>
       <Route path="/progress">{() => <ProtectedRoute component={ProgressPage} />}</Route>
