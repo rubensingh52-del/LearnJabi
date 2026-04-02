@@ -11,22 +11,12 @@ import { useState, useMemo, useCallback, useRef } from "react";
 
 type LessonStep = "learn" | "exercise" | "complete";
 
-/**
- * Speak Punjabi text accurately:
- * 1. Try to find a pa-IN (Punjabi India) voice — most accurate
- * 2. Fall back to hi-IN (Hindi) — phonetically much closer than English
- * 3. Last resort: speak romanized with default voice at slow rate
- * Never speaks the English translation.
- */
 function speakPunjabi(gurmukhi: string, romanized: string) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
 
   const voices = window.speechSynthesis.getVoices();
-
-  // Prefer native Punjabi voice
   const paVoice = voices.find((v) => v.lang.startsWith("pa"));
-  // Second choice: Hindi (same script family, correct phonetics)
   const hiVoice = voices.find((v) => v.lang.startsWith("hi"));
 
   const utterance = new SpeechSynthesisUtterance();
@@ -35,18 +25,14 @@ function speakPunjabi(gurmukhi: string, romanized: string) {
   utterance.volume = 1;
 
   if (paVoice) {
-    // Native Punjabi TTS — speak Gurmukhi directly
     utterance.voice = paVoice;
     utterance.lang = paVoice.lang;
     utterance.text = gurmukhi;
   } else if (hiVoice) {
-    // Hindi voice — speak romanized, phonetics are close enough
     utterance.voice = hiVoice;
     utterance.lang = hiVoice.lang;
     utterance.text = romanized;
   } else {
-    // No South Asian voice available — set lang hint and speak romanized
-    // Setting lang="pa-IN" prompts the browser to use the best available voice
     utterance.lang = "pa-IN";
     utterance.text = romanized;
   }
@@ -176,8 +162,8 @@ export default function LessonPage() {
     return (
       <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12 text-center">
         <p className="text-muted-foreground">Content unavailable.</p>
-        <Link href="/">
-          <Button variant="outline" className="mt-4">Back to Home</Button>
+        <Link href="/learn">
+          <Button variant="outline" className="mt-4">Back to Units</Button>
         </Link>
       </div>
     );
@@ -193,8 +179,8 @@ export default function LessonPage() {
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Back link */}
-      <Link href={`/unit/${unitId}`}>
+      {/* Back link — fixed path to match router /learn/:unitId */}
+      <Link href={`/learn/${unitId}`}>
         <Button variant="ghost" size="sm" className="mb-6 -ml-2 text-muted-foreground hover:text-foreground">
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to {unit?.title || "Unit"}
@@ -216,7 +202,6 @@ export default function LessonPage() {
           <p className="text-muted-foreground text-sm">{content.intro}</p>
 
           <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
-            {/* Speak button — speaks only the Punjabi, not English */}
             <button
               onClick={() => handleSpeak(currentItem)}
               aria-label="Pronounce this word in Punjabi"
@@ -238,7 +223,6 @@ export default function LessonPage() {
             </p>
           </div>
 
-          {/* Item counter */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               {currentItemIndex + 1} / {items.length}
@@ -261,7 +245,6 @@ export default function LessonPage() {
             </div>
           </div>
 
-          {/* Dot navigation */}
           <div className="flex justify-center gap-1.5 pt-2">
             {items.map((_, i) => (
               <button
@@ -288,7 +271,6 @@ export default function LessonPage() {
           <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
             <p className="font-semibold text-lg">{currentExercise.question}</p>
 
-            {/* Multiple choice */}
             {currentExercise.type === "choose" && currentExercise.options && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {currentExercise.options.map((option, i) => {
@@ -313,7 +295,6 @@ export default function LessonPage() {
               </div>
             )}
 
-            {/* Matching */}
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
@@ -349,7 +330,6 @@ export default function LessonPage() {
               </div>
             )}
 
-            {/* Result feedback */}
             {showResult && (
               <div className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
                 selectedAnswer === currentExercise.correct
@@ -393,11 +373,11 @@ export default function LessonPage() {
               Restart Lesson
             </Button>
             {nextLesson ? (
-              <Button onClick={() => setLocation(`/unit/${unitId}/lesson/${nextLesson.id}`)}>
+              <Button onClick={() => setLocation(`/learn/${unitId}/${nextLesson.id}`)}>
                 Next Lesson <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Link href={`/unit/${unitId}`}>
+              <Link href={`/learn/${unitId}`}>
                 <Button>Back to Unit</Button>
               </Link>
             )}
