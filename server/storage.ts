@@ -19,7 +19,7 @@ export const db = createClient(supabaseUrl, supabaseKey, {
 });
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUnits(): Promise<Unit[]>;
@@ -35,7 +35,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     const { data } = await db.from('users').select('*').eq('id', id).single();
     return data ?? undefined;
   }
@@ -45,8 +45,14 @@ export class DatabaseStorage implements IStorage {
     return data ?? undefined;
   }
 
+  // Note: new users are auto-created by the handle_new_user Postgres trigger.
+  // This method exists for manual upserts (e.g. updating username).
   async createUser(user: InsertUser): Promise<User> {
-    const { data, error } = await db.from('users').insert(user).select().single();
+    const { data, error } = await db
+      .from('users')
+      .upsert({ id: user.id, username: user.username }, { onConflict: 'id' })
+      .select()
+      .single();
     if (error) throw new Error(error.message);
     return data;
   }
@@ -93,30 +99,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertProgress(progress: InsertProgress): Promise<UserProgress> {
-    const existing = await this.getProgressByLesson(progress.userId, progress.lessonId);
-    if (existing) {
-      const { data, error } = await db
-        .from('user_progress')
-        .update({
-          completed: progress.completed,
-          score: progress.score,
-          last_accessed: progress.lastAccessed,
-        })
-        .eq('id', existing.id)
-        .select()
-        .single();
-      if (error) throw new Error(error.message);
-      return mapProgress(data);
-    }
     const { data, error } = await db
       .from('user_progress')
-      .insert({
-        user_id: progress.userId,
-        lesson_id: progress.lessonId,
-        completed: progress.completed,
-        score: progress.score,
-        last_accessed: progress.lastAccessed,
-      })
+      .upsert(
+        {
+          user_id: progress.userId,
+          lesson_id: progress.lessonId,
+          completed: progress.completed,
+          score: progress.score,
+          completed_at: progress.completedAt ?? null,
+        },
+        { onConflict: 'user_id,lesson_id' }
+      )
       .select()
       .single();
     if (error) throw new Error(error.message);
@@ -128,7 +122,7 @@ export class DatabaseStorage implements IStorage {
       .from('chat_messages')
       .select('*')
       .eq('user_id', userId)
-      .order('id', { ascending: true });
+      .order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []).map(mapChatMessage);
   }
@@ -140,7 +134,7 @@ export class DatabaseStorage implements IStorage {
         user_id: message.userId,
         role: message.role,
         content: message.content,
-        timestamp: message.timestamp,
+        // created_at is set automatically by Postgres
       })
       .select()
       .single();
@@ -157,7 +151,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Supabase uses snake_case column names — map back to camelCase for the app
+// Map Supabase snake_case rows → camelCase app types
 function mapUnit(row: any): Unit {
   return {
     id: row.id,
@@ -190,7 +184,7 @@ function mapProgress(row: any): UserProgress {
     lessonId: row.lesson_id,
     completed: row.completed,
     score: row.score,
-    lastAccessed: row.last_accessed,
+    completedAt: row.completed_at,
   };
 }
 
@@ -200,7 +194,7 @@ function mapChatMessage(row: any): ChatMessage {
     userId: row.user_id,
     role: row.role,
     content: row.content,
-    timestamp: row.timestamp,
+    createdAt: row.created_at,
   };
 }
 

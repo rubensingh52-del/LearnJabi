@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-// ── Plain TypeScript types (no Drizzle/SQLite) ──────────────────────────────
+// ── Plain TypeScript types (aligned with Supabase schema.sql) ────────────────
 
 export type User = {
-  id: number;
+  id: string;         // uuid — references auth.users(id)
   username: string;
-  password: string;
+  created_at?: string;
 };
 
 export type Unit = {
@@ -31,26 +31,28 @@ export type Lesson = {
 
 export type UserProgress = {
   id: number;
-  userId: string;       // which user this progress belongs to
+  userId: string;
   lessonId: number;
   completed: boolean;
   score: number;
-  lastAccessed: string;
+  completedAt: string | null;  // matches completed_at in DB
 };
 
 export type ChatMessage = {
   id: number;
-  userId: string;       // which user this message belongs to
+  userId: string;
   role: string;
   content: string;
-  timestamp: string;
+  createdAt: string;  // matches created_at in DB
 };
 
 // ── Zod schemas for validation ───────────────────────────────────────────────
 
+// createUser is handled automatically by the Supabase trigger handle_new_user
+// so InsertUser is only used if you need to manually upsert a profile
 export const insertUserSchema = z.object({
-  username: z.string(),
-  password: z.string(),
+  id: z.string(),      // uuid from auth.users
+  username: z.string().optional(),
 });
 
 export const insertProgressSchema = z.object({
@@ -58,14 +60,13 @@ export const insertProgressSchema = z.object({
   lessonId: z.number(),
   completed: z.boolean(),
   score: z.number(),
-  lastAccessed: z.string(),
+  completedAt: z.string().nullable().optional(),
 });
 
 export const insertChatMessageSchema = z.object({
   userId: z.string(),
   role: z.string(),
   content: z.string(),
-  timestamp: z.string(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
