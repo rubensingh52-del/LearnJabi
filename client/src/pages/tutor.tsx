@@ -1,7 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell, Volume2, CheckCircle2, XCircle, RotateCcw, ChevronRight, Sparkles, BookOpen, Trophy } from "lucide-react";
+
+/* ── Confetti burst helper ── */
+function useConfetti() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesRef = useRef<any[]>([]);
+  const rafRef = useRef<number | null>(null);
+
+  const burst = (x: number, y: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const colors = ["#01696f", "#4f98a3", "#6daa45", "#e8af34", "#d163a7"];
+    particlesRef.current = Array.from({ length: 36 }, () => ({
+      x, y,
+      vx: (Math.random() - 0.5) * 10,
+      vy: Math.random() * -12 - 4,
+      r: Math.random() * 5 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.3,
+    }));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesRef.current = particlesRef.current.filter(p => p.alpha > 0.05);
+      particlesRef.current.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.5;
+        p.alpha -= 0.025;
+        p.rotation += p.rotSpeed;
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 1.6);
+        ctx.restore();
+      });
+      if (particlesRef.current.length > 0) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    animate();
+  };
+
+  return { canvasRef, burst };
+}
 
 /* ── static flashcard & quiz data ── */
 const flashcardSets = [
@@ -153,12 +204,10 @@ function FlashcardDeck({ set, onBack }: { set: (typeof flashcardSets)[0]; onBack
         <span className="text-xs text-muted-foreground">{index + 1} / {total}</span>
       </div>
 
-      {/* Progress bar */}
       <div className="h-1.5 bg-muted rounded-full mb-6 overflow-hidden">
         <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${((index + 1) / total) * 100}%` }} />
       </div>
 
-      {/* Card */}
       <div
         onClick={() => setFlipped(true)}
         className={`relative min-h-[220px] rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center p-8 text-center ${
@@ -182,7 +231,6 @@ function FlashcardDeck({ set, onBack }: { set: (typeof flashcardSets)[0]; onBack
         )}
       </div>
 
-      {/* Actions */}
       {flipped && !done && (
         <div className="flex gap-3 mt-4">
           <Button variant="outline" className="flex-1 gap-2" onClick={() => next(false)} data-testid="button-still-learning">
@@ -198,7 +246,7 @@ function FlashcardDeck({ set, onBack }: { set: (typeof flashcardSets)[0]; onBack
         <div className="mt-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <Trophy className="h-4 w-4" />
-            {progress + (known.includes(index) ? 0 : 0)} / {total} cards mastered
+            {progress} / {total} cards mastered
           </div>
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1 gap-2" onClick={restart} data-testid="button-restart-cards">
@@ -221,14 +269,26 @@ function QuizMode({ onBack }: { onBack: () => void }) {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [correctAnim, setCorrectAnim] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { canvasRef, burst } = useConfetti();
 
   const q = quizzes[current];
 
-  const handleSelect = (idx: number) => {
+  const handleSelect = (idx: number, e: React.MouseEvent) => {
     if (answered) return;
     setSelected(idx);
     setAnswered(true);
-    if (idx === q.correct) setScore(s => s + 1);
+    if (idx === q.correct) {
+      setScore(s => s + 1);
+      setCorrectAnim(true);
+      // Fire confetti from click position relative to canvas
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        burst(e.clientX - rect.left, e.clientY - rect.top);
+      }
+      setTimeout(() => setCorrectAnim(false), 800);
+    }
   };
 
   const nextQ = () => {
@@ -236,6 +296,7 @@ function QuizMode({ onBack }: { onBack: () => void }) {
       setCurrent(c => c + 1);
       setSelected(null);
       setAnswered(false);
+      setCorrectAnim(false);
     } else {
       setFinished(true);
     }
@@ -247,6 +308,7 @@ function QuizMode({ onBack }: { onBack: () => void }) {
     setAnswered(false);
     setScore(0);
     setFinished(false);
+    setCorrectAnim(false);
   };
 
   if (finished) {
@@ -277,7 +339,15 @@ function QuizMode({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto max-w-xl relative" ref={containerRef}>
+      {/* Confetti canvas — overlays entire quiz area */}
+      <canvas
+        ref={canvasRef}
+        className="pointer-events-none absolute inset-0 w-full h-full z-10"
+        width={600}
+        height={600}
+      />
+
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors" data-testid="button-back-practice-quiz">
         <ChevronRight className="h-3.5 w-3.5 rotate-180" /> Back to Practice
       </button>
@@ -296,18 +366,27 @@ function QuizMode({ onBack }: { onBack: () => void }) {
       <div className="space-y-3 mb-6">
         {q.options.map((opt, i) => {
           let cls = "border-border hover:border-primary/30 bg-card";
+          let iconEl = null;
           if (answered) {
-            if (i === q.correct) cls = "border-green-500 bg-green-500/10";
-            else if (i === selected) cls = "border-red-500 bg-red-500/10";
+            if (i === q.correct) {
+              cls = `border-green-500 bg-green-500/10 ${
+                correctAnim && i === selected ? "scale-[1.03] shadow-md shadow-green-500/20" : ""
+              } transition-all duration-300`;
+              iconEl = <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />;
+            } else if (i === selected) {
+              cls = "border-red-500 bg-red-500/10";
+              iconEl = <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />;
+            }
           }
           return (
             <button
               key={i}
-              onClick={() => handleSelect(i)}
-              className={`w-full text-left p-4 rounded-xl border-2 text-sm font-medium transition-all ${cls} ${!answered ? "cursor-pointer" : "cursor-default"}`}
+              onClick={(e) => handleSelect(i, e)}
+              className={`w-full text-left p-4 rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-between gap-3 ${cls} ${!answered ? "cursor-pointer" : "cursor-default"}`}
               data-testid={`button-quiz-option-${i}`}
             >
               <span className="gurmukhi">{opt}</span>
+              {iconEl}
             </button>
           );
         })}
@@ -315,8 +394,12 @@ function QuizMode({ onBack }: { onBack: () => void }) {
 
       {answered && (
         <div className="flex items-center justify-between">
-          <span className={`text-sm font-medium ${selected === q.correct ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-            {selected === q.correct ? "Correct!" : `Incorrect — answer: ${q.options[q.correct]}`}
+          <span className={`text-sm font-medium ${
+            selected === q.correct
+              ? "text-green-600 dark:text-green-400"
+              : "text-red-600 dark:text-red-400"
+          }`}>
+            {selected === q.correct ? "✓ Correct!" : `✗ Answer: ${q.options[q.correct]}`}
           </span>
           <Button size="sm" onClick={nextQ} data-testid="button-quiz-next">
             {current < quizzes.length - 1 ? "Next" : "Finish"} <ChevronRight className="h-3.5 w-3.5 ml-1" />
@@ -351,13 +434,11 @@ export default function Practice() {
 
   return (
     <div className="page-enter mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-xl font-bold mb-1" data-testid="text-practice-title">Practice</h1>
         <p className="text-sm text-muted-foreground">Reinforce what you've learned with flashcards and quizzes</p>
       </div>
 
-      {/* Quick Quiz CTA */}
       <button
         onClick={() => setMode("quiz")}
         className="w-full text-left mb-8 group"
@@ -378,7 +459,6 @@ export default function Practice() {
         </div>
       </button>
 
-      {/* Flashcard Sets */}
       <div className="mb-6">
         <h2 className="text-sm font-semibold mb-1 flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -407,7 +487,6 @@ export default function Practice() {
         ))}
       </div>
 
-      {/* Coming Soon teaser */}
       <div className="mt-10 rounded-xl border border-dashed border-border/80 bg-muted/30 p-6 text-center">
         <Sparkles className="h-6 w-6 text-primary/60 mx-auto mb-3" />
         <h3 className="text-sm font-semibold mb-1">More practice modes coming soon</h3>

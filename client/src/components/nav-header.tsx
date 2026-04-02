@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import { Sun, Moon, Menu, X, Sparkles } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -14,8 +14,14 @@ export function NavHeader() {
   const { theme, toggle } = useTheme();
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showTutorToast, setShowTutorToast] = useState(false);
 
   const isLanding = location === "/" || location === "";
+
+  const handleTutorClick = () => {
+    setShowTutorToast(true);
+    setTimeout(() => setShowTutorToast(false), 3000);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -48,6 +54,34 @@ export function NavHeader() {
                 </span>
               </Link>
             ))}
+
+            {/* AI Tutor — Coming Soon */}
+            <div className="relative">
+              <button
+                onClick={handleTutorClick}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                data-testid="link-ai-tutor"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary/70" />
+                AI Tutor
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">
+                  Soon
+                </span>
+              </button>
+
+              {/* Popover */}
+              {showTutorToast && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="bg-popover border border-border rounded-xl shadow-lg px-4 py-3 text-center w-56">
+                    <Sparkles className="h-5 w-5 text-primary mx-auto mb-1.5" />
+                    <p className="text-sm font-semibold mb-0.5">AI Tutor</p>
+                    <p className="text-xs text-muted-foreground">Coming soon — practice Punjabi with an AI conversation partner.</p>
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-popover border-l border-t border-border" />
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right actions */}
@@ -103,6 +137,20 @@ export function NavHeader() {
                   </span>
                 </Link>
               ))}
+
+              {/* Mobile AI Tutor */}
+              <button
+                onClick={() => { setMobileOpen(false); handleTutorClick(); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground cursor-pointer text-left"
+                data-testid="link-mobile-ai-tutor"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary/70" />
+                AI Tutor
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">
+                  Soon
+                </span>
+              </button>
+
               {isLanding && (
                 <Link href="/learn">
                   <span onClick={() => setMobileOpen(false)}>
@@ -116,6 +164,19 @@ export function NavHeader() {
           </nav>
         )}
       </div>
+
+      {/* Mobile Coming Soon toast (appears below header) */}
+      {showTutorToast && (
+        <div className="sm:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="bg-popover border border-border rounded-xl shadow-lg px-4 py-3 text-center w-64 flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-left">
+              <p className="text-sm font-semibold">AI Tutor coming soon</p>
+              <p className="text-xs text-muted-foreground">Practice Punjabi with an AI conversation partner.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
