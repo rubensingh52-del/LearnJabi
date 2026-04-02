@@ -14,6 +14,7 @@ import LessonPage from "@/pages/lesson";
 import Practice from "@/pages/tutor";
 import ProgressPage from "@/pages/progress-page";
 import AlphabetPage from "@/pages/alphabet";
+import FlashcardsPage from "@/pages/flashcards";
 
 function AppRouter() {
   return (
@@ -24,6 +25,7 @@ function AppRouter() {
       <Route path="/learn/:unitId/:lessonId" component={LessonPage} />
       <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice" component={Practice} />
+      <Route path="/flashcards" component={FlashcardsPage} />
       <Route path="/progress" component={ProgressPage} />
       <Route component={NotFound} />
     </Switch>
