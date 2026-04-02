@@ -10,7 +10,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+// Use persistSession: false so the session is kept in memory rather than
+// localStorage — localStorage is blocked in sandboxed/iframe environments
+// (e.g. Render static deployments). The JS client still holds the session
+// for the full lifetime of the browser tab via onAuthStateChange.
 export const supabase = createClient(
   supabaseUrl ?? '',
-  supabaseAnonKey ?? ''
+  supabaseAnonKey ?? '',
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+    },
+  }
 );

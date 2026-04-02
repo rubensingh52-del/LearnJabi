@@ -12,8 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, BookOpen } from "lucide-react";
 
+// Accept either a valid email OR a username (3+ chars, no @)
 const loginSchema = z.object({
-  email: z.string().email("Enter a valid email"),
+  identifier: z
+    .string()
+    .min(1, "Enter your email or username")
+    .refine(
+      (v) => v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : v.length >= 3,
+      "Enter a valid email or username (min 3 characters)"
+    ),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -30,6 +37,19 @@ const registerSchema = z.object({
 type LoginData = z.infer<typeof loginSchema>;
 type RegisterData = z.infer<typeof registerSchema>;
 
+// Resolve a username to an email by looking up the profiles table
+async function resolveEmail(identifier: string): Promise<string | null> {
+  if (identifier.includes("@")) return identifier;
+  // Look up by username stored in auth.users user_metadata or a profiles table
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("username", identifier)
+    .single();
+  if (error || !data) return null;
+  return data.email as string;
+}
+
 export default function AuthPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -42,8 +62,21 @@ export default function AuthPage() {
 
   async function onLogin(data: LoginData) {
     setLoginPending(true);
+
+    // Resolve username → email if needed
+    let email = data.identifier.trim();
+    if (!email.includes("@")) {
+      const resolved = await resolveEmail(email);
+      if (!resolved) {
+        setLoginPending(false);
+        loginForm.setError("identifier", { message: "Username not found" });
+        return;
+      }
+      email = resolved;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
+      email,
       password: data.password,
     });
     setLoginPending(false);
@@ -58,15 +91,11 @@ export default function AuthPage() {
   async function onRegister(data: RegisterData) {
     setRegisterPending(true);
 
-    // Sign up — emailRedirectTo is omitted so Supabase auto-confirms if
-    // "Confirm email" is disabled in the Auth settings (recommended for dev/launch).
-    // If email confirm is ON, the user gets a confirm link and we show instructions.
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { username: data.username },
-        // Disable the redirect so Supabase doesn't require a live URL
         emailRedirectTo: undefined,
       },
     });
@@ -78,20 +107,18 @@ export default function AuthPage() {
       return;
     }
 
-    // If session is immediately available, email confirmation is OFF — log them in now
     if (authData.session) {
       toast({ title: "Welcome to LearnJabi!", description: "Your account is ready. Let's start learning!" });
       navigate("/learn");
       return;
     }
 
-    // Email confirmation is ON — tell the user to check their inbox
     toast({
       title: "Almost there!",
       description: "Check your email and click the confirmation link, then come back to log in.",
     });
     setActiveTab("login");
-    loginForm.setValue("email", data.email);
+    loginForm.setValue("identifier", data.email);
   }
 
   return (
@@ -124,16 +151,16 @@ export default function AuthPage() {
               <CardContent>
                 <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
                   <div className="space-y-1">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-identifier">Email or Username</Label>
                     <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      autoComplete="email"
-                      {...loginForm.register("email")}
+                      id="login-identifier"
+                      type="text"
+                      placeholder="you@example.com or yourname"
+                      autoComplete="username"
+                      {...loginForm.register("identifier")}
                     />
-                    {loginForm.formState.errors.email && (
-                      <p className="text-xs text-destructive">{loginForm.formState.errors.email.message}</p>
+                    {loginForm.formState.errors.identifier && (
+                      <p className="text-xs text-destructive">{loginForm.formState.errors.identifier.message}</p>
                     )}
                   </div>
                   <div className="space-y-1">
