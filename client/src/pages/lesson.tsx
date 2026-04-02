@@ -31,7 +31,9 @@ export default function LessonPage() {
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [matchSelection, setMatchSelection] = useState<{ side: "left" | "right"; index: number } | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isExerciseSpeaking, setIsExerciseSpeaking] = useState(false);
   const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exerciseSpeakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const content: LessonContent | null = useMemo(() => {
     if (!lesson) return null;
@@ -58,6 +60,16 @@ export default function LessonPage() {
     setIsSpeaking(true);
     speakPunjabi(item.gurmukhi, item.romanized);
     speakTimer.current = setTimeout(() => setIsSpeaking(false), 2500);
+  }, []);
+
+  const handleExerciseSpeak = useCallback((question: string) => {
+    if (exerciseSpeakTimer.current) clearTimeout(exerciseSpeakTimer.current);
+    setIsExerciseSpeaking(true);
+    // Extract Gurmukhi characters from the question string for TTS
+    const gurmukhiMatch = question.match(/[\u0A00-\u0A7F\s]+/g);
+    const gurmukhiText = gurmukhiMatch ? gurmukhiMatch.join(" ").trim() : question;
+    speakPunjabi(gurmukhiText, question);
+    exerciseSpeakTimer.current = setTimeout(() => setIsExerciseSpeaking(false), 2500);
   }, []);
 
   const handleChooseAnswer = (optionIndex: number) => {
@@ -233,7 +245,21 @@ export default function LessonPage() {
           </div>
 
           <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
-            <p className="font-semibold text-lg">{currentExercise.question}</p>
+            <div className="flex items-start gap-2">
+              <p className="font-semibold text-lg flex-1">{currentExercise.question}</p>
+              {/* Audio button for exercise question — speaks any Gurmukhi in the question */}
+              <button
+                onClick={() => handleExerciseSpeak(currentExercise.question)}
+                aria-label="Hear the Punjabi in this question"
+                className={`shrink-0 p-2 rounded-full transition-colors ${
+                  isExerciseSpeaking
+                    ? "bg-primary/20 text-primary animate-pulse"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                }`}
+              >
+                <Volume2 className="h-4 w-4" />
+              </button>
+            </div>
 
             {currentExercise.type === "choose" && currentExercise.options && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
