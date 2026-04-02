@@ -26,12 +26,12 @@ export interface IStorage {
   getUnit(id: number): Promise<Unit | undefined>;
   getLessonsByUnit(unitId: number): Promise<Lesson[]>;
   getLesson(id: number): Promise<Lesson | undefined>;
-  getProgress(): Promise<UserProgress[]>;
-  getProgressByLesson(lessonId: number): Promise<UserProgress | undefined>;
+  getProgress(userId: string): Promise<UserProgress[]>;
+  getProgressByLesson(userId: string, lessonId: number): Promise<UserProgress | undefined>;
   upsertProgress(progress: InsertProgress): Promise<UserProgress>;
-  getChatMessages(): Promise<ChatMessage[]>;
+  getChatMessages(userId: string): Promise<ChatMessage[]>;
   addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  clearChatMessages(): Promise<void>;
+  clearChatMessages(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -73,19 +73,27 @@ export class DatabaseStorage implements IStorage {
     return data ? mapLesson(data) : undefined;
   }
 
-  async getProgress(): Promise<UserProgress[]> {
-    const { data, error } = await db.from('user_progress').select('*');
+  async getProgress(userId: string): Promise<UserProgress[]> {
+    const { data, error } = await db
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId);
     if (error) throw new Error(error.message);
     return (data ?? []).map(mapProgress);
   }
 
-  async getProgressByLesson(lessonId: number): Promise<UserProgress | undefined> {
-    const { data } = await db.from('user_progress').select('*').eq('lesson_id', lessonId).single();
+  async getProgressByLesson(userId: string, lessonId: number): Promise<UserProgress | undefined> {
+    const { data } = await db
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .single();
     return data ? mapProgress(data) : undefined;
   }
 
   async upsertProgress(progress: InsertProgress): Promise<UserProgress> {
-    const existing = await this.getProgressByLesson(progress.lessonId);
+    const existing = await this.getProgressByLesson(progress.userId, progress.lessonId);
     if (existing) {
       const { data, error } = await db
         .from('user_progress')
@@ -103,6 +111,7 @@ export class DatabaseStorage implements IStorage {
     const { data, error } = await db
       .from('user_progress')
       .insert({
+        user_id: progress.userId,
         lesson_id: progress.lessonId,
         completed: progress.completed,
         score: progress.score,
@@ -114,20 +123,36 @@ export class DatabaseStorage implements IStorage {
     return mapProgress(data);
   }
 
-  async getChatMessages(): Promise<ChatMessage[]> {
-    const { data, error } = await db.from('chat_messages').select('*').order('id', { ascending: true });
+  async getChatMessages(userId: string): Promise<ChatMessage[]> {
+    const { data, error } = await db
+      .from('chat_messages')
+      .select('*')
+      .eq('user_id', userId)
+      .order('id', { ascending: true });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []).map(mapChatMessage);
   }
 
   async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const { data, error } = await db.from('chat_messages').insert(message).select().single();
+    const { data, error } = await db
+      .from('chat_messages')
+      .insert({
+        user_id: message.userId,
+        role: message.role,
+        content: message.content,
+        timestamp: message.timestamp,
+      })
+      .select()
+      .single();
     if (error) throw new Error(error.message);
-    return data;
+    return mapChatMessage(data);
   }
 
-  async clearChatMessages(): Promise<void> {
-    const { error } = await db.from('chat_messages').delete().neq('id', 0);
+  async clearChatMessages(userId: string): Promise<void> {
+    const { error } = await db
+      .from('chat_messages')
+      .delete()
+      .eq('user_id', userId);
     if (error) throw new Error(error.message);
   }
 }
@@ -161,10 +186,21 @@ function mapLesson(row: any): Lesson {
 function mapProgress(row: any): UserProgress {
   return {
     id: row.id,
+    userId: row.user_id,
     lessonId: row.lesson_id,
     completed: row.completed,
     score: row.score,
     lastAccessed: row.last_accessed,
+  };
+}
+
+function mapChatMessage(row: any): ChatMessage {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    role: row.role,
+    content: row.content,
+    timestamp: row.timestamp,
   };
 }
 
