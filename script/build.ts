@@ -6,11 +6,10 @@ import { rm, readFile } from "fs/promises";
 // which helps cold start times
 const allowlist = [
   "@google/generative-ai",
+  "@supabase/supabase-js",
   "axios",
   "cors",
   "date-fns",
-  "drizzle-orm",
-  "drizzle-zod",
   "express",
   "express-rate-limit",
   "express-session",
@@ -25,7 +24,6 @@ const allowlist = [
   "stripe",
   "uuid",
   "ws",
-  "xlsx",
   "zod",
   "zod-validation-error",
 ];
@@ -41,7 +39,7 @@ async function buildAll() {
   const allDeps = [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.devDependencies || {}),
-  ];
+  ].filter(Boolean);
   const externals = allDeps.filter((dep) => !allowlist.includes(dep));
 
   await esbuild({
