@@ -31,6 +31,7 @@ export type Lesson = {
 
 export type UserProgress = {
   id: number;
+  userId: string;       // which user this progress belongs to
   lessonId: number;
   completed: boolean;
   score: number;
@@ -39,6 +40,7 @@ export type UserProgress = {
 
 export type ChatMessage = {
   id: number;
+  userId: string;       // which user this message belongs to
   role: string;
   content: string;
   timestamp: string;
@@ -52,6 +54,7 @@ export const insertUserSchema = z.object({
 });
 
 export const insertProgressSchema = z.object({
+  userId: z.string(),
   lessonId: z.number(),
   completed: z.boolean(),
   score: z.number(),
@@ -59,6 +62,7 @@ export const insertProgressSchema = z.object({
 });
 
 export const insertChatMessageSchema = z.object({
+  userId: z.string(),
   role: z.string(),
   content: z.string(),
   timestamp: z.string(),
