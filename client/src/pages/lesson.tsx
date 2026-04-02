@@ -120,6 +120,16 @@ export default function LessonPage() {
     setMatchSelection(null);
   };
 
+  // Helper: detect if a string contains Gurmukhi characters
+  const hasGurmukhi = (s: string) => /[\u0A00-\u0A7F]/.test(s);
+
+  // Helper: parse "ਸ਼ੁਕਰੀਆ (Shukriya)" into { gurmukhi, romanized }
+  const parsePronunciation = (text: string): { gurmukhi: string; romanized: string | null } => {
+    const parenMatch = text.match(/^(.+?)\s*\((.+?)\)$/);
+    if (parenMatch) return { gurmukhi: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
+    return { gurmukhi: text, romanized: null };
+  };
+
   if (isLoading) {
     return (
       <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
@@ -176,7 +186,16 @@ export default function LessonPage() {
         <div className="space-y-6">
           <p className="text-muted-foreground text-sm">{content.intro}</p>
 
-          <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-2">
+          {/* Pronunciation guide banner — shown once at the top of Learn */}
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-primary/8 border border-primary/20 text-xs text-muted-foreground">
+            <Volume2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p>
+              <span className="font-semibold text-foreground">You don't need to read Gurmukhi.</span>{" "}
+              Each card shows the <span className="text-primary font-semibold">romanised pronunciation</span> in green below the script — just read that. Tap 🔊 to hear it spoken aloud.
+            </p>
+          </div>
+
+          <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
             {/* Audio button */}
             <button
               onClick={() => handleSpeak(currentItem)}
@@ -193,17 +212,16 @@ export default function LessonPage() {
             {/* Gurmukhi script — large display */}
             <div className="text-5xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
 
-            {/* Romanized pronunciation — shown immediately below, prominent */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-lg">
-              {currentItem.romanized}
+            {/* Romanized pronunciation — very prominent */}
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Pronunciation</span>
+              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xl">
+                {currentItem.romanized}
+              </div>
             </div>
 
             {/* English meaning */}
             <div className="text-base text-muted-foreground pt-1">{currentItem.english}</div>
-
-            <p className="text-xs text-muted-foreground pt-3 border-t border-border/40 mt-2">
-              <span className="font-medium text-foreground/60">Pronunciation guide</span> · Gurmukhi above, romanised spelling in green · Tap 🔊 to hear it spoken
-            </p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -256,9 +274,9 @@ export default function LessonPage() {
               <div className="flex-1">
                 <p className="font-semibold text-lg">{currentExercise.question}</p>
                 {/* If the question contains Gurmukhi, show a pronunciation hint */}
-                {/[\u0A00-\u0A7F]/.test(currentExercise.question) && (
-                  <p className="text-xs text-muted-foreground mt-1 italic">
-                    Gurmukhi script shown — romanised pronunciation appears in each answer option
+                {hasGurmukhi(currentExercise.question) && (
+                  <p className="text-xs text-primary/70 mt-1 font-medium italic">
+                    Gurmukhi script — romanised pronunciation shown in each answer below
                   </p>
                 )}
               </div>
@@ -283,8 +301,8 @@ export default function LessonPage() {
                     if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
                     else if (i === selectedAnswer) extra = "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300";
                   }
-                  // Split gurmukhi and romanized if option contains both e.g. "ਸ਼ੁਕਰੀਆ (Shukriya)"
-                  const parenMatch = option.match(/^(.+?)\s*\((.+?)\)$/);
+                  const parsed = parsePronunciation(option);
+                  const showSplit = hasGurmukhi(parsed.gurmukhi) || parsed.romanized;
                   return (
                     <button
                       key={i}
@@ -294,10 +312,12 @@ export default function LessonPage() {
                         ${showResult ? "cursor-default" : "hover:border-primary hover:bg-accent"}
                         ${!extra ? "border-border" : ""} ${extra}`}
                     >
-                      {parenMatch ? (
+                      {showSplit ? (
                         <span className="flex flex-col gap-0.5">
-                          <span className="gurmukhi text-sm font-semibold">{parenMatch[1].trim()}</span>
-                          <span className="text-xs text-primary/80 font-medium italic">{parenMatch[2].trim()}</span>
+                          <span className="gurmukhi text-sm font-semibold">{parsed.gurmukhi}</span>
+                          {parsed.romanized && (
+                            <span className="text-xs text-primary font-semibold">{parsed.romanized}</span>
+                          )}
                         </span>
                       ) : (
                         <span className="text-sm font-medium">{option}</span>
@@ -311,34 +331,58 @@ export default function LessonPage() {
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  {currentExercise.pairs.map((pair, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleMatchClick("left", i)}
-                      disabled={matchedPairs.has(i)}
-                      className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all
-                        ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
-                        ${matchSelection?.side === "left" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
-                        ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
-                    >
-                      {pair[0]}
-                    </button>
-                  ))}
+                  {currentExercise.pairs.map((pair, i) => {
+                    const parsed = parsePronunciation(pair[0]);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleMatchClick("left", i)}
+                        disabled={matchedPairs.has(i)}
+                        className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all text-left
+                          ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                          ${matchSelection?.side === "left" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
+                          ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
+                      >
+                        {hasGurmukhi(parsed.gurmukhi) ? (
+                          <span className="flex flex-col gap-0">
+                            <span className="gurmukhi font-semibold">{parsed.gurmukhi}</span>
+                            {parsed.romanized && (
+                              <span className="text-xs text-primary font-semibold not-italic">{parsed.romanized}</span>
+                            )}
+                          </span>
+                        ) : (
+                          pair[0]
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="space-y-2">
-                  {currentExercise.pairs.map((pair, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleMatchClick("right", i)}
-                      disabled={matchedPairs.has(i)}
-                      className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all
-                        ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
-                        ${matchSelection?.side === "right" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
-                        ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
-                    >
-                      {pair[1]}
-                    </button>
-                  ))}
+                  {currentExercise.pairs.map((pair, i) => {
+                    const parsed = parsePronunciation(pair[1]);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleMatchClick("right", i)}
+                        disabled={matchedPairs.has(i)}
+                        className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all text-left
+                          ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                          ${matchSelection?.side === "right" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
+                          ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
+                      >
+                        {hasGurmukhi(parsed.gurmukhi) ? (
+                          <span className="flex flex-col gap-0">
+                            <span className="gurmukhi font-semibold">{parsed.gurmukhi}</span>
+                            {parsed.romanized && (
+                              <span className="text-xs text-primary font-semibold not-italic">{parsed.romanized}</span>
+                            )}
+                          </span>
+                        ) : (
+                          pair[1]
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
