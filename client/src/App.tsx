@@ -25,6 +25,22 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   return <Component />;
 }
 
+// Unit 1 lessons are free — only protect units 2+
+function LessonRoute() {
+  const { user, loading } = useAuth();
+  // Parse unitId from current hash location
+  const hash = window.location.hash;
+  const match = hash.match(/#\/learn\/(\d+)\/(\d+)/);
+  const unitId = match ? parseInt(match[1]) : 1;
+
+  if (loading) return null;
+  // Unit 1 is always accessible without login
+  if (unitId === 1) return <LessonPage />;
+  // All other units require login
+  if (!user) return <Redirect to="/login" />;
+  return <LessonPage />;
+}
+
 function AppRouter() {
   return (
     <Switch>
@@ -34,8 +50,8 @@ function AppRouter() {
       {/* Unit list + unit detail are intentionally NOT protected — paywall is inline */}
       <Route path="/learn" component={Units} />
       <Route path="/learn/:unitId" component={UnitLessons} />
-      {/* Individual lesson IS protected — user must have an account */}
-      <Route path="/learn/:unitId/:lessonId">{() => <ProtectedRoute component={LessonPage} />}</Route>
+      {/* Unit 1 lessons are free; all other lessons require login */}
+      <Route path="/learn/:unitId/:lessonId">{() => <LessonRoute />}</Route>
       <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice">{() => <ProtectedRoute component={Practice} />}</Route>
       <Route path="/progress">{() => <ProtectedRoute component={ProgressPage} />}</Route>

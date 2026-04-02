@@ -57,24 +57,41 @@ export default function AuthPage() {
 
   async function onRegister(data: RegisterData) {
     setRegisterPending(true);
-    const { error } = await supabase.auth.signUp({
+
+    // Sign up — emailRedirectTo is omitted so Supabase auto-confirms if
+    // "Confirm email" is disabled in the Auth settings (recommended for dev/launch).
+    // If email confirm is ON, the user gets a confirm link and we show instructions.
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { username: data.username },
+        // Disable the redirect so Supabase doesn't require a live URL
+        emailRedirectTo: undefined,
       },
     });
+
     setRegisterPending(false);
+
     if (error) {
       toast({ title: "Registration failed", description: error.message, variant: "destructive" });
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Check your email to confirm your account, then log in.",
-      });
-      setActiveTab("login");
-      loginForm.setValue("email", data.email);
+      return;
     }
+
+    // If session is immediately available, email confirmation is OFF — log them in now
+    if (authData.session) {
+      toast({ title: "Welcome to LearnJabi!", description: "Your account is ready. Let's start learning!" });
+      navigate("/learn");
+      return;
+    }
+
+    // Email confirmation is ON — tell the user to check their inbox
+    toast({
+      title: "Almost there!",
+      description: "Check your email and click the confirmation link, then come back to log in.",
+    });
+    setActiveTab("login");
+    loginForm.setValue("email", data.email);
   }
 
   return (
