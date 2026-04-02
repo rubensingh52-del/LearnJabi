@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { Sun, Moon, Menu, X, Sparkles } from "lucide-react";
+import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 const navLinks = [
   { href: "/learn", label: "Learn" },
@@ -15,8 +16,10 @@ export function NavHeader() {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showTutorToast, setShowTutorToast] = useState(false);
+  const { user, signOut } = useAuth();
 
   const isLanding = location === "/" || location === "";
+  const displayName = user?.user_metadata?.username || user?.email?.split("@")[0] || "You";
 
   const handleTutorClick = () => {
     setShowTutorToast(true);
@@ -87,11 +90,30 @@ export function NavHeader() {
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            {isLanding && (
-              <Link href="/learn">
-                <Button size="sm" className="hidden sm:inline-flex" data-testid="button-start-learning">Start Learning</Button>
-              </Link>
+
+            {user ? (
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Hi, <span className="font-medium text-foreground">{displayName}</span></span>
+                <Button size="sm" variant="ghost" onClick={signOut} className="gap-1.5" data-testid="button-sign-out">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign out
+                </Button>
+              </div>
+            ) : (
+              isLanding ? (
+                <Link href="/login">
+                  <Button size="sm" className="hidden sm:inline-flex" data-testid="button-start-learning">Start Learning</Button>
+                </Link>
+              ) : (
+                <Link href="/login">
+                  <Button size="sm" variant="outline" className="hidden sm:inline-flex gap-1.5" data-testid="button-sign-in">
+                    <LogIn className="h-3.5 w-3.5" />
+                    Sign in
+                  </Button>
+                </Link>
+              )
             )}
+
             <Button size="icon" variant="ghost" className="sm:hidden" onClick={() => setMobileOpen(!mobileOpen)}
               data-testid="button-mobile-menu" aria-label="Toggle menu">
               {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -121,10 +143,25 @@ export function NavHeader() {
                 AI Tutor
                 <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">Soon</span>
               </button>
-              {isLanding && (
-                <Link href="/learn">
+
+              {/* Mobile auth */}
+              {user ? (
+                <div className="mt-2 pt-2 border-t border-border/40">
+                  <p className="px-3 py-1 text-xs text-muted-foreground">Signed in as <span className="font-medium text-foreground">{displayName}</span></p>
+                  <button onClick={() => { setMobileOpen(false); signOut(); }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground cursor-pointer w-full"
+                    data-testid="button-mobile-sign-out">
+                    <LogOut className="h-3.5 w-3.5" />
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login">
                   <span onClick={() => setMobileOpen(false)}>
-                    <Button size="sm" className="w-full mt-2" data-testid="button-mobile-start">Start Learning</Button>
+                    <Button size="sm" className="w-full mt-2" data-testid="button-mobile-sign-in">
+                      <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                      Sign in / Register
+                    </Button>
                   </span>
                 </Link>
               )}

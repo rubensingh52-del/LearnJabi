@@ -17,10 +17,10 @@ import ProgressPage from "@/pages/progress-page";
 import AlphabetPage from "@/pages/alphabet";
 import AuthPage from "@/pages/auth";
 
-// Wrapper that redirects to /login if user is not authenticated
+// Hard redirect if not logged in
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, loading } = useAuth();
-  if (loading) return null; // wait for session check
+  if (loading) return null;
   if (!user) return <Redirect to="/login" />;
   return <Component />;
 }
@@ -31,8 +31,10 @@ function AppRouter() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={AuthPage} />
       <Route path="/register" component={AuthPage} />
-      <Route path="/learn">{() => <ProtectedRoute component={Units} />}</Route>
-      <Route path="/learn/:unitId">{() => <ProtectedRoute component={UnitLessons} />}</Route>
+      {/* Unit list + unit detail are intentionally NOT protected — paywall is inline */}
+      <Route path="/learn" component={Units} />
+      <Route path="/learn/:unitId" component={UnitLessons} />
+      {/* Individual lesson IS protected — user must have an account */}
       <Route path="/learn/:unitId/:lessonId">{() => <ProtectedRoute component={LessonPage} />}</Route>
       <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice">{() => <ProtectedRoute component={Practice} />}</Route>

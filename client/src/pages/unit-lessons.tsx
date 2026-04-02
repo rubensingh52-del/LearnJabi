@@ -3,7 +3,11 @@ import { Link, useParams, useLocation } from "wouter";
 import { type Unit, type Lesson, type UserProgress } from "@shared/schema";
 import { unitColors } from "@/lib/curriculum";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, CheckCircle2, BookOpen, MessageSquare, Pen, FlaskConical, Globe2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { ChevronLeft, ChevronRight, CheckCircle2, BookOpen, MessageSquare, Pen, FlaskConical, Globe2, Lock } from "lucide-react";
+
+const FREE_LESSONS = 3; // guests can open this many lessons before being prompted
 
 const typeIcons: Record<string, any> = {
   vocabulary: BookOpen,
@@ -24,6 +28,7 @@ const typeLabels: Record<string, string> = {
 export default function UnitLessons() {
   const params = useParams<{ unitId: string }>();
   const [, navigate] = useLocation();
+  const { user } = useAuth();
   const unitId = parseInt(params.unitId || "1");
 
   const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
@@ -50,7 +55,7 @@ export default function UnitLessons() {
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Back nav — uses navigate() to avoid hash routing issues */}
+      {/* Back nav */}
       <button
         onClick={() => navigate("/learn")}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground cursor-pointer mb-6 bg-transparent border-none p-0"
@@ -93,6 +98,34 @@ export default function UnitLessons() {
         {lessons?.map((lesson, index) => {
           const isCompleted = completedLessons.has(lesson.id);
           const TypeIcon = typeIcons[lesson.type] || BookOpen;
+          // guests can access first FREE_LESSONS tiles; locked if no account
+          const isLocked = !user && index >= FREE_LESSONS;
+
+          if (isLocked) {
+            return (
+              <div
+                key={lesson.id}
+                className="group flex items-center gap-4 p-4 rounded-xl border border-border/40 bg-muted/30 opacity-70 cursor-not-allowed"
+                data-testid={`card-lesson-${lesson.id}-locked`}
+              >
+                {/* Lock icon */}
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-muted text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="text-sm font-semibold truncate text-muted-foreground">{lesson.title}</h3>
+                    <span className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                      <TypeIcon className="h-2.5 w-2.5" />
+                      {typeLabels[lesson.type]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
+                </div>
+                <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              </div>
+            );
+          }
 
           return (
             <Link key={lesson.id} href={`/learn/${unitId}/${lesson.id}`}>
@@ -104,7 +137,6 @@ export default function UnitLessons() {
                 }`}
                 data-testid={`card-lesson-${lesson.id}`}
               >
-                {/* Number / check */}
                 <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
                   isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}>
@@ -114,8 +146,6 @@ export default function UnitLessons() {
                     <span className="text-sm font-semibold">{index + 1}</span>
                   )}
                 </div>
-
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <h3 className="text-sm font-semibold truncate">{lesson.title}</h3>
@@ -126,13 +156,31 @@ export default function UnitLessons() {
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
                 </div>
-
                 <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
               </div>
             </Link>
           );
         })}
       </div>
+
+      {/* Paywall banner — shown to guests once locked lessons exist */}
+      {!user && lessons && lessons.length > FREE_LESSONS && (
+        <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
+          <Lock className="h-6 w-6 text-primary mx-auto mb-2" />
+          <h3 className="text-sm font-semibold mb-1">Create a free account to continue</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            You've seen the first {FREE_LESSONS} lessons. Sign up free to unlock everything — no payment needed.
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Link href="/login">
+              <Button size="sm" variant="outline">Sign in</Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Create free account</Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Empty state */}
       {lessons?.length === 0 && (
