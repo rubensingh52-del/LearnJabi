@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle } from "lucide-react";
+import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle, LogIn } from "lucide-react";
 
 const features = [
   {
@@ -70,6 +70,12 @@ export default function Landing() {
                 <Button size="lg" className="gap-2" data-testid="button-hero-start">
                   Start Learning Free
                   <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button size="lg" className="gap-2" data-testid="button-hero-signin">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
                 </Button>
               </Link>
               <Link href="/practice">
