@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "wouter";
+import { Link, useParams, useLocation } from "wouter";
 import { type Unit, type Lesson, type UserProgress } from "@shared/schema";
 import { unitColors } from "@/lib/curriculum";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle2, BookOpen, MessageSquare, Pen, FlaskConical, Globe2 } from "lucide-react";
 
 const typeIcons: Record<string, any> = {
@@ -24,6 +23,7 @@ const typeLabels: Record<string, string> = {
 
 export default function UnitLessons() {
   const params = useParams<{ unitId: string }>();
+  const [, navigate] = useLocation();
   const unitId = parseInt(params.unitId || "1");
 
   const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
@@ -50,13 +50,15 @@ export default function UnitLessons() {
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Back nav */}
-      <Link href="/learn">
-        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground cursor-pointer mb-6" data-testid="link-back-units">
-          <ChevronLeft className="h-4 w-4" />
-          All Units
-        </span>
-      </Link>
+      {/* Back nav — uses navigate() to avoid hash routing issues */}
+      <button
+        onClick={() => navigate("/learn")}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground cursor-pointer mb-6 bg-transparent border-none p-0"
+        data-testid="link-back-units"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        All Units
+      </button>
 
       {/* Unit header */}
       <div className="mb-8">

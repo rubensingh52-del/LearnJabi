@@ -13,6 +13,7 @@ import UnitLessons from "@/pages/unit-lessons";
 import LessonPage from "@/pages/lesson";
 import Practice from "@/pages/tutor";
 import ProgressPage from "@/pages/progress-page";
+import AlphabetPage from "@/pages/alphabet";
 
 function AppRouter() {
   return (
@@ -21,6 +22,7 @@ function AppRouter() {
       <Route path="/learn" component={Units} />
       <Route path="/learn/:unitId" component={UnitLessons} />
       <Route path="/learn/:unitId/:lessonId" component={LessonPage} />
+      <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice" component={Practice} />
       <Route path="/progress" component={ProgressPage} />
       <Route component={NotFound} />

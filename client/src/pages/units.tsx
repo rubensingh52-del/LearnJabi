@@ -3,7 +3,10 @@ import { Link } from "wouter";
 import { type Unit, type UserProgress } from "@shared/schema";
 import { unitColors } from "@/lib/curriculum";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PenTool, HandMetal, Hash, Users, Utensils, MapPin, ChevronRight, Lock } from "lucide-react";
+import {
+  PenTool, HandMetal, Hash, Users, Utensils, MapPin,
+  ChevronRight, BookOpen, Palette, Heart, Smile, Compass
+} from "lucide-react";
 
 const iconMap: Record<string, any> = {
   "pen-tool": PenTool,
@@ -12,6 +15,11 @@ const iconMap: Record<string, any> = {
   "users": Users,
   "utensils": Utensils,
   "map-pin": MapPin,
+  "palette": Palette,
+  "heart": Heart,
+  "smile": Smile,
+  "compass": Compass,
+  "book-open": BookOpen,
 };
 
 export default function Units() {
@@ -22,9 +30,16 @@ export default function Units() {
 
   return (
     <div className="page-enter mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-xl font-bold mb-1" data-testid="text-units-title">Your Learning Path</h1>
-        <p className="text-sm text-muted-foreground">Choose a unit to explore lessons, vocabulary, and exercises</p>
+        <p className="text-sm text-muted-foreground mb-4">Choose a unit to explore lessons, vocabulary, and exercises</p>
+        <Link href="/alphabet">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-accent transition-all duration-200 cursor-pointer text-sm font-medium">
+            <BookOpen className="h-4 w-4 text-primary" />
+            <span>Gurmukhi Alphabet Reference</span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+        </Link>
       </div>
 
       {unitsLoading ? (
@@ -40,7 +55,7 @@ export default function Units() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {units?.map((unit, index) => {
+          {units?.map((unit) => {
             const colors = unitColors[unit.color] || unitColors.amber;
             const Icon = iconMap[unit.icon] || BookOpen;
 

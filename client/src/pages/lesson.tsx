@@ -42,7 +42,7 @@ function speakPunjabi(gurmukhi: string, romanized: string) {
 
 export default function LessonPage() {
   const params = useParams<{ unitId: string; lessonId: string }>();
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
   const unitId = parseInt(params.unitId || "1");
   const lessonId = parseInt(params.lessonId || "1");
 
@@ -162,9 +162,9 @@ export default function LessonPage() {
     return (
       <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12 text-center">
         <p className="text-muted-foreground">Content unavailable.</p>
-        <Link href="/learn">
-          <Button variant="outline" className="mt-4">Back to Units</Button>
-        </Link>
+        <button onClick={() => navigate(`/learn/${unitId}`)} className="mt-4 px-4 py-2 rounded-lg border border-border text-sm hover:bg-accent transition-colors">
+          Back to Unit
+        </button>
       </div>
     );
   }
@@ -179,13 +179,15 @@ export default function LessonPage() {
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
-      {/* Back link — fixed path to match router /learn/:unitId */}
-      <Link href={`/learn/${unitId}`}>
-        <Button variant="ghost" size="sm" className="mb-6 -ml-2 text-muted-foreground hover:text-foreground">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to {unit?.title || "Unit"}
-        </Button>
-      </Link>
+      {/* Back button — uses navigate() to prevent hash routing crash */}
+      <button
+        onClick={() => navigate(`/learn/${unitId}`)}
+        className="inline-flex items-center gap-1 mb-6 -ml-1 text-sm text-muted-foreground hover:text-foreground bg-transparent border-none cursor-pointer p-1 rounded transition-colors hover:bg-accent"
+        aria-label={`Back to ${unit?.title || 'Unit'}`}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Back to {unit?.title || "Unit"}
+      </button>
 
       {/* Progress bar */}
       <div className="mb-6">
@@ -373,13 +375,13 @@ export default function LessonPage() {
               Restart Lesson
             </Button>
             {nextLesson ? (
-              <Button onClick={() => setLocation(`/learn/${unitId}/${nextLesson.id}`)}>
+              <Button onClick={() => navigate(`/learn/${unitId}/${nextLesson.id}`)}>
                 Next Lesson <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Link href={`/learn/${unitId}`}>
-                <Button>Back to Unit</Button>
-              </Link>
+              <Button onClick={() => navigate(`/learn/${unitId}`)}>
+                Back to Unit
+              </Button>
             )}
           </div>
         </div>
