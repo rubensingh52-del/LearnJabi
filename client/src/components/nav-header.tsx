@@ -6,7 +6,6 @@ import { useState } from "react";
 
 const navLinks = [
   { href: "/learn", label: "Learn" },
-  { href: "/flashcards", label: "Flashcards" },
   { href: "/practice", label: "Practice" },
   { href: "/progress", label: "Progress" },
 ];
@@ -69,8 +68,6 @@ export function NavHeader() {
                   Soon
                 </span>
               </button>
-
-              {/* Popover */}
               {showTutorToast && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="bg-popover border border-border rounded-xl shadow-lg px-4 py-3 text-center w-56">
@@ -78,7 +75,6 @@ export function NavHeader() {
                     <p className="text-sm font-semibold mb-0.5">AI Tutor</p>
                     <p className="text-xs text-muted-foreground">Coming soon — practice Punjabi with an AI conversation partner.</p>
                   </div>
-                  {/* Arrow */}
                   <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-popover border-l border-t border-border" />
                 </div>
               )}
@@ -87,33 +83,17 @@ export function NavHeader() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={toggle}
-              data-testid="button-theme-toggle"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            >
+            <Button size="icon" variant="ghost" onClick={toggle} data-testid="button-theme-toggle"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-
             {isLanding && (
               <Link href="/learn">
-                <Button size="sm" className="hidden sm:inline-flex" data-testid="button-start-learning">
-                  Start Learning
-                </Button>
+                <Button size="sm" className="hidden sm:inline-flex" data-testid="button-start-learning">Start Learning</Button>
               </Link>
             )}
-
-            {/* Mobile menu button */}
-            <Button
-              size="icon"
-              variant="ghost"
-              className="sm:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              data-testid="button-mobile-menu"
-              aria-label="Toggle menu"
-            >
+            <Button size="icon" variant="ghost" className="sm:hidden" onClick={() => setMobileOpen(!mobileOpen)}
+              data-testid="button-mobile-menu" aria-label="Toggle menu">
               {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
           </div>
@@ -125,39 +105,26 @@ export function NavHeader() {
             <div className="flex flex-col gap-1">
               {navLinks.map(link => (
                 <Link key={link.href} href={link.href}>
-                  <span
-                    onClick={() => setMobileOpen(false)}
+                  <span onClick={() => setMobileOpen(false)}
                     className={`block px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${
-                      location.startsWith(link.href)
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground"
+                      location.startsWith(link.href) ? "bg-primary/10 text-primary" : "text-muted-foreground"
                     }`}
-                    data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}
-                  >
+                    data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}>
                     {link.label}
                   </span>
                 </Link>
               ))}
-
-              {/* Mobile AI Tutor */}
-              <button
-                onClick={() => { setMobileOpen(false); handleTutorClick(); }}
+              <button onClick={() => { setMobileOpen(false); handleTutorClick(); }}
                 className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground cursor-pointer text-left"
-                data-testid="link-mobile-ai-tutor"
-              >
+                data-testid="link-mobile-ai-tutor">
                 <Sparkles className="h-3.5 w-3.5 text-primary/70" />
                 AI Tutor
-                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">
-                  Soon
-                </span>
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">Soon</span>
               </button>
-
               {isLanding && (
                 <Link href="/learn">
                   <span onClick={() => setMobileOpen(false)}>
-                    <Button size="sm" className="w-full mt-2" data-testid="button-mobile-start">
-                      Start Learning
-                    </Button>
+                    <Button size="sm" className="w-full mt-2" data-testid="button-mobile-start">Start Learning</Button>
                   </span>
                 </Link>
               )}
@@ -165,8 +132,6 @@ export function NavHeader() {
           </nav>
         )}
       </div>
-
-      {/* Mobile Coming Soon toast (appears below header) */}
       {showTutorToast && (
         <div className="sm:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="bg-popover border border-border rounded-xl shadow-lg px-4 py-3 text-center w-64 flex items-start gap-3">
