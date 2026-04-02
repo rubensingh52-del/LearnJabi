@@ -1,29 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle } from "lucide-react";
+import { BookOpen, MessageCircle, BarChart3, Globe2, Sparkles, ChevronRight, Mail, CheckCircle, Volume2, Zap, Star } from "lucide-react";
 
 const features = [
+  { icon: BookOpen, title: "Structured Curriculum", desc: "From Gurmukhi script basics to conversational fluency, learn through carefully sequenced units and lessons." },
+  { icon: MessageCircle, title: "Interactive Practice", desc: "Reinforce your learning with flashcard decks and quizzes that test your vocabulary across every topic." },
+  { icon: BarChart3, title: "Track Your Progress", desc: "See how far you've come with detailed progress tracking across every unit and lesson." },
+];
+
+const lessonCards = [
   {
-    icon: BookOpen,
-    title: "Structured Curriculum",
-    desc: "From Gurmukhi script basics to conversational fluency, learn through carefully sequenced units and lessons.",
+    emoji: "🔤",
+    tag: "Unit 1",
+    title: "Gurmukhi Alphabet",
+    desc: "Learn the 35 letters of the Punjabi script",
+    color: "from-violet-500/20 to-purple-500/10",
+    accent: "text-violet-500",
+    border: "border-violet-500/20",
+    chars: ["ਸ", "ਹ", "ਕ", "ਖ", "ਗ"],
+    progress: 0,
   },
   {
-    icon: MessageCircle,
-    title: "Interactive Practice",
-    desc: "Reinforce your learning with flashcard decks and quizzes that test your vocabulary across every topic.",
+    emoji: "👋",
+    tag: "Unit 2",
+    title: "Greetings & Basics",
+    desc: "Say hello, introduce yourself, and be polite",
+    color: "from-emerald-500/20 to-teal-500/10",
+    accent: "text-emerald-500",
+    border: "border-emerald-500/20",
+    preview: [{ p: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", e: "Hello" }, { p: "ਧੰਨਵਾਦ", e: "Thank you" }],
+    progress: 0,
   },
   {
-    icon: BarChart3,
-    title: "Track Your Progress",
-    desc: "See how far you've come with detailed progress tracking across every unit and lesson.",
+    emoji: "🔢",
+    tag: "Unit 3",
+    title: "Numbers & Counting",
+    desc: "Count from 1 to 100 in Punjabi",
+    color: "from-orange-500/20 to-amber-500/10",
+    accent: "text-orange-500",
+    border: "border-orange-500/20",
+    preview: [{ p: "ਇੱਕ", e: "One" }, { p: "ਦੋ", e: "Two" }, { p: "ਤਿੰਨ", e: "Three" }],
+    progress: 0,
+  },
+  {
+    emoji: "👨‍👩‍👧",
+    tag: "Unit 4",
+    title: "Family & Relationships",
+    desc: "Talk about your loved ones in Punjabi",
+    color: "from-rose-500/20 to-pink-500/10",
+    accent: "text-rose-500",
+    border: "border-rose-500/20",
+    preview: [{ p: "ਮਾਂ", e: "Mother" }, { p: "ਪਿਤਾ", e: "Father" }],
+    progress: 0,
+  },
+  {
+    emoji: "🍛",
+    tag: "Unit 5",
+    title: "Food & Culture",
+    desc: "Vocabulary for Punjabi cuisine and traditions",
+    color: "from-yellow-500/20 to-orange-400/10",
+    accent: "text-yellow-600",
+    border: "border-yellow-500/20",
+    preview: [{ p: "ਰੋਟੀ", e: "Bread" }, { p: "ਦਾਲ", e: "Lentils" }],
+    progress: 0,
   },
 ];
 
 export default function Landing() {
   const [formState, setFormState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [activeCard, setActiveCard] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveCard(prev => (prev + 1) % lessonCards.length);
+    }, 2800);
+    return () => clearInterval(timer);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,58 +88,192 @@ export default function Landing() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(formData),
       });
-      if (res.ok) {
-        setFormState("sent");
-        setFormData({ name: "", email: "", message: "" });
-      } else {
-        setFormState("error");
-      }
-    } catch {
-      setFormState("error");
-    }
+      if (res.ok) { setFormState("sent"); setFormData({ name: "", email: "", message: "" }); }
+      else setFormState("error");
+    } catch { setFormState("error"); }
   }
+
+  const card = lessonCards[activeCard];
 
   return (
     <div className="page-enter">
       {/* Hero */}
       <section className="relative overflow-hidden">
+        {/* Animated glow blobs */}
+        <div className="pointer-events-none select-none" aria-hidden="true">
+          <div
+            className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px]"
+            style={{
+              background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+              animation: "glow-drift 8s ease-in-out infinite alternate",
+            }}
+          />
+          <div
+            className="absolute top-20 right-0 w-[400px] h-[400px] rounded-full opacity-[0.05] blur-[80px]"
+            style={{
+              background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+              animation: "glow-drift 11s ease-in-out infinite alternate-reverse",
+            }}
+          />
+        </div>
+
+        <style>{`
+          @keyframes glow-drift {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(40px, 30px) scale(1.08); }
+            100% { transform: translate(-20px, 50px) scale(0.95); }
+          }
+          @keyframes card-in {
+            0%   { opacity: 0; transform: translateY(16px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+          }
+          @keyframes fade-up {
+            0%   { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .card-animate { animation: card-in 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+          .fade-up { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+          @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.7); }
+          }
+        `}</style>
+
         <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6" data-testid="badge-hero">
-              <Sparkles className="h-3 w-3" />
-              AI-Powered Language Learning
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+
+            {/* Left — text */}
+            <div className="flex-1 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
+                <Sparkles className="h-3 w-3" />
+                AI-Powered Language Learning
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+                Learn Punjabi,{" "}
+                <span className="text-primary">connect with your roots</span>
+              </h1>
+
+              <p className="text-base text-muted-foreground leading-relaxed mb-6 max-w-lg">
+                Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
+              </p>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-5 mb-8">
+                {[
+                  { icon: BookOpen, val: "35+", label: "Lessons" },
+                  { icon: Volume2, val: "400+", label: "Words" },
+                  { icon: Zap,     val: "5",    label: "Units" },
+                  { icon: Star,    val: "Free",  label: "Always" },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+                      <s.icon className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold text-foreground">{s.val}</span>
+                      <span className="text-xs text-muted-foreground ml-1">{s.label}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Link href="/learn">
+                  <Button size="lg" className="gap-2">
+                    Start Learning Free
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/practice">
+                  <Button size="lg" variant="secondary" className="gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    Try Practice Mode
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4" data-testid="text-hero-title">
-              Learn Punjabi,{" "}
-              <span className="text-primary">connect with your roots</span>
-            </h1>
+            {/* Right — animated lesson showcase */}
+            <div className="flex-shrink-0 w-full max-w-xs lg:max-w-sm">
+              <div className="relative">
+                {/* Glow behind card */}
+                <div
+                  className="absolute inset-0 rounded-2xl blur-2xl opacity-30 transition-all duration-700"
+                  style={{ background: `linear-gradient(135deg, hsl(var(--primary)), transparent)` }}
+                />
 
-            <p className="text-base text-muted-foreground leading-relaxed mb-8 max-w-lg" data-testid="text-hero-desc">
-              Master Gurmukhi script, build vocabulary, and practice with interactive quizzes — all in one beautiful platform designed for heritage learners and beginners alike.
-            </p>
+                {/* Card */}
+                <div
+                  key={activeCard}
+                  className={`card-animate relative rounded-2xl border bg-card p-6 shadow-lg ${card.border}`}
+                >
+                  {/* Tag */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 ${card.accent}`}>
+                      {card.tag}
+                    </span>
+                    <span className="text-2xl">{card.emoji}</span>
+                  </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Link href="/learn">
-                <Button size="lg" className="gap-2" data-testid="button-hero-start">
-                  Start Learning Free
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/practice">
-                <Button size="lg" variant="secondary" className="gap-2" data-testid="button-hero-practice">
-                  <MessageCircle className="h-4 w-4" />
-                  Try Practice Mode
-                </Button>
-              </Link>
+                  <h3 className="text-base font-bold mb-1">{card.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-4">{card.desc}</p>
+
+                  {/* Content preview */}
+                  {card.chars ? (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {card.chars.map((ch, i) => (
+                        <div
+                          key={ch}
+                          className="gurmukhi w-10 h-10 rounded-lg bg-background border border-border/60 flex items-center justify-center text-base font-semibold text-foreground/80"
+                          style={{ animationDelay: `${i * 60}ms` }}
+                        >
+                          {ch}
+                        </div>
+                      ))}
+                      <div className="gurmukhi w-10 h-10 rounded-lg border border-dashed border-border/40 flex items-center justify-center text-xs text-muted-foreground">+30</div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 mb-4">
+                      {(card.preview ?? []).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between rounded-lg bg-background border border-border/50 px-3 py-2">
+                          <span className="gurmukhi text-sm font-semibold">{item.p}</span>
+                          <span className={`text-xs font-medium ${card.accent}`}>{item.e}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Fake progress bar */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 rounded-full bg-border/60">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-1000"
+                        style={{ width: "0%" }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground">Not started</span>
+                  </div>
+                </div>
+
+                {/* Dot indicators */}
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {lessonCards.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveCard(i)}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === activeCard
+                          ? "w-5 h-1.5 bg-primary"
+                          : "w-1.5 h-1.5 bg-border"
+                      }`}
+                      aria-label={`Show lesson ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Decorative Gurmukhi characters - right side */}
-          <div className="absolute right-8 top-16 hidden lg:block opacity-[0.04] pointer-events-none select-none" aria-hidden="true">
-            <div className="gurmukhi text-[180px] font-bold leading-none">
-              ੴ
-            </div>
           </div>
         </div>
       </section>
@@ -94,7 +282,7 @@ export default function Landing() {
       <section className="border-y border-border/60 bg-card/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16">
           <div className="text-center mb-10">
-            <h2 className="text-xl font-bold mb-2" data-testid="text-script-title">The Beauty of Gurmukhi</h2>
+            <h2 className="text-xl font-bold mb-2">The Beauty of Gurmukhi</h2>
             <p className="text-sm text-muted-foreground">The script used to write Punjabi — elegant, phonetic, and deeply cultural</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -103,7 +291,6 @@ export default function Landing() {
                 key={char}
                 className="gurmukhi w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background border border-border/60 flex items-center justify-center text-lg sm:text-xl font-semibold text-foreground/80 transition-all duration-200 hover:border-primary/40 hover:text-primary hover:scale-105"
                 style={{ animationDelay: `${i * 50}ms` }}
-                data-testid={`char-${char}`}
               >
                 {char}
               </div>
@@ -116,17 +303,12 @@ export default function Landing() {
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-12">
-            <h2 className="text-xl font-bold mb-2" data-testid="text-features-title">Everything you need to learn Punjabi</h2>
+            <h2 className="text-xl font-bold mb-2">Everything you need to learn Punjabi</h2>
             <p className="text-sm text-muted-foreground max-w-lg">A complete learning system built for the modern learner — structured, interactive, and effective.</p>
           </div>
-
           <div className="grid gap-6 sm:grid-cols-3">
             {features.map((f, i) => (
-              <div
-                key={f.title}
-                className="group p-6 rounded-xl bg-card border border-card-border transition-all duration-200 hover:border-primary/30"
-                data-testid={`card-feature-${i}`}
-              >
+              <div key={f.title} className="group p-6 rounded-xl bg-card border border-card-border transition-all duration-200 hover:border-primary/30" data-testid={`card-feature-${i}`}>
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <f.icon className="h-5 w-5 text-primary" />
                 </div>
@@ -142,10 +324,9 @@ export default function Landing() {
       <section className="border-t border-border/60 bg-card/30 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-10">
-            <h2 className="text-xl font-bold mb-2" data-testid="text-phrases-title">Start speaking from day one</h2>
+            <h2 className="text-xl font-bold mb-2">Start speaking from day one</h2>
             <p className="text-sm text-muted-foreground">Here's a taste of what you'll learn in your first lessons</p>
           </div>
-
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { p: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", r: "Sat Sri Akal", e: "Hello" },
@@ -155,11 +336,7 @@ export default function Landing() {
               { p: "ਕਿਰਪਾ ਕਰਕੇ", r: "Kirpa karke", e: "Please" },
               { p: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਿਹਾ ਹਾਂ", r: "Mai Punjabi sikkh riha haan", e: "I am learning Punjabi" },
             ].map((phrase, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-4 p-4 rounded-lg bg-background border border-border/50"
-                data-testid={`phrase-${i}`}
-              >
+              <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-background border border-border/50">
                 <div className="flex-1 min-w-0">
                   <p className="gurmukhi text-lg font-semibold text-foreground mb-0.5">{phrase.p}</p>
                   <p className="text-sm text-muted-foreground italic">{phrase.r}</p>
@@ -177,16 +354,11 @@ export default function Landing() {
           <div className="relative rounded-2xl bg-primary p-8 sm:p-12 text-center overflow-hidden">
             <div className="relative z-10">
               <Globe2 className="h-8 w-8 text-primary-foreground/80 mx-auto mb-4" />
-              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-3" data-testid="text-cta-title">
-                Ready to start your Punjabi journey?
-              </h2>
-              <p className="text-sm text-primary-foreground/80 mb-6 max-w-md mx-auto">
-                Join thousands of heritage learners reconnecting with their language and culture.
-              </p>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-3">Ready to start your Punjabi journey?</h2>
+              <p className="text-sm text-primary-foreground/80 mb-6 max-w-md mx-auto">Join thousands of heritage learners reconnecting with their language and culture.</p>
               <Link href="/learn">
-                <Button size="lg" variant="secondary" className="gap-2" data-testid="button-cta-start">
-                  Begin Learning Now
-                  <ChevronRight className="h-4 w-4" />
+                <Button size="lg" variant="secondary" className="gap-2">
+                  Begin Learning Now <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -207,65 +379,32 @@ export default function Landing() {
             <h2 className="text-xl font-bold mb-2">Contact Us</h2>
             <p className="text-sm text-muted-foreground">Have a question, suggestion, or just want to say hello? We'd love to hear from you.</p>
           </div>
-
           {formState === "sent" ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <CheckCircle className="h-10 w-10 text-primary" />
               <p className="text-base font-semibold">Message sent!</p>
               <p className="text-sm text-muted-foreground">Thanks for reaching out — we'll get back to you soon.</p>
-              <button
-                className="mt-2 text-sm text-primary underline underline-offset-2"
-                onClick={() => setFormState("idle")}
-              >
-                Send another message
-              </button>
+              <button className="mt-2 text-sm text-primary underline underline-offset-2" onClick={() => setFormState("idle")}>Send another message</button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="contact-name" className="text-sm font-medium">Name</label>
-                  <input
-                    id="contact-name"
-                    type="text"
-                    required
-                    placeholder="Your name"
-                    value={formData.name}
-                    onChange={e => setFormData(d => ({ ...d, name: e.target.value }))}
-                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  />
+                  <input id="contact-name" type="text" required placeholder="Your name" value={formData.name} onChange={e => setFormData(d => ({ ...d, name: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="contact-email" className="text-sm font-medium">Email</label>
-                  <input
-                    id="contact-email"
-                    type="email"
-                    required
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={e => setFormData(d => ({ ...d, email: e.target.value }))}
-                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  />
+                  <input id="contact-email" type="email" required placeholder="your@email.com" value={formData.email} onChange={e => setFormData(d => ({ ...d, email: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition" />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="contact-message" className="text-sm font-medium">Message</label>
-                <textarea
-                  id="contact-message"
-                  required
-                  rows={5}
-                  placeholder="Write your message here..."
-                  value={formData.message}
-                  onChange={e => setFormData(d => ({ ...d, message: e.target.value }))}
-                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
-                />
+                <textarea id="contact-message" required rows={5} placeholder="Write your message here..." value={formData.message} onChange={e => setFormData(d => ({ ...d, message: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none" />
               </div>
-              {formState === "error" && (
-                <p className="text-sm text-destructive">Something went wrong. Please try again or email us directly at rubensingh52@gmail.com.</p>
-              )}
+              {formState === "error" && <p className="text-sm text-destructive">Something went wrong. Please try again or email us directly at rubensingh52@gmail.com.</p>}
               <Button type="submit" disabled={formState === "sending"} className="self-end gap-2">
-                {formState === "sending" ? "Sending..." : "Send Message"}
-                <Mail className="h-4 w-4" />
+                {formState === "sending" ? "Sending..." : "Send Message"} <Mail className="h-4 w-4" />
               </Button>
             </form>
           )}
