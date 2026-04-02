@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://learnjabi.onrender.com/sitemap.xml
+Sitemap: https://learnjabi.com/sitemap.xml
