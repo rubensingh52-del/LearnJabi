@@ -1,7 +1,37 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, db } from "./storage";
+import { createClient } from "@supabase/supabase-js";
 
+// ── Auth middleware ──────────────────────────────────────────────────────────
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized — no token provided" });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("[Auth] Missing Supabase env vars");
+    return res.status(500).json({ message: "Server misconfiguration" });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return res.status(401).json({ message: "Unauthorized — invalid or expired token" });
+  }
+
+  (req as any).user = user;
+  next();
+}
+
+// ── Seed ─────────────────────────────────────────────────────────────────────
 async function seedData(force = false) {
   const existingUnits = await storage.getUnits();
   if (existingUnits.length > 0 && !force) return;
@@ -71,7 +101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error('[Seed] Error during seeding:', e);
   }
 
-  app.post("/api/admin/reseed", async (req, res) => {
+  // 🔒 PROTECTED — admin only
+  app.post("/api/admin/reseed", requireAuth, async (req, res) => {
     try {
       await seedData(true);
       res.json({ success: true, message: "Database reseeded successfully" });
@@ -80,6 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ✅ PUBLIC — lesson content is not sensitive
   app.get("/api/units", async (_req, res) => {
     try {
       const units = await storage.getUnits();
@@ -118,10 +150,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/progress", async (req, res) => {
+  // 🔒 PROTECTED — user-specific data
+  app.get("/api/progress", requireAuth, async (req, res) => {
     try {
-      const userId = req.header("x-user-id");
-      if (!userId) return res.status(401).json({ message: "Missing user id" });
+      const userId = (req as any).user.id;
       const progress = await storage.getProgress(userId);
       res.json(progress);
     } catch {
@@ -129,10 +161,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/progress", async (req, res) => {
+  app.post("/api/progress", requireAuth, async (req, res) => {
     try {
-      const userId = req.header("x-user-id") || req.body.user_id;
-      if (!userId) return res.status(401).json({ message: "Missing user id" });
+      const userId = (req as any).user.id;
       const progress = await storage.upsertProgress({ ...req.body, user_id: userId });
       res.json(progress);
     } catch {
@@ -140,10 +171,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/chat", async (req, res) => {
+  // 🔒 PROTECTED — user-specific data
+  app.get("/api/chat", requireAuth, async (req, res) => {
     try {
-      const userId = req.header("x-user-id");
-      if (!userId) return res.status(401).json({ message: "Missing user id" });
+      const userId = (req as any).user.id;
       const messages = await storage.getChatMessages(userId);
       res.json(messages);
     } catch {
@@ -151,10 +182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/chat", async (req, res) => {
+  app.post("/api/chat", requireAuth, async (req, res) => {
     try {
-      const userId = req.header("x-user-id") || req.body.user_id;
-      if (!userId) return res.status(401).json({ message: "Missing user id" });
+      const userId = (req as any).user.id;
       const message = await storage.addChatMessage({ ...req.body, user_id: userId });
       res.json(message);
     } catch {
@@ -162,10 +192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/chat", async (req, res) => {
+  app.delete("/api/chat", requireAuth, async (req, res) => {
     try {
-      const userId = req.header("x-user-id");
-      if (!userId) return res.status(401).json({ message: "Missing user id" });
+      const userId = (req as any).user.id;
       await storage.clearChatMessages(userId);
       res.json({ success: true });
     } catch {
