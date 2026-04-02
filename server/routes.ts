@@ -102,10 +102,10 @@ function seedData() {
       content: JSON.stringify({
         intro: "Practice tracing and writing Gurmukhi characters. Focus on stroke order and proportions.",
         items: [
-          { gurmukhi: "ੴ", romanized: "ik oankaar", english: "The sacred symbol — 'One God'", audio: "ik oankaar" },
+          { gurmukhi: "ੴ", romanized: "Ik Onkar", english: "The sacred symbol — 'One God'", audio: "Ik Onkar" },
           { gurmukhi: "ਸਤ", romanized: "sat", english: "Truth", audio: "sat" },
           { gurmukhi: "ਨਾਮ", romanized: "naam", english: "Name / Identity", audio: "naam" },
-          { gurmukhi: "ਸਿੱਖ", romanized: "sikkh", english: "Sikh / Learner", audio: "sikh" },
+          { gurmukhi: "ਸਿੱਖ", romanized: "Sikh", english: "Sikh / Learner", audio: "Sikh" },
           { gurmukhi: "ਪੰਜਾਬ", romanized: "panjaab", english: "Punjab — Land of Five Rivers", audio: "panjaab" },
         ],
         exercises: [
@@ -122,7 +122,7 @@ function seedData() {
       unitId: 2, title: "Everyday Greetings", titlePunjabi: "ਰੋਜ਼ਾਨਾ ਸ਼ੁਭ ਇੱਛਾਵਾਂ", description: "Say hello, goodbye, and daily courtesies",
       order: 1, type: "phrases",
       content: JSON.stringify({
-        intro: "Punjabi greetings reflect deep cultural respect. The most common greeting 'Sat Sri Akal' literally means 'God is the ultimate truth.'",
+        intro: "Punjabi greetings reflect deep cultural respect. The most common greeting 'Sat Sri Akal' literally means 'True is the Timeless Lord.'",
         items: [
           { gurmukhi: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", romanized: "Sat Sri Akal", english: "Hello / God is truth", audio: "sat sri akal" },
           { gurmukhi: "ਕਿਦਾਂ?", romanized: "Kidaan?", english: "How are you? (informal)", audio: "kidaan" },
@@ -137,14 +137,14 @@ function seedData() {
           { gurmukhi: "ਕਿਰਪਾ ਕਰਕੇ", romanized: "Kirpa karke", english: "Please", audio: "kirpa karke" },
           { gurmukhi: "ਬਹੁਤ ਧੰਨਵਾਦ", romanized: "Bahut dhannvaad", english: "Thank you very much", audio: "bahut dhannvaad" },
           { gurmukhi: "ਕੋਈ ਗੱਲ ਨਹੀਂ", romanized: "Koi gal nahi", english: "No problem / You're welcome", audio: "koi gal nahi" },
-          { gurmukhi: "ਸ਼ੁਭ ਸਵੇਰ", romanized: "Shubh saver", english: "Good morning", audio: "shubh saver" },
+          { gurmukhi: "ਸ਼ੁਭ ਸਵੇਰੇ", romanized: "Shubh Savere", english: "Good morning", audio: "shubh savere" },
           { gurmukhi: "ਸ਼ੁਭ ਰਾਤ", romanized: "Shubh raat", english: "Good night", audio: "shubh raat" },
           { gurmukhi: "ਫਿਰ ਮਿਲਾਂਗੇ", romanized: "Phir milaange", english: "See you again", audio: "phir milaange" },
         ],
         exercises: [
           { type: "choose", question: "How do you say 'Hello' in Punjabi?", options: ["ਸ਼ੁਕਰੀਆ","ਸਤ ਸ੍ਰੀ ਅਕਾਲ","ਅਲਵਿਦਾ","ਕਿਦਾਂ"], correct: 1 },
           { type: "choose", question: "What does 'ਸ਼ੁਕਰੀਆ' mean?", options: ["Hello","Sorry","Thank you","Welcome"], correct: 2 },
-          { type: "choose", question: "How do you say 'Good morning'?", options: ["ਸ਼ੁਭ ਰਾਤ","ਅਲਵਿਦਾ","ਸ਼ੁਭ ਸਵੇਰ","ਕਿਦਾਂ"], correct: 2 },
+          { type: "choose", question: "How do you say 'Good morning'?", options: ["ਸ਼ੁਭ ਰਾਤ","ਅਲਵਿਦਾ","ਸ਼ੁਭ ਸਵੇਰੇ","ਕਿਦਾਂ"], correct: 2 },
           { type: "match", question: "Match greetings", pairs: [["ਸ਼ੁਕਰੀਆ","Thank you"],["ਅਲਵਿਦਾ","Goodbye"],["ਹਾਂ","Yes"],["ਨਹੀਂ","No"]] },
         ]
       })
@@ -158,8 +158,8 @@ function seedData() {
           { gurmukhi: "ਮੇਰਾ ਨਾਮ ___ ਹੈ", romanized: "Mera naam ___ hai", english: "My name is ___", audio: "mera naam hai" },
           { gurmukhi: "ਤੁਹਾਡਾ ਨਾਮ ਕੀ ਹੈ?", romanized: "Tuhaada naam ki hai?", english: "What is your name? (formal)", audio: "tuhaada naam" },
           { gurmukhi: "ਮੈਂ ___ ਤੋਂ ਹਾਂ", romanized: "Mai ___ to haan", english: "I am from ___", audio: "mai to haan" },
-          { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਿਹਾ ਹਾਂ", romanized: "Mai Punjabi sikkh riha haan", english: "I am learning Punjabi (male)", audio: "sikkh riha" },
-          { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਹੀ ਹਾਂ", romanized: "Mai Punjabi sikkh rahi haan", english: "I am learning Punjabi (female)", audio: "sikkh rahi" },
+          { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਿਹਾ ਹਾਂ", romanized: "Mai Punjabi Sikh riha haan", english: "I am learning Punjabi (male)", audio: "Sikh riha" },
+          { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਹੀ ਹਾਂ", romanized: "Mai Punjabi Sikh rahi haan", english: "I am learning Punjabi (female)", audio: "Sikh rahi" },
           { gurmukhi: "ਤੁਸੀਂ ਕੀ ਕੰਮ ਕਰਦੇ ਹੋ?", romanized: "Tusi ki kam karde ho?", english: "What do you do?", audio: "ki kam" },
           { gurmukhi: "ਮਿਲ ਕੇ ਖੁਸ਼ੀ ਹੋਈ", romanized: "Mil ke khushi hoyi", english: "Nice to meet you", audio: "mil ke khushi" },
           { gurmukhi: "ਮੇਰੀ ਉਮਰ ___ ਸਾਲ ਹੈ", romanized: "Meri umar ___ saal hai", english: "I am ___ years old", audio: "meri umar" },
@@ -441,152 +441,96 @@ function seedData() {
       content: JSON.stringify({
         intro: "Now let's use emotion words in real sentences. The key structure is 'ਮੈਨੂੰ ___ ਹੈ' (I have/feel ___) or 'ਮੈਂ ___ ਹਾਂ' (I am ___).",
         items: [
-          { gurmukhi: "ਮੈਂ ਖੁਸ਼ ਹਾਂ", romanized: "Mai khush haan", english: "I am happy", audio: "mai khush" },
-          { gurmukhi: "ਮੈਂ ਉਦਾਸ ਹਾਂ", romanized: "Mai udaas haan", english: "I am sad", audio: "mai udaas" },
-          { gurmukhi: "ਮੈਨੂੰ ਗੁੱਸਾ ਆ ਰਿਹਾ ਹੈ", romanized: "Mainu gussa aa riha hai", english: "I am getting angry", audio: "gussa aa riha" },
+          { gurmukhi: "ਮੈਂ ਖੁਸ਼ ਹਾਂ", romanized: "Mai khush haan", english: "I am happy", audio: "mai khush haan" },
           { gurmukhi: "ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ", romanized: "Mainu bhukh laggi hai", english: "I am hungry", audio: "bhukh laggi" },
           { gurmukhi: "ਮੈਨੂੰ ਪਿਆਸ ਲੱਗੀ ਹੈ", romanized: "Mainu pyaas laggi hai", english: "I am thirsty", audio: "pyaas laggi" },
           { gurmukhi: "ਮੈਂ ਥੱਕਿਆ ਹਾਂ", romanized: "Mai thakkya haan", english: "I am tired (male)", audio: "thakkya haan" },
-          { gurmukhi: "ਮੈਂ ਥੱਕੀ ਹਾਂ", romanized: "Mai thakki haan", english: "I am tired (female)", audio: "thakki haan" },
           { gurmukhi: "ਮੈਨੂੰ ਚਿੰਤਾ ਹੈ", romanized: "Mainu chinta hai", english: "I am worried", audio: "chinta hai" },
-          { gurmukhi: "ਮੈਂ ਹੈਰਾਨ ਹਾਂ", romanized: "Mai hairaan haan", english: "I am surprised", audio: "hairaan haan" },
-          { gurmukhi: "ਮੈਂ ਠੀਕ ਹਾਂ", romanized: "Mai theek haan", english: "I am fine / OK", audio: "theek haan" },
-          { gurmukhi: "ਮੈਂ ਬਹੁਤ ਖੁਸ਼ ਹਾਂ", romanized: "Mai bahut khush haan", english: "I am very happy", audio: "bahut khush" },
-          { gurmukhi: "ਮੈਂ ਬਿਲਕੁਲ ਠੀਕ ਨਹੀਂ", romanized: "Mai bilkul theek nahi", english: "I am not well at all", audio: "bilkul theek nahi" },
-          { gurmukhi: "ਤੂੰ ਕਿਵੇਂ ਮਹਿਸੂਸ ਕਰ ਰਿਹਾ/ਰਹੀ ਹੈਂ?", romanized: "Tu kive mahsoos kar riha/rahi hain?", english: "How are you feeling?", audio: "kive mahsoos" },
-          { gurmukhi: "ਮੈਨੂੰ ਬਿਹਤਰ ਮਹਿਸੂਸ ਹੋ ਰਿਹਾ ਹੈ", romanized: "Mainu behtar mahsoos ho riha hai", english: "I am feeling better", audio: "behtar mahsoos" },
-          { gurmukhi: "ਮੈਨੂੰ ਉਸ ਤੋਂ ਪਿਆਰ ਹੈ", romanized: "Mainu us to pyaar hai", english: "I love him/her", audio: "us to pyaar" },
+          { gurmukhi: "ਮੈਂ ਉਦਾਸ ਹਾਂ", romanized: "Mai udaas haan", english: "I am sad", audio: "udaas haan" },
+          { gurmukhi: "ਮੈਨੂੰ ਖੁਸ਼ੀ ਹੈ", romanized: "Mainu khushi hai", english: "I am joyful", audio: "khushi hai" },
+          { gurmukhi: "ਮੈਂ ਡਰਿਆ ਹਾਂ", romanized: "Mai darya haan", english: "I am scared (male)", audio: "darya haan" },
         ],
         exercises: [
-          { type: "choose", question: "How do you say 'I am happy'?", options: ["ਮੈਂ ਉਦਾਸ ਹਾਂ","ਮੈਂ ਥੱਕਿਆ ਹਾਂ","ਮੈਂ ਖੁਸ਼ ਹਾਂ","ਮੈਨੂੰ ਗੁੱਸਾ ਹੈ"], correct: 2 },
-          { type: "choose", question: "What does 'ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ' mean?", options: ["I am thirsty","I am hungry","I am tired","I am worried"], correct: 1 },
-          { type: "match", question: "Match emotion sentences", pairs: [["ਮੈਂ ਖੁਸ਼ ਹਾਂ","I am happy"],["ਮੈਂ ਉਦਾਸ ਹਾਂ","I am sad"],["ਮੈਨੂੰ ਚਿੰਤਾ ਹੈ","I am worried"],["ਮੈਂ ਹੈਰਾਨ ਹਾਂ","I am surprised"]] },
+          { type: "choose", question: "How do you say 'I am happy'?", options: ["ਮੈਂ ਉਦਾਸ ਹਾਂ","ਮੈਂ ਖੁਸ਼ ਹਾਂ","ਮੈਨੂੰ ਚਿੰਤਾ ਹੈ","ਮੈਂ ਥੱਕਿਆ ਹਾਂ"], correct: 1 },
+          { type: "choose", question: "What does 'ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ' mean?", options: ["I am thirsty","I am tired","I am hungry","I am scared"], correct: 2 },
+          { type: "match", question: "Match feeling sentences", pairs: [["ਮੈਂ ਖੁਸ਼ ਹਾਂ","I am happy"],["ਮੈਂ ਉਦਾਸ ਹਾਂ","I am sad"],["ਮੈਨੂੰ ਭੁੱਖ ਲੱਗੀ ਹੈ","I am hungry"],["ਮੈਂ ਥੱਕਿਆ ਹਾਂ","I am tired"]] },
         ]
       })
     },
   ];
 
-  // ── UNIT 7: Family & People ───────────────────────────────────────────────
-  const unit7Lessons = [
-    {
-      unitId: 7, title: "Family Members", titlePunjabi: "ਪਰਿਵਾਰਕ ਮੈਂਬਰ", description: "Learn words for family members and relationships",
-      order: 1, type: "vocabulary",
-      content: JSON.stringify({
-        intro: "Family is central to Punjabi culture. Punjabi has very specific words for maternal and paternal relatives — more specific than English.",
-        items: [
-          { gurmukhi: "ਮਾਂ", romanized: "Maa", english: "Mother", audio: "mother" },
-          { gurmukhi: "ਪਿਤਾ ਜੀ", romanized: "Pita ji", english: "Father (respectful)", audio: "father" },
-          { gurmukhi: "ਭੈਣ", romanized: "Bhain", english: "Sister", audio: "sister" },
-          { gurmukhi: "ਭਰਾ", romanized: "Bhra", english: "Brother", audio: "brother" },
-          { gurmukhi: "ਦਾਦੀ", romanized: "Daadi", english: "Paternal grandmother", audio: "grandmother" },
-          { gurmukhi: "ਦਾਦਾ", romanized: "Daada", english: "Paternal grandfather", audio: "grandfather" },
-          { gurmukhi: "ਨਾਨੀ", romanized: "Naani", english: "Maternal grandmother", audio: "nani" },
-          { gurmukhi: "ਨਾਨਾ", romanized: "Naana", english: "Maternal grandfather", audio: "nana" },
-          { gurmukhi: "ਚਾਚਾ", romanized: "Chaacha", english: "Father's younger brother", audio: "chacha" },
-          { gurmukhi: "ਮਾਮਾ", romanized: "Maama", english: "Mother's brother", audio: "mama" },
-        ],
-        exercises: [
-          { type: "choose", question: "What is 'ਦਾਦੀ'?", options: ["Mother","Maternal grandmother","Paternal grandmother","Sister"], correct: 2 },
-          { type: "match", question: "Match family members", pairs: [["ਮਾਂ","Mother"],["ਭੈਣ","Sister"],["ਭਰਾ","Brother"],["ਨਾਨੀ","Maternal grandmother"]] },
-        ]
-      })
-    },
-    {
-      unitId: 7, title: "Extended Family", titlePunjabi: "ਵੱਡਾ ਪਰਿਵਾਰ", description: "Aunts, uncles, cousins, and in-laws",
-      order: 2, type: "vocabulary",
-      content: JSON.stringify({
-        intro: "Punjabi has distinct words for maternal vs paternal relatives — much more specific than English.",
-        items: [
-          { gurmukhi: "ਤਾਇਆ", romanized: "Taaya", english: "Father's elder brother", audio: "taaya" },
-          { gurmukhi: "ਚਾਚੀ", romanized: "Chaachi", english: "Father's younger brother's wife", audio: "chaachi" },
-          { gurmukhi: "ਮਾਸੀ", romanized: "Maasi", english: "Mother's sister", audio: "maasi" },
-          { gurmukhi: "ਭੂਆ", romanized: "Bhua", english: "Father's sister", audio: "bhua" },
-          { gurmukhi: "ਮਾਮੀ", romanized: "Maami", english: "Mother's brother's wife", audio: "maami" },
-          { gurmukhi: "ਪੁੱਤ", romanized: "Putt", english: "Son", audio: "son" },
-          { gurmukhi: "ਧੀ", romanized: "Dhee", english: "Daughter", audio: "daughter" },
-        ],
-        exercises: [
-          { type: "choose", question: "What is 'ਭੂਆ'?", options: ["Mother's sister","Father's sister","Grandmother","Daughter"], correct: 1 },
-          { type: "match", question: "Match family", pairs: [["ਤਾਇਆ","Father's elder brother"],["ਮਾਸੀ","Mother's sister"],["ਪੁੱਤ","Son"],["ਧੀ","Daughter"]] },
-        ]
-      })
-    },
-  ];
-
-  // ── UNIT 8: Food & Dining ─────────────────────────────────────────────────
-  const unit8Lessons = [
-    {
-      unitId: 8, title: "Punjabi Food Vocabulary", titlePunjabi: "ਪੰਜਾਬੀ ਖਾਣਾ", description: "Essential food words and classic Punjabi dishes",
-      order: 1, type: "vocabulary",
-      content: JSON.stringify({
-        intro: "Punjabi cuisine is world-famous. From butter chicken to sarson da saag, food is a huge part of Punjabi identity and hospitality.",
-        items: [
-          { gurmukhi: "ਰੋਟੀ", romanized: "Roti", english: "Flatbread (chapati)", audio: "roti" },
-          { gurmukhi: "ਦਾਲ", romanized: "Daal", english: "Lentil curry", audio: "daal" },
-          { gurmukhi: "ਸਬਜ਼ੀ", romanized: "Sabzi", english: "Vegetable dish", audio: "sabzi" },
-          { gurmukhi: "ਚਾਹ", romanized: "Chaah", english: "Tea", audio: "tea" },
-          { gurmukhi: "ਪਾਣੀ", romanized: "Paani", english: "Water", audio: "water" },
-          { gurmukhi: "ਦੁੱਧ", romanized: "Duddh", english: "Milk", audio: "milk" },
-          { gurmukhi: "ਮੱਖਣ", romanized: "Makkhan", english: "Butter", audio: "butter" },
-          { gurmukhi: "ਲੱਸੀ", romanized: "Lassi", english: "Yogurt drink", audio: "lassi" },
-          { gurmukhi: "ਸਰੋਂ ਦਾ ਸਾਗ", romanized: "Saron da saag", english: "Mustard greens", audio: "saag" },
-          { gurmukhi: "ਮੱਕੀ ਦੀ ਰੋਟੀ", romanized: "Makki di roti", english: "Cornmeal flatbread", audio: "makki" },
-        ],
-        exercises: [
-          { type: "choose", question: "What is 'ਲੱਸੀ'?", options: ["Tea","Water","Yogurt drink","Milk"], correct: 2 },
-          { type: "match", question: "Match foods", pairs: [["ਰੋਟੀ","Flatbread"],["ਦਾਲ","Lentil curry"],["ਚਾਹ","Tea"],["ਪਾਣੀ","Water"]] },
-        ]
-      })
-    },
-  ];
-
-  const allLessons = [
-    ...unit1Lessons, ...unit2Lessons, ...unit3Lessons,
-    ...unit4Lessons, ...unit5Lessons, ...unit6Lessons,
-    ...unit7Lessons, ...unit8Lessons,
-  ];
-  for (const l of allLessons) {
-    db.insert(lessons).values(l).run();
+  // Insert all lessons
+  const allLessons = [...unit1Lessons, ...unit2Lessons, ...unit3Lessons, ...unit4Lessons, ...unit5Lessons, ...unit6Lessons];
+  for (const lesson of allLessons) {
+    db.insert(lessons).values(lesson).run();
   }
 }
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<Server> {
   seedData();
 
-  app.get("/api/units", async (_req, res) => {
-    const allUnits = await storage.getUnits();
-    res.json(allUnits);
-  });
-
-  app.get("/api/units/:id", async (req, res) => {
-    const unit = await storage.getUnit(parseInt(req.params.id));
-    if (!unit) return res.status(404).json({ error: "Unit not found" });
-    res.json(unit);
+  app.get("/api/units", async (req, res) => {
+    try {
+      const allUnits = db.select().from(units).all();
+      res.json(allUnits);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch units" });
+    }
   });
 
   app.get("/api/units/:unitId/lessons", async (req, res) => {
-    const unitLessons = await storage.getLessonsByUnit(parseInt(req.params.unitId));
-    res.json(unitLessons);
+    try {
+      const unitId = parseInt(req.params.unitId);
+      const unitLessons = db.select().from(lessons).all().filter(l => l.unitId === unitId);
+      res.json(unitLessons);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lessons" });
+    }
   });
 
-  app.get("/api/lessons/:id", async (req, res) => {
-    const lesson = await storage.getLesson(parseInt(req.params.id));
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
-    res.json(lesson);
+  app.get("/api/lessons/:lessonId", async (req, res) => {
+    try {
+      const lessonId = parseInt(req.params.lessonId);
+      const lesson = db.select().from(lessons).all().find(l => l.id === lessonId);
+      if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+      res.json(lesson);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lesson" });
+    }
   });
 
-  app.get("/api/progress", async (_req, res) => {
-    const progress = await storage.getProgress();
-    res.json(progress);
+  app.get("/api/progress/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const progress = db.select().from(userProgress).all().filter(p => p.userId === userId);
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch progress" });
+    }
   });
 
   app.post("/api/progress", async (req, res) => {
-    const progress = await storage.upsertProgress(req.body);
-    res.json(progress);
+    try {
+      const { userId, lessonId, completed, score } = req.body;
+      const existing = db.select().from(userProgress).all().find(
+        p => p.userId === userId && p.lessonId === lessonId
+      );
+      if (existing) {
+        db.update(userProgress)
+          .set({ completed, score, completedAt: new Date().toISOString() })
+          .run();
+      } else {
+        db.insert(userProgress).values({
+          userId, lessonId, completed, score,
+          completedAt: new Date().toISOString()
+        }).run();
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update progress" });
+    }
   });
 
+  const httpServer = createServer(app);
   return httpServer;
 }
