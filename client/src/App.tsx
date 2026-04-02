@@ -14,11 +14,14 @@ import LessonPage from "@/pages/lesson";
 import Practice from "@/pages/tutor";
 import ProgressPage from "@/pages/progress-page";
 import AlphabetPage from "@/pages/alphabet";
+import AuthPage from "@/pages/auth";
 
 function AppRouter() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={AuthPage} />
+      <Route path="/register" component={AuthPage} />
       <Route path="/learn" component={Units} />
       <Route path="/learn/:unitId" component={UnitLessons} />
       <Route path="/learn/:unitId/:lessonId" component={LessonPage} />
