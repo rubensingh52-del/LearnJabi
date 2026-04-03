@@ -28,6 +28,8 @@ export default function LessonPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  // Track which exercises have already been scored to prevent double-counting
+  const [scoredExercises, setScoredExercises] = useState<Set<number>>(new Set());
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [matchSelection, setMatchSelection] = useState<{ side: "left" | "right"; index: number } | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -84,8 +86,9 @@ export default function LessonPage() {
     if (showResult) return;
     setSelectedAnswer(optionIndex);
     setShowResult(true);
-    if (optionIndex === currentExercise?.correct) {
+    if (optionIndex === currentExercise?.correct && !scoredExercises.has(exerciseIndex)) {
       setScore(s => s + 1);
+      setScoredExercises(prev => new Set([...prev, exerciseIndex]));
     }
   };
 
@@ -99,7 +102,11 @@ export default function LessonPage() {
     if (pairs[leftIdx] && pairs[leftIdx][1] === pairs[rightIdx]?.[1]) {
       if (leftIdx === rightIdx) {
         setMatchedPairs(prev => new Set([...prev, leftIdx]));
-        setScore(s => s + 1);
+        // Score 1 point per match exercise (not per pair), only once
+        if (!scoredExercises.has(exerciseIndex) && matchedPairs.size + 1 === pairs.length) {
+          setScore(s => s + 1);
+          setScoredExercises(prev => new Set([...prev, exerciseIndex]));
+        }
       }
     }
     setMatchSelection(null);
@@ -125,6 +132,7 @@ export default function LessonPage() {
     setSelectedAnswer(null);
     setShowResult(false);
     setScore(0);
+    setScoredExercises(new Set());
     setMatchedPairs(new Set());
     setMatchSelection(null);
   };
@@ -134,38 +142,48 @@ export default function LessonPage() {
 
   /**
    * Resolve the romanized text for a raw option string.
-   * 1. If the option already contains "(romanized)" — parse it out.
-   * 2. Otherwise look up the full string in the vocab lookup map.
-   * 3. Fallback: look up with the Gurmukhi-only portion (strip any trailing English).
+   * Handles formats:
+   *  - "ਸ਼ੁਕਰੀਆ"                 → lookup exact match
+   *  - "ਸ਼ੁਕਰੀਆ (Shukriya)"      → parse from parens
+   *  - "੫ - ਪੰਜ"                 → extract Gurmukhi word and lookup
+   *  - "ਸਿਰ (sir) - Head"        → parse from parens
    */
-  const resolveRomanized = (text: string): { gurmukhi: string; romanized: string | null } => {
-    // Already has parens form: "ਸ਼ੁਕਰੀਆ (Shukriya)"
-    const parenMatch = text.match(/^(.+?)\s*\((.+?)\)$/);
-    if (parenMatch) return { gurmukhi: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
-
-    // Plain Gurmukhi — look up in vocab items
+  const resolveRomanized = (text: string): { display: string; romanized: string | null } => {
     const trimmed = text.trim();
-    const fromMap = gurmukhiLookup.get(trimmed);
-    if (fromMap) return { gurmukhi: trimmed, romanized: fromMap };
 
-    // Try matching just the Gurmukhi portion (e.g. "੫ - ਪੰਜ" → look up "ਪੰਜ")
-    const gurmukhiOnly = trimmed.match(/[\u0A00-\u0A7F][\u0A00-\u0A7F\s]*/)?.[0]?.trim();
-    if (gurmukhiOnly) {
-      const fromPartial = gurmukhiLookup.get(gurmukhiOnly);
-      if (fromPartial) return { gurmukhi: trimmed, romanized: fromPartial };
+    // 1. Already has parens: "ਸ਼ੁਕਰੀਆ (Shukriya)" or "ਉ (u)"
+    const parenMatch = trimmed.match(/^(.+?)\s*\((.+?)\)/);
+    if (parenMatch) return { display: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
+
+    // 2. Exact match in vocab lookup
+    const fromExact = gurmukhiLookup.get(trimmed);
+    if (fromExact) return { display: trimmed, romanized: fromExact };
+
+    // 3. Mixed format "੫ - ਪੰਜ" or "੧ - ਇੱਕ" — extract the Gurmukhi word(s)
+    const gurmukhiWordMatch = trimmed.match(/[\u0A00-\u0A7F][\u0A00-\u0A7F\s]*/g);
+    if (gurmukhiWordMatch) {
+      // Try each Gurmukhi segment
+      for (const seg of gurmukhiWordMatch) {
+        const clean = seg.trim();
+        const fromSeg = gurmukhiLookup.get(clean);
+        if (fromSeg) return { display: trimmed, romanized: fromSeg };
+      }
+      // If the whole item key contains this pattern, try the full item key
+      for (const [key, roman] of gurmukhiLookup.entries()) {
+        if (key.includes(trimmed) || trimmed.includes(key)) {
+          return { display: trimmed, romanized: roman };
+        }
+      }
     }
 
-    return { gurmukhi: trimmed, romanized: null };
+    return { display: trimmed, romanized: null };
   };
 
   /**
-   * Replaces every Gurmukhi word/phrase in a question string with
-   * JSX that shows the script followed by (romanized).
-   * Looks up romanized form from content.items first.
+   * Renders question text with Gurmukhi segments annotated with (romanized)
    */
   const renderQuestionWithRomanized = (question: string) => {
     const parts = question.split(/((?:[\u0A00-\u0A7F]+(?:\s+[\u0A00-\u0A7F]+)*))/g);
-
     return (
       <>
         {parts.map((part, idx) => {
@@ -321,7 +339,6 @@ export default function LessonPage() {
           <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                {/* Question text — Gurmukhi words get (romanized) appended inline */}
                 <p className="font-semibold text-lg leading-relaxed">
                   {renderQuestionWithRomanized(currentExercise.question)}
                 </p>
@@ -347,8 +364,8 @@ export default function LessonPage() {
                     if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
                     else if (i === selectedAnswer) extra = "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300";
                   }
-                  const { gurmukhi, romanized } = resolveRomanized(option);
-                  const isGurmukhi = hasGurmukhi(gurmukhi);
+                  const { display, romanized } = resolveRomanized(option);
+                  const isGurmukhi = hasGurmukhi(display);
                   return (
                     <button
                       key={i}
@@ -360,7 +377,7 @@ export default function LessonPage() {
                     >
                       {isGurmukhi ? (
                         <span className="flex flex-col gap-0.5">
-                          <span className="gurmukhi text-sm font-semibold">{gurmukhi}</span>
+                          <span className="gurmukhi text-sm font-semibold">{display}</span>
                           {romanized && (
                             <span className="text-xs text-primary font-semibold">({romanized})</span>
                           )}
@@ -378,7 +395,7 @@ export default function LessonPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => {
-                    const { gurmukhi, romanized } = resolveRomanized(pair[0]);
+                    const { display, romanized } = resolveRomanized(pair[0]);
                     return (
                       <button
                         key={i}
@@ -389,9 +406,9 @@ export default function LessonPage() {
                           ${matchSelection?.side === "left" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
                           ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
                       >
-                        {hasGurmukhi(gurmukhi) ? (
+                        {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
-                            <span className="gurmukhi font-semibold">{gurmukhi}</span>
+                            <span className="gurmukhi font-semibold">{display}</span>
                             {romanized && (
                               <span className="text-xs text-primary font-semibold not-italic">({romanized})</span>
                             )}
@@ -405,7 +422,7 @@ export default function LessonPage() {
                 </div>
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => {
-                    const { gurmukhi, romanized } = resolveRomanized(pair[1]);
+                    const { display, romanized } = resolveRomanized(pair[1]);
                     return (
                       <button
                         key={i}
@@ -416,9 +433,9 @@ export default function LessonPage() {
                           ${matchSelection?.side === "right" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
                           ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
                       >
-                        {hasGurmukhi(gurmukhi) ? (
+                        {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
-                            <span className="gurmukhi font-semibold">{gurmukhi}</span>
+                            <span className="gurmukhi font-semibold">{display}</span>
                             {romanized && (
                               <span className="text-xs text-primary font-semibold not-italic">({romanized})</span>
                             )}
@@ -466,7 +483,7 @@ export default function LessonPage() {
           <div>
             <h2 className="text-2xl font-bold mb-2">Lesson Complete!</h2>
             <p className="text-muted-foreground">
-              You scored {score} out of {totalExercises}
+              You scored {Math.min(score, totalExercises)} out of {totalExercises}
             </p>
           </div>
 
