@@ -120,7 +120,7 @@ export default function LessonPage() {
     setMatchSelection(null);
   };
 
-  // Helper: detect if a string contains Gurmukhi characters
+  // Helper: detect Gurmukhi characters
   const hasGurmukhi = (s: string) => /[\u0A00-\u0A7F]/.test(s);
 
   // Helper: parse "ਸ਼ੁਕਰੀਆ (Shukriya)" into { gurmukhi, romanized }
@@ -128,6 +128,43 @@ export default function LessonPage() {
     const parenMatch = text.match(/^(.+?)\s*\((.+?)\)$/);
     if (parenMatch) return { gurmukhi: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
     return { gurmukhi: text, romanized: null };
+  };
+
+  /**
+   * Replaces every Gurmukhi word/phrase in a question string with
+   * JSX that shows the script followed by (romanized) in green.
+   * Looks up romanized form from content.items first; falls back to
+   * extracting text already inside parentheses in the question.
+   */
+  const renderQuestionWithRomanized = (question: string) => {
+    const items = content?.items || [];
+    // Build a lookup map: gurmukhi → romanized from lesson vocab
+    const lookup = new Map<string, string>();
+    items.forEach(item => {
+      if (item.gurmukhi && item.romanized) lookup.set(item.gurmukhi.trim(), item.romanized.trim());
+    });
+
+    // Split the question into segments: Gurmukhi runs vs Latin/punctuation runs
+    // Unicode block for Gurmukhi: U+0A00–U+0A7F, plus virama/nukta etc.
+    const parts = question.split(/((?:[\u0A00-\u0A7F]+(?:\s+[\u0A00-\u0A7F]+)*))/g);
+
+    return (
+      <>
+        {parts.map((part, idx) => {
+          if (!hasGurmukhi(part)) return <span key={idx}>{part}</span>;
+          const trimmed = part.trim();
+          const romanized = lookup.get(trimmed);
+          return (
+            <span key={idx} className="inline-flex items-baseline gap-1 flex-wrap">
+              <span className="gurmukhi font-semibold">{part}</span>
+              {romanized && (
+                <span className="text-primary font-semibold text-sm">({romanized})</span>
+              )}
+            </span>
+          );
+        })}
+      </>
+    );
   };
 
   if (isLoading) {
@@ -186,7 +223,6 @@ export default function LessonPage() {
         <div className="space-y-6">
           <p className="text-muted-foreground text-sm">{content.intro}</p>
 
-          {/* Pronunciation guide banner — shown once at the top of Learn */}
           <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-primary/8 border border-primary/20 text-xs text-muted-foreground">
             <Volume2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p>
@@ -196,7 +232,6 @@ export default function LessonPage() {
           </div>
 
           <div className="relative rounded-2xl border bg-card shadow-sm p-8 text-center space-y-3">
-            {/* Audio button */}
             <button
               onClick={() => handleSpeak(currentItem)}
               aria-label="Pronounce this word in Punjabi"
@@ -209,10 +244,8 @@ export default function LessonPage() {
               <Volume2 className="h-5 w-5" />
             </button>
 
-            {/* Gurmukhi script — large display */}
             <div className="text-5xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
 
-            {/* Romanized pronunciation — very prominent */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Pronunciation</span>
               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xl">
@@ -220,7 +253,6 @@ export default function LessonPage() {
               </div>
             </div>
 
-            {/* English meaning */}
             <div className="text-base text-muted-foreground pt-1">{currentItem.english}</div>
           </div>
 
@@ -272,13 +304,10 @@ export default function LessonPage() {
           <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                <p className="font-semibold text-lg">{currentExercise.question}</p>
-                {/* If the question contains Gurmukhi, show a pronunciation hint */}
-                {hasGurmukhi(currentExercise.question) && (
-                  <p className="text-xs text-primary/70 mt-1 font-medium italic">
-                    Gurmukhi script — romanised pronunciation shown in each answer below
-                  </p>
-                )}
+                {/* Question text — Gurmukhi words get (romanized) appended inline */}
+                <p className="font-semibold text-lg leading-relaxed">
+                  {renderQuestionWithRomanized(currentExercise.question)}
+                </p>
               </div>
               <button
                 onClick={() => handleExerciseSpeak(currentExercise.question)}
