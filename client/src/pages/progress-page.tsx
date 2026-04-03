@@ -50,6 +50,12 @@ function shuffleArr<T>(arr: T[]): T[] {
   return a;
 }
 
+function getYesterday(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split("T")[0];
+}
+
 // ─── Main Progress Page ───────────────────────────────────────────────────────
 export default function ProgressPage() {
   const { data: units, isLoading: unitsLoading } = useQuery<Unit[]>({ queryKey: ["/api/units"] });
@@ -60,10 +66,11 @@ export default function ProgressPage() {
   const totalScore = completedLessons.reduce((sum, p) => sum + p.score, 0);
   const uniqueLessonsCompleted = new Set(completedLessons.map(p => p.lessonId)).size;
 
+  // Streak: use lastAccessed (now correctly returned by server)
   const lastAccessDates = [...new Set(
     (progress || [])
       .filter(p => p.lastAccessed)
-      .map(p => p.lastAccessed.split("T")[0])
+      .map(p => (p.lastAccessed as string).split("T")[0])
   )].sort().reverse();
 
   let streak = 0;
@@ -201,10 +208,11 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
   const [unsure, setUnsure] = useState<Set<string>>(new Set());
   const [sessionDone, setSessionDone] = useState(false);
 
-  // Build cards from lesson content
+  // Build cards from lesson content.
+  // IMPORTANT: lessons are camelCased by mapLesson on the server — use unitId, not unit_id.
   const allCards: FlashCard[] = [];
   for (const lesson of lessons) {
-    const unit = units.find((u: any) => u.id === lesson.unit_id);
+    const unit = units.find((u: any) => u.id === lesson.unitId);
     if (!unit) continue;
     let content: any = {};
     try { content = typeof lesson.content === "string" ? JSON.parse(lesson.content) : lesson.content; } catch {}
@@ -231,10 +239,11 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
     setDeck(shuffleArr(filtered));
     setIndex(0); setFlipped(false);
     setKnown(new Set()); setUnsure(new Set()); setSessionDone(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterUnit, lessons.length]);
 
   const card = deck[index];
-  const progress = deck.length > 0 ? Math.round(((known.size + unsure.size) / deck.length) * 100) : 0;
+  const progressPct = deck.length > 0 ? Math.round(((known.size + unsure.size) / deck.length) * 100) : 0;
 
   function next() {
     setFlipped(false);
@@ -296,7 +305,7 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
             <span className="text-amber-600 dark:text-amber-400">? {unsure.size} review</span>
           </span>
         </div>
-        <Progress value={progress} className="h-1.5" />
+        <Progress value={progressPct} className="h-1.5" />
       </div>
 
       <AnimatePresence mode="wait">
@@ -306,84 +315,69 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
           >
             <div className="text-4xl mb-3">🎉</div>
             <h3 className="text-lg font-bold mb-1">Session Complete!</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-6">
               <span className="text-emerald-600 font-semibold">{known.size} known</span> · <span className="text-amber-600 font-semibold">{unsure.size} to review</span>
             </p>
-            <div className="flex gap-3 justify-center">
-              {unsure.size > 0 && (
-                <Button onClick={restart} size="sm"><RotateCcw className="w-3.5 h-3.5 mr-1" /> Review {unsure.size}</Button>
-              )}
-              <Button onClick={reshuffle} variant="outline" size="sm"><Shuffle className="w-3.5 h-3.5 mr-1" /> Start fresh</Button>
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" size="sm" onClick={restart}>
+                <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                {unsure.size > 0 ? `Review ${unsure.size}` : "Restart"}
+              </Button>
+              <Button size="sm" onClick={reshuffle}>
+                <Shuffle className="h-3.5 w-3.5 mr-1.5" />Shuffle All
+              </Button>
             </div>
           </motion.div>
         ) : card ? (
-          <motion.div key="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* Card */}
-            <div className="cursor-pointer select-none" style={{ perspective: "1200px" }} onClick={() => setFlipped(f => !f)}>
-              <motion.div
-                animate={{ rotateY: flipped ? 180 : 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                style={{ transformStyle: "preserve-3d", position: "relative", minHeight: "220px" }}
-              >
-                {/* Front */}
-                <div
-                  className={`absolute inset-0 rounded-2xl border-2 flex flex-col items-center justify-center p-6 ${
-                    UNIT_CARD_BG[card.unitColor] ?? UNIT_CARD_BG.blue
-                  }`}
-                  style={{ backfaceVisibility: "hidden" }}
-                >
-                  <Badge variant="outline" className="mb-3 text-xs">{card.unit}</Badge>
-                  <p className="text-5xl font-bold mb-2" style={{ fontFamily: "'Noto Sans Gurmukhi', serif" }}>{card.gurmukhi}</p>
-                  {card.romanized && <p className="text-base text-muted-foreground">{card.romanized}</p>}
-                  <p className="text-xs text-muted-foreground mt-4">Tap to reveal</p>
-                </div>
-                {/* Back */}
-                <div
-                  className="absolute inset-0 rounded-2xl border-2 border-primary/30 bg-primary/5 flex flex-col items-center justify-center p-6"
-                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                >
-                  <Badge className={`mb-3 text-xs ${UNIT_BADGE[card.unitColor] ?? "bg-primary"}`}>{card.unit}</Badge>
-                  <p className="text-4xl font-bold mb-1" style={{ fontFamily: "'Noto Sans Gurmukhi', serif" }}>{card.gurmukhi}</p>
-                  {card.romanized && <p className="text-sm text-muted-foreground mb-3">{card.romanized}</p>}
-                  <p className="text-xl font-semibold text-primary text-center">{card.english}</p>
-                </div>
-              </motion.div>
+          <motion.div key={card.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+            className="mb-4"
+          >
+            {/* Flip card */}
+            <div
+              onClick={() => setFlipped(f => !f)}
+              className={`relative cursor-pointer rounded-2xl border p-8 text-center min-h-[180px] flex flex-col items-center justify-center gap-3 transition-all duration-300 select-none ${
+                UNIT_CARD_BG[card.unitColor] ?? "bg-card border-border"
+              }`}
+              style={{ perspective: 800 }}
+            >
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full text-white ${UNIT_BADGE[card.unitColor] ?? "bg-primary"}`}>
+                {card.unit}
+              </span>
+
+              {!flipped ? (
+                <>
+                  <p className="text-4xl font-bold" style={{ fontFamily: "serif" }}>{card.gurmukhi}</p>
+                  {card.romanized && <p className="text-sm text-muted-foreground italic">{card.romanized}</p>}
+                  <p className="text-xs text-muted-foreground mt-2">Tap to reveal</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-2xl font-semibold">{card.english}</p>
+                  <p className="text-base text-muted-foreground" style={{ fontFamily: "serif" }}>{card.gurmukhi}</p>
+                  {card.romanized && <p className="text-sm text-muted-foreground italic">{card.romanized}</p>}
+                </>
+              )}
             </div>
 
-            {/* Know it / Still learning */}
+            {/* Action buttons */}
             <div className="flex gap-3 mt-4 justify-center">
-              <Button variant="outline" size="sm" onClick={markUnsure}
-                className="flex-1 max-w-[160px] border-amber-400 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20">
-                <XCircle className="w-3.5 h-3.5 mr-1" /> Still learning
+              <Button variant="outline" size="sm" onClick={markUnsure} className="flex-1 max-w-[140px] border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/40">
+                <XCircle className="h-3.5 w-3.5 mr-1.5" />Still learning
               </Button>
-              <Button variant="outline" size="sm" onClick={markKnown}
-                className="flex-1 max-w-[160px] border-emerald-400 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20">
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Got it!
+              <Button size="sm" onClick={markKnown} className="flex-1 max-w-[140px] bg-emerald-600 hover:bg-emerald-700 text-white">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Got it!
               </Button>
             </div>
 
-            {/* Prev / Reshuffle / Skip */}
-            <div className="flex items-center justify-between mt-3">
-              <Button variant="ghost" size="sm" disabled={index === 0}
-                onClick={() => { setFlipped(false); setTimeout(() => setIndex(i => Math.max(0, i - 1)), 150); }}>
-                <ChevronLeft className="w-4 h-4" /> Prev
-              </Button>
-              <Button variant="ghost" size="sm" onClick={reshuffle}>
-                <Shuffle className="w-3.5 h-3.5 mr-1" /> Reshuffle
-              </Button>
-              <Button variant="ghost" size="sm" onClick={next}>
-                Skip <ChevronRight className="w-4 h-4" />
-              </Button>
+            {/* Skip */}
+            <div className="flex justify-center mt-3">
+              <button onClick={next} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                Skip <ChevronRight className="h-3 w-3" />
+              </button>
             </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
     </section>
   );
-}
-
-function getYesterday(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split("T")[0];
 }
