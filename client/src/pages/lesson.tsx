@@ -8,9 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Trophy, Volume2 } from "lucide-react";
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 type LessonStep = "learn" | "exercise" | "complete";
+
+/** Fisher-Yates shuffle — returns a NEW array */
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function LessonPage() {
   const params = useParams<{ unitId: string; lessonId: string }>();
@@ -28,7 +38,6 @@ export default function LessonPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
-  // Track which exercises have already been scored to prevent double-counting
   const [scoredExercises, setScoredExercises] = useState<Set<number>>(new Set());
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [matchSelection, setMatchSelection] = useState<{ side: "left" | "right"; index: number } | null>(null);
@@ -36,6 +45,19 @@ export default function LessonPage() {
   const [isExerciseSpeaking, setIsExerciseSpeaking] = useState(false);
   const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exerciseSpeakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── FIX 1: Reset ALL state whenever the lesson changes ─────────────────────
+  useEffect(() => {
+    setStep("learn");
+    setCurrentItemIndex(0);
+    setExerciseIndex(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(0);
+    setScoredExercises(new Set());
+    setMatchedPairs(new Set());
+    setMatchSelection(null);
+  }, [lessonId]);
 
   const content: LessonContent | null = useMemo(() => {
     if (!lesson) return null;
@@ -47,7 +69,9 @@ export default function LessonPage() {
       await apiRequest("POST", "/api/progress", { ...data, lastAccessed: new Date().toISOString() });
     },
     onSuccess: () => {
+      // ── FIX 3: Invalidate all progress-related queries so progress page updates ──
       queryClient.invalidateQueries({ queryKey: ["/api/progress"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/units"] });
     },
   });
 
@@ -65,6 +89,14 @@ export default function LessonPage() {
     });
     return map;
   }, [content]);
+
+  // ── FIX 2: Shuffle the RIGHT side of each match exercise ───────────────────
+  // We keep a stable shuffled order per exercise so it doesn't re-shuffle on re-render.
+  // Key is exerciseIndex so it regenerates when moving to next match exercise.
+  const shuffledRightIndices = useMemo(() => {
+    if (currentExercise?.type !== "match" || !currentExercise.pairs) return [];
+    return shuffleArray(currentExercise.pairs.map((_, i) => i));
+  }, [exerciseIndex, currentExercise?.type]);
 
   const handleSpeak = useCallback((item: { gurmukhi: string; romanized: string }) => {
     if (speakTimer.current) clearTimeout(speakTimer.current);
@@ -92,22 +124,37 @@ export default function LessonPage() {
     }
   };
 
-  const handleMatchClick = (side: "left" | "right", index: number) => {
-    if (matchedPairs.has(index) && side === "left") return;
-    if (!matchSelection) { setMatchSelection({ side, index }); return; }
-    if (matchSelection.side === side) { setMatchSelection({ side, index }); return; }
+  // Match click now uses shuffledRightIndices to map visual position → real pair index
+  const handleMatchClick = (side: "left" | "right", visualIndex: number) => {
     const pairs = currentExercise?.pairs || [];
-    const leftIdx = side === "left" ? index : matchSelection.index;
-    const rightIdx = side === "right" ? index : matchSelection.index;
-    if (pairs[leftIdx] && pairs[leftIdx][1] === pairs[rightIdx]?.[1]) {
-      if (leftIdx === rightIdx) {
-        setMatchedPairs(prev => new Set([...prev, leftIdx]));
-        // Score 1 point per match exercise (not per pair), only once
-        if (!scoredExercises.has(exerciseIndex) && matchedPairs.size + 1 === pairs.length) {
+    // For left side: visualIndex === real pair index (left is never shuffled)
+    // For right side: map visual position back to real pair index
+    const realIndex = side === "right" ? shuffledRightIndices[visualIndex] : visualIndex;
+
+    if (matchedPairs.has(realIndex) && side === "left") return;
+    if (!matchSelection) {
+      setMatchSelection({ side, index: side === "right" ? visualIndex : realIndex });
+      return;
+    }
+    if (matchSelection.side === side) {
+      setMatchSelection({ side, index: side === "right" ? visualIndex : realIndex });
+      return;
+    }
+
+    const leftRealIdx = side === "left" ? realIndex : matchSelection.index;
+    const rightVisualIdx = side === "right" ? visualIndex : matchSelection.index;
+    const rightRealIdx = shuffledRightIndices[rightVisualIdx] ?? rightVisualIdx;
+
+    // A pair matches when both sides point to the same original pair index
+    if (leftRealIdx === rightRealIdx) {
+      setMatchedPairs(prev => {
+        const next = new Set([...prev, leftRealIdx]);
+        if (!scoredExercises.has(exerciseIndex) && next.size === pairs.length) {
           setScore(s => s + 1);
-          setScoredExercises(prev => new Set([...prev, exerciseIndex]));
+          setScoredExercises(prevScored => new Set([...prevScored, exerciseIndex]));
         }
-      }
+        return next;
+      });
     }
     setMatchSelection(null);
   };
@@ -140,48 +187,28 @@ export default function LessonPage() {
   // Helper: detect Gurmukhi characters
   const hasGurmukhi = (s: string) => /[\u0A00-\u0A7F]/.test(s);
 
-  /**
-   * Resolve the romanized text for a raw option string.
-   * Handles formats:
-   *  - "ਸ਼ੁਕਰੀਆ"                 → lookup exact match
-   *  - "ਸ਼ੁਕਰੀਆ (Shukriya)"      → parse from parens
-   *  - "੫ - ਪੰਜ"                 → extract Gurmukhi word and lookup
-   *  - "ਸਿਰ (sir) - Head"        → parse from parens
-   */
   const resolveRomanized = (text: string): { display: string; romanized: string | null } => {
     const trimmed = text.trim();
-
-    // 1. Already has parens: "ਸ਼ੁਕਰੀਆ (Shukriya)" or "ਉ (u)"
     const parenMatch = trimmed.match(/^(.+?)\s*\((.+?)\)/);
     if (parenMatch) return { display: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
-
-    // 2. Exact match in vocab lookup
     const fromExact = gurmukhiLookup.get(trimmed);
     if (fromExact) return { display: trimmed, romanized: fromExact };
-
-    // 3. Mixed format "੫ - ਪੰਜ" or "੧ - ਇੱਕ" — extract the Gurmukhi word(s)
     const gurmukhiWordMatch = trimmed.match(/[\u0A00-\u0A7F][\u0A00-\u0A7F\s]*/g);
     if (gurmukhiWordMatch) {
-      // Try each Gurmukhi segment
       for (const seg of gurmukhiWordMatch) {
         const clean = seg.trim();
         const fromSeg = gurmukhiLookup.get(clean);
         if (fromSeg) return { display: trimmed, romanized: fromSeg };
       }
-      // If the whole item key contains this pattern, try the full item key
       for (const [key, roman] of gurmukhiLookup.entries()) {
         if (key.includes(trimmed) || trimmed.includes(key)) {
           return { display: trimmed, romanized: roman };
         }
       }
     }
-
     return { display: trimmed, romanized: null };
   };
 
-  /**
-   * Renders question text with Gurmukhi segments annotated with (romanized)
-   */
   const renderQuestionWithRomanized = (question: string) => {
     const parts = question.split(/((?:[\u0A00-\u0A7F]+(?:\s+[\u0A00-\u0A7F]+)*))/g);
     return (
@@ -393,18 +420,21 @@ export default function LessonPage() {
 
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
+                {/* LEFT column — always in original order */}
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => {
                     const { display, romanized } = resolveRomanized(pair[0]);
+                    const isMatched = matchedPairs.has(i);
+                    const isSelected = matchSelection?.side === "left" && matchSelection.index === i;
                     return (
                       <button
                         key={i}
                         onClick={() => handleMatchClick("left", i)}
-                        disabled={matchedPairs.has(i)}
+                        disabled={isMatched}
                         className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all text-left
-                          ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
-                          ${matchSelection?.side === "left" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
-                          ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
+                          ${isMatched ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                          ${isSelected ? "border-primary bg-accent" : !isMatched ? "border-border" : ""}
+                          ${!isMatched ? "hover:border-primary hover:bg-accent" : ""}`}
                       >
                         {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
@@ -420,18 +450,23 @@ export default function LessonPage() {
                     );
                   })}
                 </div>
+
+                {/* RIGHT column — shuffled order */}
                 <div className="space-y-2">
-                  {currentExercise.pairs.map((pair, i) => {
+                  {shuffledRightIndices.map((realIdx, visualIdx) => {
+                    const pair = currentExercise.pairs![realIdx];
                     const { display, romanized } = resolveRomanized(pair[1]);
+                    const isMatched = matchedPairs.has(realIdx);
+                    const isSelected = matchSelection?.side === "right" && matchSelection.index === visualIdx;
                     return (
                       <button
-                        key={i}
-                        onClick={() => handleMatchClick("right", i)}
-                        disabled={matchedPairs.has(i)}
+                        key={realIdx}
+                        onClick={() => handleMatchClick("right", visualIdx)}
+                        disabled={isMatched}
                         className={`w-full rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all text-left
-                          ${matchedPairs.has(i) ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
-                          ${matchSelection?.side === "right" && matchSelection.index === i ? "border-primary bg-accent" : "border-border"}
-                          ${!matchedPairs.has(i) ? "hover:border-primary hover:bg-accent" : ""}`}
+                          ${isMatched ? "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 line-through" : ""}
+                          ${isSelected ? "border-primary bg-accent" : !isMatched ? "border-border" : ""}
+                          ${!isMatched ? "hover:border-primary hover:bg-accent" : ""}`}
                       >
                         {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
