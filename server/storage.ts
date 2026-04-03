@@ -109,6 +109,7 @@ export class DatabaseStorage implements IStorage {
           completed: progress.completed,
           score: progress.score,
           completed_at: progress.completedAt ?? null,
+          last_accessed: new Date().toISOString(),
         },
         { onConflict: 'user_id,lesson_id' }
       )
@@ -186,6 +187,7 @@ function mapProgress(row: any): UserProgress {
     completed: row.completed,
     score: row.score,
     completedAt: row.completed_at,
+    lastAccessed: row.last_accessed ?? row.completed_at ?? null,
   };
 }
 
