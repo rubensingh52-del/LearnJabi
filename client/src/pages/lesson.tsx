@@ -46,7 +46,7 @@ export default function LessonPage() {
   const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exerciseSpeakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── FIX 1: Reset ALL state whenever the lesson changes ─────────────────────
+  // Reset ALL state whenever the lesson changes
   useEffect(() => {
     setStep("learn");
     setCurrentItemIndex(0);
@@ -69,7 +69,6 @@ export default function LessonPage() {
       await apiRequest("POST", "/api/progress", { ...data, lastAccessed: new Date().toISOString() });
     },
     onSuccess: () => {
-      // ── FIX 3: Invalidate all progress-related queries so progress page updates ──
       queryClient.invalidateQueries({ queryKey: ["/api/progress"] });
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
     },
@@ -81,6 +80,9 @@ export default function LessonPage() {
 
   const nextLesson = allLessons?.find(l => l.order === (lesson?.order || 0) + 1);
 
+  // Helper: detect Gurmukhi characters
+  const hasGurmukhi = (s: string) => /[\u0A00-\u0A7F]/.test(s);
+
   // Build a lookup map: gurmukhi → romanized from lesson vocab items
   const gurmukhiLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -90,13 +92,26 @@ export default function LessonPage() {
     return map;
   }, [content]);
 
-  // ── FIX 2: Shuffle the RIGHT side of each match exercise ───────────────────
-  // We keep a stable shuffled order per exercise so it doesn't re-shuffle on re-render.
-  // Key is exerciseIndex so it regenerates when moving to next match exercise.
+  // Shuffle the RIGHT side of each match exercise.
+  // Keyed by exerciseIndex so it regenerates when moving to next match exercise.
   const shuffledRightIndices = useMemo(() => {
     if (currentExercise?.type !== "match" || !currentExercise.pairs) return [];
     return shuffleArray(currentExercise.pairs.map((_, i) => i));
   }, [exerciseIndex, currentExercise?.type]);
+
+  // For a match exercise: if ALL right-side items are plain English (no Gurmukhi),
+  // then the romanized on the left IS the answer — hide it.
+  // If the right side contains Gurmukhi (word↔word or letter↔letter), keep romanized as a pronunciation aid.
+  const matchHidesRomanized = useMemo(() => {
+    if (currentExercise?.type !== "match" || !currentExercise.pairs) return false;
+    return currentExercise.pairs.every(pair => !hasGurmukhi(pair[1]));
+  }, [currentExercise]);
+
+  // For the speaker button: only show if the question string contains speakable Gurmukhi.
+  const questionHasSpeakableGurmukhi = useMemo(() => {
+    if (!currentExercise) return false;
+    return hasGurmukhi(currentExercise.question);
+  }, [currentExercise]);
 
   const handleSpeak = useCallback((item: { gurmukhi: string; romanized: string }) => {
     if (speakTimer.current) clearTimeout(speakTimer.current);
@@ -124,11 +139,9 @@ export default function LessonPage() {
     }
   };
 
-  // Match click now uses shuffledRightIndices to map visual position → real pair index
+  // Match click uses shuffledRightIndices to map visual position → real pair index
   const handleMatchClick = (side: "left" | "right", visualIndex: number) => {
     const pairs = currentExercise?.pairs || [];
-    // For left side: visualIndex === real pair index (left is never shuffled)
-    // For right side: map visual position back to real pair index
     const realIndex = side === "right" ? shuffledRightIndices[visualIndex] : visualIndex;
 
     if (matchedPairs.has(realIndex) && side === "left") return;
@@ -145,7 +158,6 @@ export default function LessonPage() {
     const rightVisualIdx = side === "right" ? visualIndex : matchSelection.index;
     const rightRealIdx = shuffledRightIndices[rightVisualIdx] ?? rightVisualIdx;
 
-    // A pair matches when both sides point to the same original pair index
     if (leftRealIdx === rightRealIdx) {
       setMatchedPairs(prev => {
         const next = new Set([...prev, leftRealIdx]);
@@ -183,9 +195,6 @@ export default function LessonPage() {
     setMatchedPairs(new Set());
     setMatchSelection(null);
   };
-
-  // Helper: detect Gurmukhi characters
-  const hasGurmukhi = (s: string) => /[\u0A00-\u0A7F]/.test(s);
 
   const resolveRomanized = (text: string): { display: string; romanized: string | null } => {
     const trimmed = text.trim();
@@ -370,17 +379,20 @@ export default function LessonPage() {
                   {renderQuestionWithRomanized(currentExercise.question)}
                 </p>
               </div>
-              <button
-                onClick={() => handleExerciseSpeak(currentExercise.question)}
-                aria-label="Hear the Punjabi in this question"
-                className={`shrink-0 p-2 rounded-full transition-colors ${
-                  isExerciseSpeaking
-                    ? "bg-primary/20 text-primary animate-pulse"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                }`}
-              >
-                <Volume2 className="h-4 w-4" />
-              </button>
+              {/* Only show speaker when the question contains speakable Gurmukhi */}
+              {questionHasSpeakableGurmukhi && (
+                <button
+                  onClick={() => handleExerciseSpeak(currentExercise.question)}
+                  aria-label="Hear the Punjabi in this question"
+                  className={`shrink-0 p-2 rounded-full transition-colors ${
+                    isExerciseSpeaking
+                      ? "bg-primary/20 text-primary animate-pulse"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  }`}
+                >
+                  <Volume2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             {currentExercise.type === "choose" && currentExercise.options && (
@@ -420,7 +432,9 @@ export default function LessonPage() {
 
             {currentExercise.type === "match" && currentExercise.pairs && (
               <div className="grid grid-cols-2 gap-3">
-                {/* LEFT column — always in original order */}
+                {/* LEFT column — original order.
+                    Hide romanized when right side is plain English (it would give away the answer).
+                    Keep romanized when right side is also Gurmukhi (pronunciation aid only). */}
                 <div className="space-y-2">
                   {currentExercise.pairs.map((pair, i) => {
                     const { display, romanized } = resolveRomanized(pair[0]);
@@ -439,7 +453,7 @@ export default function LessonPage() {
                         {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
                             <span className="gurmukhi font-semibold">{display}</span>
-                            {romanized && (
+                            {!matchHidesRomanized && romanized && (
                               <span className="text-xs text-primary font-semibold not-italic">({romanized})</span>
                             )}
                           </span>
@@ -451,7 +465,8 @@ export default function LessonPage() {
                   })}
                 </div>
 
-                {/* RIGHT column — shuffled order */}
+                {/* RIGHT column — shuffled order.
+                    Romanized on right side: only shown if right items are Gurmukhi themselves. */}
                 <div className="space-y-2">
                   {shuffledRightIndices.map((realIdx, visualIdx) => {
                     const pair = currentExercise.pairs![realIdx];
