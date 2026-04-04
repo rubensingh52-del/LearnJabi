@@ -159,7 +159,4 @@ function UnitProgressCard({ unit, progress }: { unit: Unit; progress: UserProgre
       </div>
     </Link>
   );
-      </AnimatePresence>
-    </section>
-  );
 }
