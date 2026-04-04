@@ -56,7 +56,12 @@ export default function UnitLessons() {
 function UnitLessonsContent({ unitId, user, navigate }: { unitId: number; user: any; navigate: any }) {
   const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
   const { data: lessons, isLoading: lessonsLoading } = useQuery<Lesson[]>({ queryKey: ["/api/units", unitId, "lessons"] });
-  const { data: progress } = useQuery<UserProgress[]>({ queryKey: ["/api/progress"] });
+  // Only fetch progress when the user is logged in — prevents a 401 for guests
+  // browsing the free Unit 1 lesson list.
+  const { data: progress } = useQuery<UserProgress[]>({
+    queryKey: ["/api/progress"],
+    enabled: !!user,
+  });
 
   const completedLessons = new Set(progress?.filter(p => p.completed).map(p => p.lessonId) || []);
   const colors = unitColors[unit?.color || "amber"] || unitColors.amber;
