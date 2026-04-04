@@ -13,13 +13,28 @@ const TTS_ENDPOINT =
 // Cache synthesized audio so we don't hit the API twice for the same word
 const audioCache = new Map<string, string>();
 
+const PHONETIC_MAP: Record<string, string> = {
+  "ੴ": "ਇੱਕ ਓਅੰਕਾਰ",
+  "ਾ": "ਕੰਨਾ",
+  "ਿ": "ਸਿਹਾਰੀ",
+  "ੀ": "ਬਿਹਾਰੀ",
+  "ੁ": "ਔਂਕੜ",
+  "ੂ": "ਦੁਲੈਂਕੜ",
+  "ੇ": "ਲਾਂਵਾਂ",
+  "ੈ": "ਦੁਲਾਵਾਂ",
+  "ੋ": "ਹੋੜਾ",
+  "ੌ": "ਕਨੌੜਾ",
+  "ੱ": "ਅਧਕ",
+  "ੰ": "ਟਿੱਪੀ",
+  "ਂ": "ਬਿੰਦੀ"
+};
+
 /**
  * Cleans input text before sending to TTS.
- * Strips ___ blank placeholders (replaces with a 2-second silence gap via SSML,
- * or removes them when using plain text mode).
+ * Strips ___ blank placeholders and maps phonetic aliases.
  */
 function cleanForTTS(text: string): string {
-  // Remove ___ sequences (and surrounding whitespace) — they'd be read as "underscore"
+  if (PHONETIC_MAP[text]) return PHONETIC_MAP[text];
   return text.replace(/\s*_{2,}\s*/g, " ").trim();
 }
 
