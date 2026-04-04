@@ -3,101 +3,109 @@ import { useLocation } from "wouter";
 import { ChevronLeft, Volume2 } from "lucide-react";
 import { speakPunjabi } from "@/lib/tts";
 
-const VOWELS = [
-  { g: "ਅ", r: "aira", e: "short 'a' — as in 'about'" },
-  { g: "ਆ", r: "aa", e: "long 'aa' — as in 'father'" },
-  { g: "ਇ", r: "i", e: "short 'i' — as in 'hit'" },
-  { g: "ਈ", r: "ee", e: "long 'ee' — as in 'see'" },
-  { g: "ਉ", r: "u", e: "short 'u' — as in 'put'" },
-  { g: "ਊ", r: "oo", e: "long 'oo' — as in 'moon'" },
-  { g: "ਏ", r: "e", e: "'e' — as in 'play'" },
-  { g: "ਐ", r: "ai", e: "'ai' — as in 'cat'" },
-  { g: "ਓ", r: "o", e: "'o' — as in 'go'" },
-  { g: "ਔ", r: "au", e: "'au' — as in 'caught'" },
+// Each letter has: gurmukhi char, full name (e.g. "sassaa"), short sound (e.g. "Sa"), english description
+interface AlphaChar {
+  g: string;
+  name: string;    // full name: sassaa, haahaa, etc.
+  sound: string;   // short sound: Sa, Ha, Ou
+  e: string;       // english description
+}
+
+// The 35-letter Gurmukhi alphabet (paiṇṭī) — data from discoversikhism.com
+// Each entry: character | full name | short sound | description
+const ALPHABET: AlphaChar[] = [
+  { g: "ੳ", name: "oorhaa",       sound: "Ou",   e: "Vowel carrier for ਉ ਊ ਓ ਔ" },
+  { g: "ਅ", name: "airhaa",       sound: "Aa",   e: "Vowel carrier — also the inherent 'a' sound" },
+  { g: "ੲ", name: "eerhee",       sound: "Ie",   e: "Vowel carrier for ਇ ਈ ਏ" },
+  { g: "ਸ", name: "sassaa",       sound: "Sa",   e: "s — as in sun" },
+  { g: "ਹ", name: "haahaa",       sound: "Ha",   e: "h — as in hat" },
+  { g: "ਕ", name: "kakkaa",       sound: "Ka",   e: "k — as in kit" },
+  { g: "ਖ", name: "khakhkhaa",    sound: "Kha",  e: "kh — aspirated k" },
+  { g: "ਗ", name: "gaggaa",       sound: "Ga",   e: "g — as in go" },
+  { g: "ਘ", name: "ghaggaa",      sound: "Gha",  e: "gh — aspirated g" },
+  { g: "ਙ", name: "nganngaa",     sound: "Nga",  e: "ng — as in sing" },
+  { g: "ਚ", name: "chachchaa",    sound: "Cha",  e: "ch — as in chat" },
+  { g: "ਛ", name: "chhachhchhaa", sound: "Chha", e: "chh — aspirated ch" },
+  { g: "ਜ", name: "jajjaa",       sound: "Ja",   e: "j — as in jam" },
+  { g: "ਝ", name: "jhajjaa",      sound: "Jha",  e: "jh — aspirated j" },
+  { g: "ਞ", name: "njannjaa",     sound: "Nja",  e: "ny — as in canyon" },
+  { g: "ਟ", name: "tainkaa",      sound: "Ta",   e: "ṭ — retroflex t" },
+  { g: "ਠ", name: "thaththaa",    sound: "Tha",  e: "ṭh — aspirated retroflex t" },
+  { g: "ਡ", name: "daddaa",       sound: "Da",   e: "ḍ — retroflex d" },
+  { g: "ਢ", name: "dhaddaa",      sound: "Dha",  e: "ḍh — aspirated retroflex d" },
+  { g: "ਣ", name: "nhaanhaa",     sound: "Na",   e: "ṇ — retroflex n" },
+  { g: "ਤ", name: "tattaa",       sound: "Ta",   e: "t — soft dental t" },
+  { g: "ਥ", name: "thaththaa",    sound: "Tha",  e: "th — aspirated dental t" },
+  { g: "ਦ", name: "daddaa",       sound: "Da",   e: "d — dental d" },
+  { g: "ਧ", name: "dhaddaa",      sound: "Dha",  e: "dh — aspirated dental d" },
+  { g: "ਨ", name: "nannaa",       sound: "Na",   e: "n — as in no" },
+  { g: "ਪ", name: "pappaa",       sound: "Pa",   e: "p — as in pen" },
+  { g: "ਫ", name: "phaphphaa",    sound: "Pha",  e: "ph — aspirated p" },
+  { g: "ਬ", name: "babbaa",       sound: "Ba",   e: "b — as in bed" },
+  { g: "ਭ", name: "bhabbaa",      sound: "Bha",  e: "bh — aspirated b" },
+  { g: "ਮ", name: "mammaa",       sound: "Ma",   e: "m — as in mat" },
+  { g: "ਯ", name: "yayyaa",       sound: "Ya",   e: "y — as in yes" },
+  { g: "ਰ", name: "raaraa",       sound: "Ra",   e: "r — rolled r" },
+  { g: "ਲ", name: "lallaa",       sound: "La",   e: "l — as in love" },
+  { g: "ਵ", name: "vavvaa",       sound: "Va",   e: "v/w — between v and w" },
+  { g: "ੜ", name: "rhaarhaa",     sound: "Ra",   e: "ṛ — retroflex flap r" },
 ];
 
-const CONSONANTS = [
-  { g: "ੳ", r: "ooraa", e: "vowel carrier for ਉ ਊ ਓ ਔ" },
-  { g: "ਅ", r: "airaa", e: "vowel carrier for ਅ ਆ ਐ ਔ" },
-  { g: "ੲ", r: "eeree", e: "vowel carrier for ਇ ਈ ਏ" },
-  { g: "ਸ", r: "sassaa", e: "s — sun" },
-  { g: "ਹ", r: "haahaa", e: "h — hat" },
-  { g: "ਕ", r: "kakkaa", e: "k — kit" },
-  { g: "ਖ", r: "khakkhaa", e: "kh — aspirated k" },
-  { g: "ਗ", r: "gaggaa", e: "g — go" },
-  { g: "ਘ", r: "ghagghaa", e: "gh — aspirated g" },
-  { g: "ਙ", r: "ngangaa", e: "ng — sing" },
-  { g: "ਚ", r: "chachchaa", e: "ch — chat" },
-  { g: "ਛ", r: "chhachchhaa", e: "chh — aspirated ch" },
-  { g: "ਜ", r: "jajjaa", e: "j — jam" },
-  { g: "ਝ", r: "jhajjhaa", e: "jh — aspirated j" },
-  { g: "ਞ", r: "nyanyaa", e: "ny — canyon" },
-  { g: "ਟ", r: "tainkaa", e: "ṭ — retroflex t" },
-  { g: "ਠ", r: "thaththaa", e: "ṭh — aspirated retroflex t" },
-  { g: "ਡ", r: "daddaa", e: "ḍ — retroflex d" },
-  { g: "ਢ", r: "dhaddhaa", e: "ḍh — aspirated retroflex d" },
-  { g: "ਣ", r: "naanaa", e: "ṇ — retroflex n" },
-  { g: "ਤ", r: "tattaa", e: "t — soft dental t" },
-  { g: "ਥ", r: "thaththaa", e: "th — aspirated dental t" },
-  { g: "ਦ", r: "daddaa", e: "d — dental d" },
-  { g: "ਧ", r: "dhaddhaa", e: "dh — aspirated dental d" },
-  { g: "ਨ", r: "nannaa", e: "n — no" },
-  { g: "ਪ", r: "pappaa", e: "p — pen" },
-  { g: "ਫ", r: "phaphphaa", e: "ph — aspirated p" },
-  { g: "ਬ", r: "babbaa", e: "b — bed" },
-  { g: "ਭ", r: "bhabbhaa", e: "bh — aspirated b" },
-  { g: "ਮ", r: "mammaa", e: "m — mat" },
-  { g: "ਯ", r: "yayyaa", e: "y — yes" },
-  { g: "ਰ", r: "raaraa", e: "r — rolled r" },
-  { g: "ਲ", r: "lallaa", e: "l — love" },
-  { g: "ਵ", r: "vavvaa", e: "v/w — between v and w" },
-  { g: "ੜ", r: "rhaarhaa", e: "ṛ — retroflex flap r" },
+// 6 extra letters added later (for borrowed sounds from other languages)
+const EXTRA_LETTERS: AlphaChar[] = [
+  { g: "ਸ਼", name: "shashashaa",   sound: "Sha",  e: "sh — as in shop (borrowed sound)" },
+  { g: "ਖ਼", name: "khhakhhkhha",  sound: "Khha", e: "ḵh — guttural kh (Arabic/Persian)" },
+  { g: "ਗ਼", name: "ghagghaa",     sound: "Ga",   e: "ġ — voiced velar fricative (borrowed)" },
+  { g: "ਜ਼", name: "zazzaa",       sound: "Za",   e: "z — as in zebra (borrowed sound)" },
+  { g: "ਫ਼", name: "faffaa",       sound: "Fa",   e: "f — as in fan (borrowed sound)" },
+  { g: "ਲ਼", name: "lallaa",       sound: "La",   e: "ḷ — retroflex l (borrowed sound)" },
 ];
 
 const MATRAS = [
-  { g: "ਾ", r: "kannaa", e: "long 'aa' matra" },
-  { g: "ਿ", r: "sihaari", e: "short 'i' matra (written before the letter)" },
-  { g: "ੀ", r: "bihaari", e: "long 'ee' matra" },
-  { g: "ੁ", r: "aunkarh", e: "short 'u' matra" },
-  { g: "ੂ", r: "dulainkarh", e: "long 'oo' matra" },
-  { g: "ੇ", r: "laavaan", e: "'e' matra" },
-  { g: "ੈ", r: "dulaavaan", e: "'ai' matra" },
-  { g: "ੋ", r: "horhaa", e: "'o' matra" },
-  { g: "ੌ", r: "kanaurhaa", e: "'au' matra" },
+  { g: "ਾ",  name: "kannaa",      sound: "aa",  e: "long 'aa' — as in part" },
+  { g: "ਿ",  name: "sihaaree",    sound: "i",   e: "short 'i' — as in it (written before the letter)" },
+  { g: "ੀ",  name: "bihaaree",    sound: "ee",  e: "long 'ee' — as in see" },
+  { g: "ੁ",  name: "aunkarh",     sound: "u",   e: "short 'u' — as in put" },
+  { g: "ੂ",  name: "dulainkarh",  sound: "oo",  e: "long 'oo' — as in food" },
+  { g: "ੇ",  name: "laavaan",     sound: "e",   e: "'e' — as in cake" },
+  { g: "ੈ",  name: "dulaavaan",   sound: "ai",  e: "'ai' — as in man" },
+  { g: "ੋ",  name: "horhaa",      sound: "o",   e: "'o' — as in go" },
+  { g: "ੌ",  name: "kanaurhaa",   sound: "au",  e: "'au' — as in caught" },
 ];
 
 const EXAMPLES = [
-  { g: "ਪੰਜਾਬ", r: "Panjaab", e: "Punjab" },
-  { g: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", r: "Sat Sri Akal", e: "Hello / God is truth" },
-  { g: "ਪਾਣੀ", r: "Paani", e: "Water" },
-  { g: "ਖਾਣਾ", r: "Khaana", e: "Food" },
-  { g: "ਮਾਂ", r: "Maa", e: "Mother" },
-  { g: "ਘਰ", r: "Ghar", e: "Home" },
-  { g: "ਸਿੱਖ", r: "Sikh", e: "Sikh / Learner" },
-  { g: "ੴ", r: "Ik Oankaar", e: "One God (sacred symbol)" },
+  { g: "ਪੰਜਾਬ",       name: "Panjaab",      sound: "",  e: "Punjab" },
+  { g: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", name: "Sat Sri Akal", sound: "",  e: "Hello / God is truth" },
+  { g: "ਪਾਣੀ",        name: "Paani",         sound: "",  e: "Water" },
+  { g: "ਖਾਣਾ",        name: "Khaana",        sound: "",  e: "Food" },
+  { g: "ਮਾਂ",          name: "Maa",           sound: "",  e: "Mother" },
+  { g: "ਘਰ",          name: "Ghar",           sound: "",  e: "Home" },
+  { g: "ਸਿੱਖ",         name: "Sikh",          sound: "",  e: "Sikh / Learner" },
+  { g: "ੴ",           name: "Ik Onkar",       sound: "",  e: "One God — the sacred symbol opening the Guru Granth Sahib Ji" },
 ];
 
-type Tab = "vowels" | "consonants" | "matras" | "examples";
+type Tab = "alphabet" | "extra" | "matras" | "examples";
 
 const TABS: { id: Tab; label: string; gurmukhi: string }[] = [
-  { id: "vowels", label: "Vowels", gurmukhi: "ਸੁਰ" },
-  { id: "consonants", label: "Consonants", gurmukhi: "ਵਿਅੰਜਨ" },
-  { id: "matras", label: "Matras", gurmukhi: "ਮਾਤਰਾ" },
-  { id: "examples", label: "Examples", gurmukhi: "ਉਦਾਹਰਣ" },
+  { id: "alphabet", label: "Alphabet",  gurmukhi: "ਪੈਂਤੀ" },
+  { id: "extra",    label: "Extra Letters", gurmukhi: "ਹੋਰ" },
+  { id: "matras",   label: "Matras",    gurmukhi: "ਮਾਤਰਾ" },
+  { id: "examples", label: "Examples",  gurmukhi: "ਉਦਾਹਰਣ" },
 ];
 
 export default function AlphabetPage() {
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<Tab>("vowels");
-  const [selected, setSelected] = useState<{ g: string; r: string; e: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("alphabet");
+  const [selected, setSelected] = useState<AlphaChar | null>(null);
 
-  const handleCardClick = (item: { g: string; r: string; e: string }) => {
+  const handleCardClick = (item: AlphaChar) => {
     setSelected(item);
-    speakPunjabi(item.g, item.r);
+    speakPunjabi(item.g, item.name);
   };
 
-  const data = activeTab === "vowels" ? VOWELS
-    : activeTab === "consonants" ? CONSONANTS
+  const data: AlphaChar[] =
+    activeTab === "alphabet" ? ALPHABET
+    : activeTab === "extra"  ? EXTRA_LETTERS
     : activeTab === "matras" ? MATRAS
     : EXAMPLES;
 
@@ -115,14 +123,14 @@ export default function AlphabetPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-4xl">ੴ</span>
+          <span className="gurmukhi text-4xl font-bold text-primary">ਗੁ</span>
           <div>
             <h1 className="text-xl font-bold">Gurmukhi Script</h1>
             <p className="gurmukhi text-sm text-muted-foreground">ਗੁਰਮੁਖੀ ਲਿਪੀ</p>
           </div>
         </div>
         <p className="text-sm text-muted-foreground max-w-prose">
-          Gurmukhi (ਗੁਰਮੁਖੀ) is the writing system used for the Punjabi language. It has <strong>35 consonants</strong>, <strong>10 independent vowels</strong>, and a set of vowel signs called <em>matras</em>. Tap any character to hear it spoken aloud.
+          Gurmukhi (ਗੁਰਮੁਖੀ) has <strong>35 core letters</strong> — the <em>paiṇṭī</em> (ਪੈਂਤੀ). Every letter has three things: its <strong>shape</strong>, its <strong>full name</strong> (e.g. <em>sassaa</em>), and a <strong>short sound</strong> (e.g. <em>Sa</em>). Tap any character to hear it.
         </p>
       </div>
 
@@ -147,12 +155,17 @@ export default function AlphabetPage() {
       {/* Selected card highlight */}
       {selected && (
         <div className="mb-6 p-5 rounded-2xl border-2 border-primary/40 bg-primary/5 flex items-center gap-5 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="text-6xl font-bold leading-none w-20 text-center flex-shrink-0">{selected.g}</div>
+          <div className="gurmukhi text-6xl font-bold leading-none w-20 text-center flex-shrink-0">{selected.g}</div>
           <div>
-            <div className="text-xl font-semibold text-primary">{selected.r}</div>
+            <div className="flex items-baseline gap-3 mb-0.5 flex-wrap">
+              {selected.sound && (
+                <span className="text-2xl font-bold text-primary">{selected.sound}</span>
+              )}
+              <span className="text-base font-semibold text-foreground/80 italic">{selected.name}</span>
+            </div>
             <div className="text-sm text-muted-foreground">{selected.e}</div>
             <button
-              onClick={() => speakPunjabi(selected.g, selected.r)}
+              onClick={() => speakPunjabi(selected.g, selected.name)}
               className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
             >
               <Volume2 className="h-3.5 w-3.5" />
@@ -169,30 +182,37 @@ export default function AlphabetPage() {
             key={i}
             onClick={() => handleCardClick(item)}
             className={`group flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-150 cursor-pointer ${
-              selected?.g === item.g
+              selected?.g === item.g && selected?.name === item.name
                 ? "border-primary bg-primary/10 shadow-sm scale-105"
                 : "border-border/60 bg-card hover:border-primary/40 hover:bg-accent hover:scale-105"
             }`}
           >
-            <span className="text-3xl font-bold leading-tight mb-1">{item.g}</span>
-            <span className="text-xs text-primary font-medium">{item.r}</span>
+            <span className="gurmukhi text-3xl font-bold leading-tight mb-1">{item.g}</span>
+            {item.sound ? (
+              <>
+                <span className="text-xs font-bold text-primary">{item.sound}</span>
+                <span className="text-[10px] text-muted-foreground italic leading-tight">{item.name}</span>
+              </>
+            ) : (
+              <span className="text-xs text-primary font-medium">{item.name}</span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Section description */}
       <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/40 text-sm text-muted-foreground">
-        {activeTab === "vowels" && (
-          <p>Gurmukhi has <strong>10 independent vowels</strong>. When attached to a consonant, they appear as vowel signs (matras). Every syllable in Gurmukhi has an inherent 'a' sound unless a matra overrides it.</p>
+        {activeTab === "alphabet" && (
+          <p>The <strong>35 letters</strong> of the Gurmukhi script, called the <em>paiṇṭī</em> (ਪੈਂਤੀ). The first three — ੳ, ਅ, ੲ — are vowel carriers: they don't make a sound on their own but carry vowel signs. Each letter shows its short sound (<em>Sa, Ha, Ka…</em>) and full name (<em>sassaa, haahaa, kakkaa…</em>).</p>
         )}
-        {activeTab === "consonants" && (
-          <p>The <strong>35 consonants</strong> are arranged in groups by point of articulation — from the throat (ਕ) to the lips (ਪ). Many come in plain and aspirated pairs (e.g., ਕ / ਖ, ਗ / ਘ).</p>
+        {activeTab === "extra" && (
+          <p>Six <strong>extra letters</strong> added after the original 35 to represent sounds borrowed from Arabic, Persian, and other languages. They are formed by adding a dot (pair bindī) to existing letters. Many Punjabi speakers don't distinguish these from their plain equivalents.</p>
         )}
         {activeTab === "matras" && (
-          <p><strong>Matras</strong> are vowel diacritics that attach to consonants to change their vowel sound. They replace the default inherent 'a' sound. For example: ਕ (ka) + ੀ matra = ਕੀ (kee).</p>
+          <p><strong>Matras</strong> are vowel signs that attach to consonants to change their vowel sound. They replace the default short 'a' sound every consonant inherits. For example: ਕ (Ka) + ੀ matra = ਕੀ (Kee).</p>
         )}
         {activeTab === "examples" && (
-          <p>Common Punjabi words written in Gurmukhi. Tap each one to hear its pronunciation. Notice how the characters combine to form words — consonants carry the vowel matras as attachments.</p>
+          <p>Common Punjabi words written in Gurmukhi. Tap each one to hear its pronunciation. Notice how characters combine — consonants carry the vowel matras as attachments above, below, or beside them.</p>
         )}
       </div>
 

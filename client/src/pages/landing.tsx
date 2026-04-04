@@ -178,7 +178,7 @@ export default function Landing() {
               {/* Stats row */}
               <div className="flex flex-wrap gap-5 mb-8">
                 {[
-                  { icon: BookOpen, val: "50+",  label: "Lessons" },
+                  { icon: BookOpen, val: "15+",  label: "Lessons" },
                   { icon: Volume2,  val: "400+", label: "Words with pronunciation" },
                   { icon: Zap,      val: "8",    label: "Units" },
                   { icon: Star,     val: "Free", label: "Always" },
@@ -366,7 +366,7 @@ export default function Landing() {
             <div className="relative z-10">
               <Globe2 className="h-8 w-8 text-primary-foreground/80 mx-auto mb-4" />
               <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-3">Ready to start your Punjabi journey?</h2>
-              <p className="text-sm text-primary-foreground/80 mb-6 max-w-md mx-auto">Join thousands of heritage learners reconnecting with their language and culture.</p>
+              <p className="text-sm text-primary-foreground/80 mb-6 max-w-md mx-auto">Join a growing community of heritage learners reconnecting with their language and culture.</p>
               <Link href="/learn">
                 <Button size="lg" variant="secondary" className="gap-2">
                   Begin Learning Now <ChevronRight className="h-4 w-4" />
@@ -432,7 +432,14 @@ export default function Landing() {
             </svg>
             <span className="text-sm font-semibold">LearnJabi</span>
           </div>
-          <p className="text-xs text-muted-foreground">Built with care for Punjabi learners everywhere</p>
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-xs text-muted-foreground">
+            <p>© {new Date().getFullYear()} LearnJabi. Built with care for Punjabi learners everywhere.</p>
+            <div className="flex items-center gap-3">
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <span>·</span>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

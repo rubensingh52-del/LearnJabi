@@ -584,7 +584,7 @@ export default function LessonPage() {
           {/* Progress save status */}
           {saveMutation.isError ? (
             <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-destructive/10 text-destructive border border-destructive/20">
-              <span className="font-semibold">⚠️ Failed to save: {saveMutation.error?.message || "Unknown"}</span>
+              <span className="font-semibold">⚠️ Couldn't save your progress — make sure you're logged in.</span>
             </div>
           ) : saveMutation.isSuccess ? (
             <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300">

@@ -16,6 +16,8 @@ import Practice from "@/pages/tutor";
 import ProgressPage from "@/pages/progress-page";
 import AlphabetPage from "@/pages/alphabet";
 import AuthPage from "@/pages/auth";
+import TermsPage from "@/pages/terms";
+import PrivacyPage from "@/pages/privacy";
 
 // Hard redirect if not logged in
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -56,6 +58,8 @@ function AppRouter() {
       <Route path="/alphabet" component={AlphabetPage} />
       <Route path="/practice">{() => <ProtectedRoute component={Practice} />}</Route>
       <Route path="/progress">{() => <ProtectedRoute component={ProgressPage} />}</Route>
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/privacy" component={PrivacyPage} />
       <Route component={NotFound} />
     </Switch>
   );

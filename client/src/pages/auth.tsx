@@ -256,7 +256,10 @@ export default function AuthPage() {
         </Tabs>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By continuing you agree to LearnJabi's terms of service.
+          By continuing you agree to LearnJabi's{" "}
+          <a href="/#/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">terms of service</a>
+          {" "}and{" "}
+          <a href="/#/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">privacy policy</a>.
         </p>
       </div>
     </div>
