@@ -14,6 +14,9 @@ const TTS_ENDPOINT =
 const audioCache = new Map<string, string>();
 
 const PHONETIC_MAP: Record<string, string> = {
+  "ੳ": "ਊੜਾ",
+  "ਅ": "ਐੜਾ",
+  "ੲ": "ਈੜੀ",
   "ੴ": "ਇੱਕ ਓਅੰਕਾਰ",
   "ਾ": "ਕੰਨਾ",
   "ਿ": "ਸਿਹਾਰੀ",

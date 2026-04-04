@@ -426,8 +426,8 @@ function QuizMode({ onBack }: { onBack: () => void }) {
 }
 
 /* ── Mixed Flashcard Mode ── */
-function MixedFlashcardMode({ cards, units, onBack }: { cards: FlashCard[]; units: Unit[]; onBack: () => void }) {
-  const [filterUnit, setFilterUnit] = useState("all");
+function MixedFlashcardMode({ cards, units, onBack, initialFilter = "all" }: { cards: FlashCard[]; units: Unit[]; onBack: () => void; initialFilter?: string }) {
+  const [filterUnit, setFilterUnit] = useState(initialFilter);
   const [deck, setDeck] = useState<FlashCard[]>([]);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -561,6 +561,7 @@ type Mode = "home" | "quiz" | { type: "flashcards"; setIndex: number } | "mixed"
 
 export default function Practice() {
   const [mode, setMode] = useState<Mode>("home");
+  const [initialFilter, setInitialFilter] = useState("all");
   const { data: units = [] } = useQuery<Unit[]>({ queryKey: ["/api/units"] });
   const { data: lessons = [] } = useQuery<Lesson[]>({ queryKey: ["/api/lessons"] });
 
@@ -592,7 +593,7 @@ export default function Practice() {
   }, [lessons, units]);
 
   if (mode === "quiz") return <div className="page-enter mx-auto max-w-6xl px-4 py-12"><QuizMode onBack={() => setMode("home")} /></div>;
-  if (mode === "mixed") return <div className="page-enter mx-auto max-w-6xl px-4 py-12"><MixedFlashcardMode cards={allCards} units={units} onBack={() => setMode("home")} /></div>;
+  if (mode === "mixed") return <div className="page-enter mx-auto max-w-6xl px-4 py-12"><MixedFlashcardMode cards={allCards} units={units} onBack={() => setMode("home")} initialFilter={initialFilter} /></div>;
   if (typeof mode === "object" && mode.type === "flashcards") return <div className="page-enter mx-auto max-w-6xl px-4 py-12"><FlashcardDeck set={flashcardSets[mode.setIndex]} onBack={() => setMode("home")} /></div>;
 
   return (
@@ -628,6 +629,36 @@ export default function Practice() {
           <ChevronRight className="h-5 w-5 text-primary/40" />
         </div>
       </button>
+
+      <div className="mb-6 mt-10">
+        <h2 className="text-sm font-semibold mb-1 flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /> Mastery Decks by Unit</h2>
+        <p className="text-xs text-muted-foreground mb-4">Focus on vocabulary from a specific unit</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 mb-10">
+        {units?.map((unit) => {
+          const unitCards = allCards.filter(c => c.unit === unit.title);
+          if (unitCards.length === 0) return null;
+          return (
+            <button
+              key={unit.id}
+              onClick={() => {
+                // We'll use the mixed mode but with a pre-filtered set
+                setInitialFilter(unit.title);
+                setMode("mixed");
+              }}
+              className="group text-left p-5 rounded-2xl border border-border bg-card transition-all hover:border-primary/30"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <Badge variant="secondary" className="text-xs">{unitCards.length} cards</Badge>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <h3 className="text-sm font-semibold">{unit.title}</h3>
+              <p className="text-xs text-muted-foreground">{unit.titlePunjabi}</p>
+            </button>
+          );
+        })}
+      </div>
 
       <div className="mb-6">
         <h2 className="text-sm font-semibold mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4 text-muted-foreground" />Static Decks</h2>
