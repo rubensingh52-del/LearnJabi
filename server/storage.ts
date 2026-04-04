@@ -25,6 +25,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getUnits(): Promise<Unit[]>;
   getUnit(id: number): Promise<Unit | undefined>;
+  getAllLessons(): Promise<Lesson[]>;
   getLessonsByUnit(unitId: number): Promise<Lesson[]>;
   getLesson(id: number): Promise<Lesson | undefined>;
   getProgress(userId: string): Promise<UserProgress[]>;
@@ -67,6 +68,12 @@ export class DatabaseStorage implements IStorage {
   async getUnit(id: number): Promise<Unit | undefined> {
     const { data } = await db.from('units').select('*').eq('id', id).single();
     return data ? mapUnit(data) : undefined;
+  }
+
+  async getAllLessons(): Promise<Lesson[]> {
+    const { data, error } = await db.from('lessons').select('*').order('order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(mapLesson);
   }
 
   async getLessonsByUnit(unitId: number): Promise<Lesson[]> {

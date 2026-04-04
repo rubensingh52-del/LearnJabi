@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
-import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn } from "lucide-react";
+import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn, Mail, CheckCircle } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -18,6 +18,9 @@ export function NavHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showTutorToast, setShowTutorToast] = useState(false);
   const { user, loading, signOut } = useAuth();
+  const [showContact, setShowContact] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
+  const [contactState, setContactState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const displayName = user?.user_metadata?.username || user?.email?.split("@")[0] || "You";
 
@@ -26,7 +29,7 @@ export function NavHeader() {
     setTimeout(() => setShowTutorToast(false), 3000);
   };
 
-  return (
+  const header = (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex h-14 items-center justify-between">
@@ -86,6 +89,15 @@ export function NavHeader() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {/* Contact Us — always visible */}
+            <button
+              onClick={() => { setShowContact(true); setContactState("idle"); }}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              data-testid="button-contact-us"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Contact Us
+            </button>
             <Button size="icon" variant="ghost" onClick={toggle} data-testid="button-theme-toggle"
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -149,6 +161,16 @@ export function NavHeader() {
                 <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">Soon</span>
               </button>
 
+              {/* Contact Us — mobile */}
+              <button
+                onClick={() => { setMobileOpen(false); setShowContact(true); setContactState("idle"); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground cursor-pointer text-left"
+                data-testid="link-mobile-contact"
+              >
+                <Mail className="h-3.5 w-3.5 text-primary/70" />
+                Contact Us
+              </button>
+
               {/* Mobile auth */}
               {!loading && (
                 user ? (
@@ -197,5 +219,92 @@ export function NavHeader() {
         </div>
       )}
     </header>
+  );
+
+  async function handleContactSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setContactState("sending");
+    try {
+      const res = await fetch("https://formspree.io/f/mykbpqny", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+      if (res.ok) {
+        setContactState("sent");
+        setContactForm({ name: "", email: "", message: "" });
+      } else {
+        setContactState("error");
+      }
+    } catch {
+      setContactState("error");
+    }
+  }
+
+  const contactModal = showContact ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowContact(false)}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      {/* Modal */}
+      <div
+        className="relative z-10 w-full max-w-md bg-background border border-border rounded-2xl shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setShowContact(false)}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close contact form"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mx-auto mb-3">
+            <Mail className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-lg font-bold">Contact Us</h2>
+          <p className="text-sm text-muted-foreground">Have a question or suggestion? We'd love to hear from you.</p>
+        </div>
+
+        {contactState === "sent" ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <CheckCircle className="h-10 w-10 text-primary" />
+            <p className="text-base font-semibold">Message sent!</p>
+            <p className="text-sm text-muted-foreground">Thanks for reaching out — we'll get back to you soon.</p>
+            <button className="mt-2 text-sm text-primary underline underline-offset-2" onClick={() => setContactState("idle")}>Send another message</button>
+          </div>
+        ) : (
+          <form onSubmit={handleContactSubmit} className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="nav-contact-name" className="text-sm font-medium">Name</label>
+                <input id="nav-contact-name" type="text" required placeholder="Your name" value={contactForm.name} onChange={e => setContactForm(d => ({ ...d, name: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="nav-contact-email" className="text-sm font-medium">Email</label>
+                <input id="nav-contact-email" type="email" required placeholder="your@email.com" value={contactForm.email} onChange={e => setContactForm(d => ({ ...d, email: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="nav-contact-message" className="text-sm font-medium">Message</label>
+              <textarea id="nav-contact-message" required rows={4} placeholder="Write your message here..." value={contactForm.message} onChange={e => setContactForm(d => ({ ...d, message: e.target.value }))} className="rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none" />
+            </div>
+            {contactState === "error" && <p className="text-sm text-destructive">Something went wrong. Please try again.</p>}
+            <Button type="submit" disabled={contactState === "sending"} className="self-end gap-2">
+              {contactState === "sending" ? "Sending..." : "Send Message"} <Mail className="h-4 w-4" />
+            </Button>
+          </form>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      {header}
+      {contactModal}
+    </>
   );
 }

@@ -32,6 +32,10 @@ export default function LessonPage() {
   const { data: unit } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
   const { data: allLessons } = useQuery<Lesson[]>({ queryKey: ["/api/units", unitId, "lessons"] });
 
+  // Unit 1 = Gurmukhi Script — test symbol → romanized name.
+  // All other units = speaking/vocab — test Gurmukhi+romanized → English meaning.
+  const isScriptUnit = unitId === 1;
+
   const [step, setStep] = useState<LessonStep>("learn");
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [exerciseIndex, setExerciseIndex] = useState(0);
@@ -135,9 +139,13 @@ export default function LessonPage() {
     setShowResult(true);
     if (optionIndex === currentExercise?.correct && !scoredExercises.has(exerciseIndex)) {
       setScore(s => s + 1);
+      pendingScoreBonus.current = 1; // Mark that we just got a point
       setScoredExercises(prev => new Set([...prev, exerciseIndex]));
     }
   };
+
+  // Track whether the just-answered choose was correct (for stale-state-safe final save)
+  const pendingScoreBonus = useRef(0);
 
   // Match click uses shuffledRightIndices to map visual position → real pair index
   const handleMatchClick = (side: "left" | "right", visualIndex: number) => {
@@ -173,14 +181,19 @@ export default function LessonPage() {
 
   const handleNextExercise = () => {
     if (exerciseIndex < totalExercises - 1) {
+      pendingScoreBonus.current = 0;
       setExerciseIndex(i => i + 1);
       setSelectedAnswer(null);
       setShowResult(false);
       setMatchedPairs(new Set());
       setMatchSelection(null);
     } else {
+      // score state may be stale if last answer just incremented it;
+      // use pendingScoreBonus to account for the final in-flight update
+      const finalScore = score + pendingScoreBonus.current;
+      pendingScoreBonus.current = 0;
       setStep("complete");
-      saveMutation.mutate({ lessonId, completed: true, score });
+      saveMutation.mutate({ lessonId, completed: true, score: finalScore });
     }
   };
 
@@ -218,16 +231,18 @@ export default function LessonPage() {
     return { display: trimmed, romanized: null };
   };
 
-  const renderQuestionWithRomanized = (question: string) => {
+  // In exercise questions: script unit shows Gurmukhi alone (answer IS the romanization).
+  // Vocab units show Gurmukhi with romanized inline (the test is the English meaning).
+  const renderExerciseQuestion = (question: string) => {
     const parts = question.split(/((?:[\u0A00-\u0A7F]+(?:\s+[\u0A00-\u0A7F]+)*))/g);
     return (
       <>
         {parts.map((part, idx) => {
           if (!hasGurmukhi(part)) return <span key={idx}>{part}</span>;
           const trimmed = part.trim();
-          const romanized = gurmukhiLookup.get(trimmed);
+          const romanized = !isScriptUnit ? gurmukhiLookup.get(trimmed) : undefined;
           return (
-            <span key={idx} className="inline-flex items-baseline gap-1 flex-wrap">
+            <span key={idx} className="inline-flex items-baseline gap-1.5 flex-wrap">
               <span className="gurmukhi font-semibold">{part}</span>
               {romanized && (
                 <span className="text-primary font-semibold text-sm">({romanized})</span>
@@ -266,8 +281,8 @@ export default function LessonPage() {
   const progressPercent = step === "learn"
     ? ((currentItemIndex + 1) / Math.max(items.length, 1)) * 50
     : step === "exercise"
-    ? 50 + ((exerciseIndex + 1) / Math.max(totalExercises, 1)) * 50
-    : 100;
+      ? 50 + ((exerciseIndex + 1) / Math.max(totalExercises, 1)) * 50
+      : 100;
 
   return (
     <div className="page-enter mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
@@ -306,25 +321,36 @@ export default function LessonPage() {
             <button
               onClick={() => handleSpeak(currentItem)}
               aria-label="Pronounce this word in Punjabi"
-              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
-                isSpeaking
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isSpeaking
                   ? "bg-primary/20 text-primary animate-pulse"
                   : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-              }`}
+                }`}
             >
               <Volume2 className="h-5 w-5" />
             </button>
 
-            <div className="text-5xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
-
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Pronunciation</span>
-              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xl">
-                {currentItem.romanized}
-              </div>
-            </div>
-
-            <div className="text-base text-muted-foreground pt-1">{currentItem.english}</div>
+            {isScriptUnit ? (
+              // SCRIPT UNIT: Big Gurmukhi symbol, romanized name as the "answer", English description
+              <>
+                <div className="text-6xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Name</span>
+                  <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xl">
+                    {currentItem.romanized}
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground pt-1">{currentItem.english}</div>
+              </>
+            ) : (
+              // VOCAB/PHRASE UNIT: Gurmukhi + romanized together = the "word to learn", English = the meaning
+              <>
+                <div className="text-5xl font-bold leading-tight gurmukhi">{currentItem.gurmukhi}</div>
+                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xl">
+                  {currentItem.romanized}
+                </div>
+                <div className="text-lg font-semibold pt-1">{currentItem.english}</div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
@@ -355,9 +381,8 @@ export default function LessonPage() {
                 key={i}
                 onClick={() => setCurrentItemIndex(i)}
                 aria-label={`Go to item ${i + 1}`}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentItemIndex ? "w-4 bg-primary" : "w-2 bg-muted"
-                }`}
+                className={`h-2 rounded-full transition-all ${i === currentItemIndex ? "w-4 bg-primary" : "w-2 bg-muted"
+                  }`}
               />
             ))}
           </div>
@@ -376,7 +401,7 @@ export default function LessonPage() {
             <div className="flex items-start gap-2">
               <div className="flex-1">
                 <p className="font-semibold text-lg leading-relaxed">
-                  {renderQuestionWithRomanized(currentExercise.question)}
+                  {renderExerciseQuestion(currentExercise.question)}
                 </p>
               </div>
               {/* Only show speaker when the question contains speakable Gurmukhi */}
@@ -384,11 +409,10 @@ export default function LessonPage() {
                 <button
                   onClick={() => handleExerciseSpeak(currentExercise.question)}
                   aria-label="Hear the Punjabi in this question"
-                  className={`shrink-0 p-2 rounded-full transition-colors ${
-                    isExerciseSpeaking
+                  className={`shrink-0 p-2 rounded-full transition-colors ${isExerciseSpeaking
                       ? "bg-primary/20 text-primary animate-pulse"
                       : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  }`}
+                    }`}
                 >
                   <Volume2 className="h-4 w-4" />
                 </button>
@@ -403,8 +427,17 @@ export default function LessonPage() {
                     if (i === currentExercise.correct) extra = "border-green-500 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300";
                     else if (i === selectedAnswer) extra = "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300";
                   }
-                  const { display, romanized } = resolveRomanized(option);
-                  const isGurmukhi = hasGurmukhi(display);
+                  const isGurmukhi = hasGurmukhi(option);
+
+                  // Parse out any embedded "(romanized)" hint already in the seed text e.g. "ਉ (u)"
+                  const embeddedRoman = option.match(/\(([^)]+)\)/)?.[1] ?? null;
+                  // Strip just the parenthetical to get the clean Gurmukhi/English part
+                  const cleanDisplay = option.replace(/\s*\([^)]+\)/g, "").trim();
+                  // For Gurmukhi options: prefer embedded romanized, then vocab map lookup
+                  const romanizedHint = isGurmukhi
+                    ? (embeddedRoman ?? gurmukhiLookup.get(cleanDisplay) ?? null)
+                    : null;
+
                   return (
                     <button
                       key={i}
@@ -415,10 +448,11 @@ export default function LessonPage() {
                         ${!extra ? "border-border" : ""} ${extra}`}
                     >
                       {isGurmukhi ? (
+                        // Gurmukhi option: ALWAYS show script + romanized beneath
                         <span className="flex flex-col gap-0.5">
-                          <span className="gurmukhi text-sm font-semibold">{display}</span>
-                          {romanized && (
-                            <span className="text-xs text-primary font-semibold">({romanized})</span>
+                          <span className="gurmukhi text-lg font-semibold leading-tight">{cleanDisplay}</span>
+                          {romanizedHint && (
+                            <span className="text-xs text-primary font-semibold">({romanizedHint})</span>
                           )}
                         </span>
                       ) : (
@@ -440,6 +474,9 @@ export default function LessonPage() {
                     const { display, romanized } = resolveRomanized(pair[0]);
                     const isMatched = matchedPairs.has(i);
                     const isSelected = matchSelection?.side === "left" && matchSelection.index === i;
+                    // Script unit left: show Gurmukhi alone (romanized IS the answer on the right)
+                    // Vocab units left: show Gurmukhi + romanized together (answer is English on right)
+                    const showRomanizedOnLeft = !isScriptUnit && !!romanized;
                     return (
                       <button
                         key={i}
@@ -453,7 +490,7 @@ export default function LessonPage() {
                         {hasGurmukhi(display) ? (
                           <span className="flex flex-col gap-0">
                             <span className="gurmukhi font-semibold">{display}</span>
-                            {!matchHidesRomanized && romanized && (
+                            {showRomanizedOnLeft && (
                               <span className="text-xs text-primary font-semibold not-italic">({romanized})</span>
                             )}
                           </span>
@@ -501,11 +538,10 @@ export default function LessonPage() {
             )}
 
             {showResult && (
-              <div className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
-                selectedAnswer === currentExercise.correct
+              <div className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${selectedAnswer === currentExercise.correct
                   ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300"
                   : "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
-              }`}>
+                }`}>
                 {selectedAnswer === currentExercise.correct
                   ? <><CheckCircle2 className="h-4 w-4" /> Correct! Well done.</>
                   : <><XCircle className="h-4 w-4" /> The correct answer was: {currentExercise.options?.[currentExercise.correct ?? 0]}</>
@@ -514,7 +550,7 @@ export default function LessonPage() {
             )}
           </div>
 
-          {(showResult || currentExercise.type === "match") && (
+          {(showResult || (currentExercise.type === "match" && matchedPairs.size === currentExercise.pairs?.length)) && (
             <div className="flex justify-end">
               <Button onClick={handleNextExercise}>
                 {exerciseIndex < totalExercises - 1 ? "Next Question" : "Finish Lesson"}
@@ -536,6 +572,17 @@ export default function LessonPage() {
               You scored {Math.min(score, totalExercises)} out of {totalExercises}
             </p>
           </div>
+
+          {/* Progress save status */}
+          {saveMutation.isError ? (
+            <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              <span>⚠️ Log in to save your progress</span>
+            </div>
+          ) : saveMutation.isSuccess ? (
+            <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300">
+              <CheckCircle2 className="h-4 w-4" /> Progress saved!
+            </div>
+          ) : null}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button variant="outline" onClick={handleRestart}>

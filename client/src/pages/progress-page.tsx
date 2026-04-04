@@ -94,7 +94,7 @@ export default function ProgressPage() {
       <div className="page-enter mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
         <Skeleton className="h-7 w-48 mb-8" />
         <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
       </div>
     );
@@ -215,7 +215,7 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
     const unit = units.find((u: any) => u.id === lesson.unitId);
     if (!unit) continue;
     let content: any = {};
-    try { content = typeof lesson.content === "string" ? JSON.parse(lesson.content) : lesson.content; } catch {}
+    try { content = typeof lesson.content === "string" ? JSON.parse(lesson.content) : lesson.content; } catch { }
     if (Array.isArray(content?.items)) {
       for (const item of content.items) {
         if (item.gurmukhi && item.english) {
@@ -239,7 +239,7 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
     setDeck(shuffleArr(filtered));
     setIndex(0); setFlipped(false);
     setKnown(new Set()); setUnsure(new Set()); setSessionDone(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterUnit, lessons.length]);
 
   const card = deck[index];
@@ -278,9 +278,8 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
       <div className="flex flex-wrap gap-2 mb-5">
         <button
           onClick={() => setFilterUnit("all")}
-          className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-            filterUnit === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:border-primary"
-          }`}
+          className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${filterUnit === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:border-primary"
+            }`}
         >All ({allCards.length})</button>
         {unitNames.map(u => {
           const uo = units.find((uu: any) => uu.title === u);
@@ -288,9 +287,8 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
           const count = allCards.filter(c => c.unit === u).length;
           return (
             <button key={u} onClick={() => setFilterUnit(u)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-                filterUnit === u ? `${UNIT_BADGE[col] ?? "bg-primary"} text-white border-transparent` : "bg-muted text-muted-foreground border-border hover:border-primary"
-              }`}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${filterUnit === u ? `${UNIT_BADGE[col] ?? "bg-primary"} text-white border-transparent` : "bg-muted text-muted-foreground border-border hover:border-primary"
+                }`}
             >{u.split(" ")[0]} ({count})</button>
           );
         })}
@@ -335,9 +333,8 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
             {/* Flip card */}
             <div
               onClick={() => setFlipped(f => !f)}
-              className={`relative cursor-pointer rounded-2xl border p-8 text-center min-h-[180px] flex flex-col items-center justify-center gap-3 transition-all duration-300 select-none ${
-                UNIT_CARD_BG[card.unitColor] ?? "bg-card border-border"
-              }`}
+              className={`relative cursor-pointer rounded-2xl border p-8 text-center min-h-[180px] flex flex-col items-center justify-center gap-3 transition-all duration-300 select-none ${UNIT_CARD_BG[card.unitColor] ?? "bg-card border-border"
+                }`}
               style={{ perspective: 800 }}
             >
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full text-white ${UNIT_BADGE[card.unitColor] ?? "bg-primary"}`}>
@@ -346,15 +343,31 @@ function FlashcardsSection({ units, lessons }: { units: any[]; lessons: any[] })
 
               {!flipped ? (
                 <>
-                  <p className="text-4xl font-bold" style={{ fontFamily: "serif" }}>{card.gurmukhi}</p>
-                  {card.romanized && <p className="text-sm text-muted-foreground italic">{card.romanized}</p>}
-                  <p className="text-xs text-muted-foreground mt-2">Tap to reveal</p>
+                  <p className="text-4xl font-bold gurmukhi">{card.gurmukhi}</p>
+                  {/* Non-script units: show romanized on front alongside Gurmukhi — test is English meaning */}
+                  {card.unit !== "Gurmukhi Script" && card.romanized && (
+                    <p className="text-xl text-primary font-semibold italic">{card.romanized}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {card.unit === "Gurmukhi Script" ? "Tap to reveal name" : "Tap to reveal meaning"}
+                  </p>
                 </>
               ) : (
                 <>
-                  <p className="text-2xl font-semibold">{card.english}</p>
-                  <p className="text-base text-muted-foreground" style={{ fontFamily: "serif" }}>{card.gurmukhi}</p>
-                  {card.romanized && <p className="text-sm text-muted-foreground italic">{card.romanized}</p>}
+                  {card.unit === "Gurmukhi Script" ? (
+                    // Script unit back: show the romanized name (this is what they're being tested on)
+                    <>
+                      <p className="text-2xl font-bold text-primary">{card.romanized}</p>
+                      <p className="text-sm text-muted-foreground gurmukhi">{card.gurmukhi}</p>
+                      <p className="text-sm text-muted-foreground">{card.english}</p>
+                    </>
+                  ) : (
+                    // Vocab unit back: reveal English meaning
+                    <>
+                      <p className="text-2xl font-semibold">{card.english}</p>
+                      <p className="text-sm text-muted-foreground gurmukhi">{card.gurmukhi}</p>
+                    </>
+                  )}
                 </>
               )}
             </div>

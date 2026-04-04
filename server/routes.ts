@@ -62,9 +62,9 @@ async function seedData(force = false) {
   const u = (order: number) => insertedUnits?.find((u: any) => u.order === order)?.id ?? order;
 
   const lessonsData = [
-    { unit_id: u(1), title: "Vowels (Lagaan Maatraa)", title_punjabi: "ਲਗਾਂ ਮਾਤਰਾ", description: "Learn the 10 Punjabi vowels and their sounds", order: 1, type: "vocabulary", content: JSON.stringify({ intro: "Gurmukhi has 10 vowel characters called Lagaan Maatraa. Each vowel can appear independently or attached to a consonant.", items: [ { gurmukhi: "ਅ", romanized: "a", english: "as in 'about'" }, { gurmukhi: "ਆ", romanized: "aa", english: "as in 'father'" }, { gurmukhi: "ਇ", romanized: "i", english: "as in 'hit'" }, { gurmukhi: "ਈ", romanized: "ee", english: "as in 'see'" }, { gurmukhi: "ਉ", romanized: "u", english: "as in 'put'" }, { gurmukhi: "ਊ", romanized: "oo", english: "as in 'moon'" }, { gurmukhi: "ਏ", romanized: "e", english: "as in 'play'" }, { gurmukhi: "ਐ", romanized: "ai", english: "as in 'cat'" }, { gurmukhi: "ਓ", romanized: "o", english: "as in 'go'" }, { gurmukhi: "ਔ", romanized: "au", english: "as in 'caught'" } ], exercises: [ { type: "match", question: "Match the Gurmukhi vowel to its sound", pairs: [["ਅ","a"],["ਆ","aa"],["ਇ","i"],["ਈ","ee"]] }, { type: "choose", question: "ਊ (oo) — Which letter makes the 'oo' sound as in 'moon'?", options: ["ਉ (u)","ਊ (oo)","ਓ (o)","ਔ (au)"], correct: 1 }, { type: "choose", question: "ਅ (a) — Which letter sounds like 'a' in 'about'?", options: ["ਆ (aa)","ਅ (a)","ਐ (ai)","ਏ (e)"], correct: 1 }, { type: "choose", question: "ਏ (e) — What sound does this vowel make?", options: ["as in 'caught'","as in 'play'","as in 'moon'","as in 'hit'"], correct: 1 } ] }) },
-    { unit_id: u(1), title: "Consonants Row 1-2", title_punjabi: "ਵਿਅੰਜਨ", description: "First 10 consonants of the Gurmukhi alphabet", order: 2, type: "vocabulary", content: JSON.stringify({ intro: "Gurmukhi has 35 consonants organised in rows of 5. Let's learn the first two rows.", items: [ { gurmukhi: "ਸ", romanized: "sa", english: "s as in 'sun'" }, { gurmukhi: "ਹ", romanized: "ha", english: "h as in 'hat'" }, { gurmukhi: "ਕ", romanized: "ka", english: "k as in 'kit'" }, { gurmukhi: "ਖ", romanized: "kha", english: "kh — aspirated k" }, { gurmukhi: "ਗ", romanized: "ga", english: "g as in 'go'" }, { gurmukhi: "ਘ", romanized: "gha", english: "gh — aspirated g" }, { gurmukhi: "ਙ", romanized: "nga", english: "ng as in 'sing'" }, { gurmukhi: "ਚ", romanized: "cha", english: "ch as in 'chat'" }, { gurmukhi: "ਛ", romanized: "chha", english: "chh — aspirated ch" }, { gurmukhi: "ਜ", romanized: "ja", english: "j as in 'jam'" } ], exercises: [ { type: "choose", question: "ਕ (ka) — What English sound does this consonant make?", options: ["s as in sun","k as in kit","g as in go","j as in jam"], correct: 1 }, { type: "choose", question: "ਘ (gha) — Which is the aspirated form of 'g'?", options: ["ਗ (ga)","ਘ (gha)","ਙ (nga)","ਖ (kha)"], correct: 1 }, { type: "match", question: "Match consonants to sounds", pairs: [["ਸ","sa"],["ਹ","ha"],["ਕ","ka"],["ਚ","cha"]] }, { type: "choose", question: "ਜ (ja) — Which letter makes the 'j' sound as in 'jam'?", options: ["ਚ (cha)","ਛ (chha)","ਜ (ja)","ਗ (ga)"], correct: 2 } ] }) },
-    { unit_id: u(1), title: "Consonants Row 3-5", title_punjabi: "ਵਿਅੰਜਨ ਭਾਗ ੨", description: "Continue with the remaining consonant rows", order: 3, type: "vocabulary", content: JSON.stringify({ intro: "Let's continue learning the remaining rows of Gurmukhi consonants including retroflex sounds unique to Punjabi.", items: [ { gurmukhi: "ਟ", romanized: "ta (retroflex)", english: "retroflex t — tongue curves back" }, { gurmukhi: "ਠ", romanized: "tha (retroflex)", english: "aspirated retroflex t" }, { gurmukhi: "ਡ", romanized: "da (retroflex)", english: "retroflex d — tongue curves back" }, { gurmukhi: "ਤ", romanized: "ta", english: "t as in 'top'" }, { gurmukhi: "ਥ", romanized: "tha", english: "aspirated t" }, { gurmukhi: "ਦ", romanized: "da", english: "d as in 'day'" }, { gurmukhi: "ਪ", romanized: "pa", english: "p as in 'pen'" }, { gurmukhi: "ਫ", romanized: "pha", english: "aspirated p — ph sound" }, { gurmukhi: "ਬ", romanized: "ba", english: "b as in 'bed'" }, { gurmukhi: "ਮ", romanized: "ma", english: "m as in 'mat'" } ], exercises: [ { type: "choose", question: "ਟ (ta retroflex) — What makes this different from ਤ (ta)?", options: ["It's aspirated","Tongue curves back (retroflex)","It's silent","It makes an 'r' sound"], correct: 1 }, { type: "match", question: "Match the letters", pairs: [["ਪ","pa"],["ਬ","ba"],["ਮ","ma"],["ਦ","da"]] }, { type: "choose", question: "ਮ (ma) — Which letter sounds like 'm' in 'mat'?", options: ["ਪ (pa)","ਬ (ba)","ਮ (ma)","ਦ (da)"], correct: 2 } ] }) },
+    { unit_id: u(1), title: "Vowels (Lagaan Maatraa)", title_punjabi: "ਲਗਾਂ ਮਾਤਰਾ", description: "Learn the 10 Punjabi vowels and their sounds", order: 1, type: "vocabulary", content: JSON.stringify({ intro: "Gurmukhi has 10 vowel characters called Lagaan Maatraa. Each vowel can appear independently or attached to a consonant.", items: [ { gurmukhi: "ਅ", romanized: "aira", english: "short 'a' — as in 'about' (the Gurmukhi base vowel)" }, { gurmukhi: "ਆ", romanized: "aa", english: "long 'aa' — as in 'father'" }, { gurmukhi: "ਇ", romanized: "i", english: "short 'i' — as in 'hit'" }, { gurmukhi: "ਈ", romanized: "ee", english: "long 'ee' — as in 'see'" }, { gurmukhi: "ਉ", romanized: "u", english: "short 'u' — as in 'put'" }, { gurmukhi: "ਊ", romanized: "oo", english: "long 'oo' — as in 'moon'" }, { gurmukhi: "ਏ", romanized: "e", english: "'e' — as in 'play'" }, { gurmukhi: "ਐ", romanized: "ai", english: "'ai' — as in 'cat'" }, { gurmukhi: "ਓ", romanized: "o", english: "'o' — as in 'go'" }, { gurmukhi: "ਔ", romanized: "au", english: "'au' — as in 'caught'" } ], exercises: [ { type: "match", question: "Match the Gurmukhi vowel to its romanized name", pairs: [["ਅ","aira"],["ਆ","aa"],["ਇ","i"],["ਈ","ee"]] }, { type: "choose", question: "ਊ — Which romanized name matches this vowel?", options: ["u","oo","o","au"], correct: 1 }, { type: "choose", question: "ਅ — What is the traditional name of this vowel?", options: ["aa","aira","ai","e"], correct: 1 }, { type: "choose", question: "ਏ — What sound does this vowel make?", options: ["as in 'caught'","as in 'play'","as in 'moon'","as in 'hit'"], correct: 1 } ] }) },
+    { unit_id: u(1), title: "Consonants Row 1-2", title_punjabi: "ਵਿਅੰਜਨ", description: "First 10 consonants of the Gurmukhi alphabet", order: 2, type: "vocabulary", content: JSON.stringify({ intro: "Gurmukhi has 35 consonants organised in rows of 5. Let's learn the first two rows.", items: [ { gurmukhi: "ਸ", romanized: "sassaa", english: "s — as in 'sun'" }, { gurmukhi: "ਹ", romanized: "haahaa", english: "h — as in 'hat'" }, { gurmukhi: "ਕ", romanized: "kakkaa", english: "k — as in 'kit'" }, { gurmukhi: "ਖ", romanized: "khakkhaa", english: "kh — aspirated k" }, { gurmukhi: "ਗ", romanized: "gaggaa", english: "g — as in 'go'" }, { gurmukhi: "ਘ", romanized: "ghagghaa", english: "gh — aspirated g" }, { gurmukhi: "ਙ", romanized: "ngangaa", english: "ng — as in 'sing'" }, { gurmukhi: "ਚ", romanized: "chachchaa", english: "ch — as in 'chat'" }, { gurmukhi: "ਛ", romanized: "chhachchhaa", english: "chh — aspirated ch" }, { gurmukhi: "ਜ", romanized: "jajjaa", english: "j — as in 'jam'" } ], exercises: [ { type: "choose", question: "ਕ — What is the traditional name of this consonant?", options: ["sassaa","kakkaa","gaggaa","jajjaa"], correct: 1 }, { type: "choose", question: "ਘ — Which is the aspirated form of ਗ (gaggaa)?", options: ["ਗ","ਘ","ਙ","ਖ"], correct: 1 }, { type: "match", question: "Match the consonants to their names", pairs: [["ਸ","sassaa"],["ਹ","haahaa"],["ਕ","kakkaa"],["ਚ","chachchaa"]] }, { type: "choose", question: "ਜ — Which letter makes the j sound as in jam?", options: ["ਚ","ਛ","ਜ","ਗ"], correct: 2 } ] }) },
+    { unit_id: u(1), title: "Consonants Row 3-5", title_punjabi: "ਵਿਅੰਜਨ ਭਾਗ ੨", description: "Continue with the remaining consonant rows", order: 3, type: "vocabulary", content: JSON.stringify({ intro: "Let's continue learning the remaining rows of Gurmukhi consonants including retroflex sounds unique to Punjabi.", items: [ { gurmukhi: "ਟ", romanized: "tainkaa", english: "retroflex t — tongue curves back" }, { gurmukhi: "ਠ", romanized: "thaththaa (retroflex)", english: "aspirated retroflex t" }, { gurmukhi: "ਡ", romanized: "daddaa (retroflex)", english: "retroflex d — tongue curves back" }, { gurmukhi: "ਤ", romanized: "tattaa", english: "t — soft dental t" }, { gurmukhi: "ਥ", romanized: "thaththaa", english: "th — aspirated dental t" }, { gurmukhi: "ਦ", romanized: "daddaa", english: "d — dental d" }, { gurmukhi: "ਪ", romanized: "pappaa", english: "p — as in 'pen'" }, { gurmukhi: "ਫ", romanized: "phaphphaa", english: "ph — aspirated p" }, { gurmukhi: "ਬ", romanized: "babbaa", english: "b — as in 'bed'" }, { gurmukhi: "ਮ", romanized: "mammaa", english: "m — as in 'mat'" } ], exercises: [ { type: "choose", question: "ਟ — What makes this different from ਤ (tattaa)?", options: ["It is aspirated","Tongue curves back (retroflex)","It is silent","It makes an r sound"], correct: 1 }, { type: "match", question: "Match consonants to their names", pairs: [["ਪ","pappaa"],["ਬ","babbaa"],["ਮ","mammaa"],["ਦ","daddaa"]] }, { type: "choose", question: "ਮ — Which letter sounds like m as in mat?", options: ["ਪ","ਬ","ਮ","ਦ"], correct: 2 } ] }) },
     { unit_id: u(1), title: "Writing Practice", title_punjabi: "ਲਿਖਣ ਅਭਿਆਸ", description: "Practice writing Gurmukhi characters step by step", order: 4, type: "practice", content: JSON.stringify({ intro: "Practice recognising Gurmukhi characters in real words. Focus on connecting letters you have already learnt.", items: [ { gurmukhi: "ੴ", romanized: "Ik Onkar", english: "The sacred symbol — 'One God'" }, { gurmukhi: "ਸਤ", romanized: "sat", english: "Truth" }, { gurmukhi: "ਨਾਮ", romanized: "naam", english: "Name / Identity" }, { gurmukhi: "ਸਿੱਖ", romanized: "Sikh", english: "Sikh / Learner" }, { gurmukhi: "ਪੰਜਾਬ", romanized: "panjaab", english: "Punjab — Land of Five Rivers" }, { gurmukhi: "ਗੁਰਮੁਖੀ", romanized: "Gurmukhi", english: "The Punjabi script — 'from the Guru's mouth'" } ], exercises: [ { type: "choose", question: "ਸਤ (sat) — What does this word mean?", options: ["Name","Truth","God","Land"], correct: 1 }, { type: "choose", question: "ਪੰਜਾਬ (panjaab) — What does Punjab mean?", options: ["Five Rivers","Holy Land","Sacred Place","Golden Temple"], correct: 0 }, { type: "choose", question: "ਗੁਰਮੁਖੀ (Gurmukhi) — What does the script name mean?", options: ["From God","Five sounds","From the Guru's mouth","Sacred writing"], correct: 2 }, { type: "match", question: "Match the words to their meanings", pairs: [["ਸਤ","Truth"],["ਨਾਮ","Name"],["ਸਿੱਖ","Learner"],["ਪੰਜਾਬ","Punjab"]] } ] }) },
     { unit_id: u(2), title: "Everyday Greetings", title_punjabi: "ਰੋਜ਼ਾਨਾ ਸ਼ੁਭ ਇੱਛਾਵਾਂ", description: "Say hello, goodbye, and daily courtesies", order: 1, type: "phrases", content: JSON.stringify({ intro: "Punjabi greetings reflect deep cultural respect. The most common greeting 'Sat Sri Akal' literally means 'True is the Timeless Lord.'", items: [ { gurmukhi: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", romanized: "Sat Sri Akal", english: "Hello / God is truth" }, { gurmukhi: "ਕਿਦਾਂ?", romanized: "Kidaan?", english: "How are you? (informal)" }, { gurmukhi: "ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?", romanized: "Tusi kive ho?", english: "How are you? (formal)" }, { gurmukhi: "ਮੈਂ ਠੀਕ ਹਾਂ", romanized: "Mai theek haan", english: "I am fine" }, { gurmukhi: "ਸ਼ੁਕਰੀਆ", romanized: "Shukriya", english: "Thank you" }, { gurmukhi: "ਜੀ ਆਇਆਂ ਨੂੰ", romanized: "Ji aayian nu", english: "Welcome" }, { gurmukhi: "ਅਲਵਿਦਾ", romanized: "Alvida", english: "Goodbye" }, { gurmukhi: "ਮਾਫ਼ ਕਰਨਾ", romanized: "Maaf karna", english: "Sorry / Excuse me" }, { gurmukhi: "ਹਾਂ", romanized: "Haan", english: "Yes" }, { gurmukhi: "ਨਹੀਂ", romanized: "Nahi", english: "No" }, { gurmukhi: "ਕਿਰਪਾ ਕਰਕੇ", romanized: "Kirpa karke", english: "Please" }, { gurmukhi: "ਬਹੁਤ ਧੰਨਵਾਦ", romanized: "Bahut dhannvaad", english: "Thank you very much" }, { gurmukhi: "ਕੋਈ ਗੱਲ ਨਹੀਂ", romanized: "Koi gal nahi", english: "No problem / You're welcome" }, { gurmukhi: "ਸ਼ੁਭ ਸਵੇਰੇ", romanized: "Shubh Savere", english: "Good morning" }, { gurmukhi: "ਸ਼ੁਭ ਰਾਤ", romanized: "Shubh raat", english: "Good night" }, { gurmukhi: "ਫਿਰ ਮਿਲਾਂਗੇ", romanized: "Phir milaange", english: "See you again" } ], exercises: [ { type: "choose", question: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ (Sat Sri Akal) — What does this greeting mean in English?", options: ["Thank you","Hello / God is truth","Goodbye","Good morning"], correct: 1 }, { type: "choose", question: "ਸ਼ੁਕਰੀਆ (Shukriya) — What does this mean?", options: ["Hello","Sorry","Thank you","Welcome"], correct: 2 }, { type: "choose", question: "ਸ਼ੁਭ ਸਵੇਰੇ (Shubh Savere) — When would you say this?", options: ["At night","In the morning","When leaving","When arriving"], correct: 1 }, { type: "match", question: "Match the greetings", pairs: [["ਸ਼ੁਕਰੀਆ","Thank you"],["ਅਲਵਿਦਾ","Goodbye"],["ਹਾਂ","Yes"],["ਨਹੀਂ","No"]] } ] }) },
     { unit_id: u(2), title: "Introducing Yourself", title_punjabi: "ਆਪਣੀ ਜਾਣ-ਪਛਾਣ", description: "Tell people your name, where you're from, and what you do", order: 2, type: "phrases", content: JSON.stringify({ intro: "Being able to introduce yourself is essential. Punjabi has formal (ਤੁਸੀਂ - tusi) and informal (ਤੂੰ - toon) registers — always use formal with strangers and elders.", items: [ { gurmukhi: "ਮੇਰਾ ਨਾਮ ___ ਹੈ", romanized: "Mera naam ___ hai", english: "My name is ___" }, { gurmukhi: "ਤੁਹਾਡਾ ਨਾਮ ਕੀ ਹੈ?", romanized: "Tuhaada naam ki hai?", english: "What is your name? (formal)" }, { gurmukhi: "ਮੈਂ ___ ਤੋਂ ਹਾਂ", romanized: "Mai ___ to haan", english: "I am from ___" }, { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਿਹਾ ਹਾਂ", romanized: "Mai Punjabi Sikh riha haan", english: "I am learning Punjabi (male)" }, { gurmukhi: "ਮੈਂ ਪੰਜਾਬੀ ਸਿੱਖ ਰਹੀ ਹਾਂ", romanized: "Mai Punjabi Sikh rahi haan", english: "I am learning Punjabi (female)" }, { gurmukhi: "ਤੁਸੀਂ ਕੀ ਕੰਮ ਕਰਦੇ ਹੋ?", romanized: "Tusi ki kam karde ho?", english: "What do you do?" }, { gurmukhi: "ਮਿਲ ਕੇ ਖੁਸ਼ੀ ਹੋਈ", romanized: "Mil ke khushi hoyi", english: "Nice to meet you" }, { gurmukhi: "ਮੇਰੀ ਉਮਰ ___ ਸਾਲ ਹੈ", romanized: "Meri umar ___ saal hai", english: "I am ___ years old" }, { gurmukhi: "ਮੈਂ ਵਿਦਿਆਰਥੀ ਹਾਂ", romanized: "Mai vidyarthi haan", english: "I am a student" }, { gurmukhi: "ਮੈਂ ਅੰਗਰੇਜ਼ੀ ਬੋਲਦਾ ਹਾਂ", romanized: "Mai angrezi bolda haan", english: "I speak English" }, { gurmukhi: "ਥੋੜੀ ਜਿਹੀ", romanized: "Thori jihi", english: "A little bit" }, { gurmukhi: "ਹੌਲੀ ਬੋਲੋ", romanized: "Hauli bolo", english: "Speak slowly" } ], exercises: [ { type: "choose", question: "ਮੇਰਾ ਨਾਮ ___ ਹੈ (Mera naam ___ hai) — What does this mean?", options: ["What is your name?","My name is ___","I am from ___","Nice to meet you"], correct: 1 }, { type: "choose", question: "ਹੌਲੀ ਬੋਲੋ (Hauli bolo) — What are you asking someone to do?", options: ["Say again","Speak slowly","Be quiet","Come here"], correct: 1 }, { type: "choose", question: "ਮੈਂ ਵਿਦਿਆਰਥੀ ਹਾਂ (Mai vidyarthi haan) — What does this sentence mean?", options: ["I am a teacher","I am a student","I am learning","I am working"], correct: 1 }, { type: "match", question: "Match the phrases", pairs: [["ਥੋੜੀ ਜਿਹੀ","A little bit"],["ਮਿਲ ਕੇ ਖੁਸ਼ੀ ਹੋਈ","Nice to meet you"],["ਹੌਲੀ ਬੋਲੋ","Speak slowly"],["ਮੈਂ ਵਿਦਿਆਰਥੀ ਹਾਂ","I am a student"]] } ] }) },
@@ -94,9 +94,120 @@ async function seedData(force = false) {
   console.log(`[Seed] Inserted ${insertedLessons?.length} lessons across 8 units`);
 }
 
+// ── Unit 1 content migration — fixes romanized names if old seed is present ───
+async function migrateUnit1Content() {
+  // Detect if migration is needed: vowel lesson ਅ should have romanized "aira" not "a"
+  const { data: units, error: unitsErr } = await db.from('units').select('id').eq('order', 1).limit(1);
+  if (unitsErr) { console.error('[Migration] units query error:', unitsErr); return; }
+  if (!units || units.length === 0) { console.log('[Migration] No unit 1 found, skipping'); return; }
+  const unit1Id = units[0].id;
+  console.log('[Migration] Unit 1 ID:', unit1Id);
+
+  const { data: lessons, error: lessonsErr } = await db.from('lessons').select('id, order, content').eq('unit_id', unit1Id).order('order');
+  if (lessonsErr) { console.error('[Migration] lessons query error:', lessonsErr); return; }
+  if (!lessons || lessons.length === 0) { console.log('[Migration] No lessons found for unit 1'); return; }
+  console.log('[Migration] Found', lessons.length, 'lessons for unit 1');
+
+  const vowelLesson = lessons.find((l: any) => l.order === 1);
+  if (!vowelLesson) { console.log('[Migration] Vowel lesson not found'); return; }
+
+  let vowelContent: any;
+  try { vowelContent = JSON.parse(vowelLesson.content); } catch (e) { console.error('[Migration] JSON parse error:', e); return; }
+
+  // Check if migration is needed
+  const firstVowel = vowelContent?.items?.[0];
+  console.log('[Migration] First vowel romanized:', firstVowel?.romanized);
+  if (!firstVowel || firstVowel.romanized === 'aira') {
+    console.log('[Migration] Already migrated or unexpected format — skipping');
+    return;
+  }
+
+  console.log('[Migration] Updating Unit 1 lesson content with correct romanized names...');
+
+  // ── Vowel lesson update ──
+  const vowelItems = [
+    { gurmukhi: 'ਅ', romanized: 'aira', english: "short 'a' — as in 'about'" },
+    { gurmukhi: 'ਆ', romanized: 'aa', english: "long 'aa' — as in 'father'" },
+    { gurmukhi: 'ਇ', romanized: 'i', english: "short 'i' — as in 'hit'" },
+    { gurmukhi: 'ਈ', romanized: 'ee', english: "long 'ee' — as in 'see'" },
+    { gurmukhi: 'ਉ', romanized: 'u', english: "short 'u' — as in 'put'" },
+    { gurmukhi: 'ਊ', romanized: 'oo', english: "long 'oo' — as in 'moon'" },
+    { gurmukhi: 'ਏ', romanized: 'e', english: "'e' — as in 'play'" },
+    { gurmukhi: 'ਐ', romanized: 'ai', english: "'ai' — as in 'cat'" },
+    { gurmukhi: 'ਓ', romanized: 'o', english: "'o' — as in 'go'" },
+    { gurmukhi: 'ਔ', romanized: 'au', english: "'au' — as in 'caught'" },
+  ];
+  const vowelExercises = [
+    { type: 'match', question: 'Match the Gurmukhi vowel to its romanized name', pairs: [['ਅ','aira'],['ਆ','aa'],['ਇ','i'],['ਈ','ee']] },
+    { type: 'choose', question: 'ਊ — Which romanized name matches this vowel?', options: ['u','oo','o','au'], correct: 1 },
+    { type: 'choose', question: 'ਅ — What is the name of this vowel?', options: ['aa','aira','ai','e'], correct: 1 },
+    { type: 'choose', question: 'ਏ — What sound does this vowel make?', options: ["as in 'caught'","as in 'play'","as in 'moon'","as in 'hit'"], correct: 1 },
+  ];
+  const { error: vowelUpdateErr } = await db.from('lessons').update({ content: JSON.stringify({ ...vowelContent, items: vowelItems, exercises: vowelExercises }) }).eq('id', vowelLesson.id);
+  if (vowelUpdateErr) {
+    console.error('[Migration] Vowel update error:', JSON.stringify(vowelUpdateErr));
+    return;
+  }
+  console.log('[Migration] Vowel lesson updated successfully for lesson id:', vowelLesson.id);
+
+  // ── Consonant Row 1-2 lesson update ──
+  const cons1Lesson = lessons.find((l: any) => l.order === 2);
+  if (cons1Lesson) {
+    let c1: any;
+    try { c1 = JSON.parse(cons1Lesson.content); } catch { c1 = {}; }
+    const cons1Items = [
+      { gurmukhi: 'ਸ', romanized: 'sassaa', english: "s — as in 'sun'" },
+      { gurmukhi: 'ਹ', romanized: 'haahaa', english: "h — as in 'hat'" },
+      { gurmukhi: 'ਕ', romanized: 'kakkaa', english: "k — as in 'kit'" },
+      { gurmukhi: 'ਖ', romanized: 'khakkhaa', english: "kh — aspirated k" },
+      { gurmukhi: 'ਗ', romanized: 'gaggaa', english: "g — as in 'go'" },
+      { gurmukhi: 'ਘ', romanized: 'ghagghaa', english: "gh — aspirated g" },
+      { gurmukhi: 'ਙ', romanized: 'ngangaa', english: "ng — as in 'sing'" },
+      { gurmukhi: 'ਚ', romanized: 'chachchaa', english: "ch — as in 'chat'" },
+      { gurmukhi: 'ਛ', romanized: 'chhachchhaa', english: "chh — aspirated ch" },
+      { gurmukhi: 'ਜ', romanized: 'jajjaa', english: "j — as in 'jam'" },
+    ];
+    const cons1Exercises = [
+      { type: 'choose', question: 'ਕ — What is the name of this consonant?', options: ['sassaa','kakkaa','gaggaa','jajjaa'], correct: 1 },
+      { type: 'choose', question: 'ਘ — Which is the aspirated form of ਗ (gaggaa)?', options: ['ਗ','ਘ','ਙ','ਖ'], correct: 1 },
+      { type: 'match', question: 'Match consonants to their names', pairs: [['ਸ','sassaa'],['ਹ','haahaa'],['ਕ','kakkaa'],['ਚ','chachchaa']] },
+      { type: 'choose', question: 'ਜ — Which letter makes the j sound as in jam?', options: ['ਚ','ਛ','ਜ','ਗ'], correct: 2 },
+    ];
+    await db.from('lessons').update({ content: JSON.stringify({ ...c1, items: cons1Items, exercises: cons1Exercises }) }).eq('id', cons1Lesson.id);
+  }
+
+  // ── Consonant Row 3-5 lesson update ──
+  const cons2Lesson = lessons.find((l: any) => l.order === 3);
+  if (cons2Lesson) {
+    let c2: any;
+    try { c2 = JSON.parse(cons2Lesson.content); } catch { c2 = {}; }
+    const cons2Items = [
+      { gurmukhi: 'ਟ', romanized: 'tainkaa', english: "retroflex ṭ — tongue curves back" },
+      { gurmukhi: 'ਠ', romanized: 'thaththaa', english: "aspirated retroflex ṭh" },
+      { gurmukhi: 'ਡ', romanized: 'daddaa', english: "retroflex ḍ — tongue curves back" },
+      { gurmukhi: 'ਤ', romanized: 'tattaa', english: "t — soft dental t" },
+      { gurmukhi: 'ਥ', romanized: 'thaththaa', english: "th — aspirated dental t" },
+      { gurmukhi: 'ਦ', romanized: 'daddaa', english: "d — dental d" },
+      { gurmukhi: 'ਪ', romanized: 'pappaa', english: "p — as in 'pen'" },
+      { gurmukhi: 'ਫ', romanized: 'phaphphaa', english: "ph — aspirated p" },
+      { gurmukhi: 'ਬ', romanized: 'babbaa', english: "b — as in 'bed'" },
+      { gurmukhi: 'ਮ', romanized: 'mammaa', english: "m — as in 'mat'" },
+    ];
+    const cons2Exercises = [
+      { type: 'choose', question: 'ਟ — What makes this different from ਤ (tattaa)?', options: ['It is aspirated','Tongue curves back (retroflex)','It is silent','It makes an r sound'], correct: 1 },
+      { type: 'match', question: 'Match the letters to their names', pairs: [['ਪ','pappaa'],['ਬ','babbaa'],['ਮ','mammaa'],['ਦ','daddaa']] },
+      { type: 'choose', question: 'ਮ — Which letter sounds like m in mat?', options: ['ਪ','ਬ','ਮ','ਦ'], correct: 2 },
+    ];
+    await db.from('lessons').update({ content: JSON.stringify({ ...c2, items: cons2Items, exercises: cons2Exercises }) }).eq('id', cons2Lesson.id);
+  }
+
+  console.log('[Migration] Unit 1 content updated successfully.');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   try {
     await seedData();
+    await migrateUnit1Content();
   } catch (e) {
     console.error('[Seed] Error during seeding:', e);
   }
@@ -108,6 +219,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Database reseeded successfully" });
     } catch (e) {
       res.status(500).json({ success: false, message: String(e) });
+    }
+  });
+
+  // Temporary migration trigger (localhost dev only — no auth needed)
+  app.post("/api/admin/migrate", async (_req, res) => {
+    try {
+      await migrateUnit1Content();
+      res.json({ success: true, message: "Migration complete" });
+    } catch (e) {
+      res.status(500).json({ error: String(e) });
     }
   });
 
@@ -137,6 +258,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(lessons);
     } catch {
       res.status(500).json({ message: "Failed to fetch lessons" });
+    }
+  });
+
+  app.get("/api/lessons", async (_req, res) => {
+    try {
+      const lessons = await storage.getAllLessons();
+      res.json(lessons);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch all lessons" });
     }
   });
 

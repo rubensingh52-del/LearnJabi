@@ -35,7 +35,8 @@ export type UserProgress = {
   lessonId: number;
   completed: boolean;
   score: number;
-  completedAt: string | null;  // matches completed_at in DB
+  completedAt: string | null;
+  lastAccessed: string | null;  // matches last_accessed in DB
 };
 
 export type ChatMessage = {
@@ -61,6 +62,7 @@ export const insertProgressSchema = z.object({
   completed: z.boolean(),
   score: z.number(),
   completedAt: z.string().nullable().optional(),
+  lastAccessed: z.string().optional(),
 });
 
 export const insertChatMessageSchema = z.object({
