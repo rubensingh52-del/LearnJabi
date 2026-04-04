@@ -108,17 +108,151 @@ async function migrateUnit1Content() {
 
   // If the first lesson's title is not "The Top Rows (ੳ - ਙ)", we need to reseed or update titles.
   const firstLesson = lessons[0];
-  if (firstLesson && firstLesson.title !== "The Top Rows (ੳ - ਙ)") {
+  // More aggressive check: update if title is wrong OR if content doesn't mention oorhaa
+  const needsUpdate = !firstLesson || 
+                    firstLesson.title !== "The Top Rows (ੳ - ਙ)" || 
+                    !firstLesson.content.includes("oorhaa");
+
+  if (needsUpdate) {
     console.log('[Migration] Old structure detected, updating Unit 1 lessons...');
     
     // For simplicity in this pedagogical shift, we update the existing lessons by order.
-    // If we have fewer than 5 lessons, we might need to insert.
+    // We define the full content for Unit 1 lessons to ensure data sync
     const newUnit1Lessons = [
-      { title: "The Top Rows (ੳ - ਙ)", title_punjabi: "ਪਹਿਲੀਆਂ ਦੋ ਪੰਕਤੀਆਂ", description: "Learn the first 10 letters of the alphabet including vowel carriers", order: 1 },
-      { title: "The Middle Rows (ਚ - ਣ)", title_punjabi: "ਵਿਚਕਾਰਲੀਆਂ ਪੰਕਤੀਆਂ", description: "Continuing through the third and fourth rows", order: 2 },
-      { title: "The Final Rows (ਤ - ੜ)", title_punjabi: "ਆਖਰੀ ਪੰਕਤੀਆਂ", description: "Completing the core 35 letters of Gurmukhi", order: 3 },
-      { title: "Extra Letters & Matras", title_punjabi: "ਹੋਰ ਅੱਖਰ ਅਤੇ ਮਾਤਰਾਵਾਂ", description: "Borrowed sounds and vowel signs", order: 4 },
-      { title: "Fundamental Symbols", title_punjabi: "ਮੂਲ ਚਿੰਨ੍ਹ", description: "Recognize high-frequency words and the One God symbol", order: 5 }
+      { 
+        order: 1,
+        title: "The Top Rows (ੳ - ਙ)", 
+        title_punjabi: "ਪਹਿਲੀਆਂ ਦੋ ਪੰਕਤੀਆਂ", 
+        description: "Learn the first 10 letters of the alphabet including vowel carriers", 
+        content: JSON.stringify({ 
+          intro: "Gurmukhi starts with the Paiṇṭī structure. The first 3 letters are vowel carriers, followed by consonants.", 
+          items: [ 
+            { gurmukhi: "ੳ", romanized: "oorhaa", english: "vowel carrier (no sound on its own)" }, 
+            { gurmukhi: "ਅ", romanized: "airhaa", english: "vowel carrier + short 'a' sound" }, 
+            { gurmukhi: "ੲ", romanized: "eerhee", english: "vowel carrier (no sound on its own)" }, 
+            { gurmukhi: "ਸ", romanized: "sassaa", english: "s — as in 'sun'" }, 
+            { gurmukhi: "ਹ", romanized: "haahaa", english: "h — as in 'hat'" }, 
+            { gurmukhi: "ਕ", romanized: "kakkaa", english: "k — as in 'kit'" }, 
+            { gurmukhi: "ਖ", romanized: "khakhkhaa", english: "kh — aspirated k" }, 
+            { gurmukhi: "ਗ", romanized: "gaggaa", english: "g — as in 'go'" }, 
+            { gurmukhi: "ਘ", romanized: "ghaggaa", english: "gh — aspirated g" }, 
+            { gurmukhi: "ਙ", romanized: "nganngaa", english: "ng — as in 'sing'" } 
+          ], 
+          exercises: [ 
+            { type: "choose", question: "ੳ — What is the name of this first letter?", options: ["oorhaa","airhaa","eerhee","kakkaa"], correct: 0 }, 
+            { type: "match", question: "Match letters to names", pairs: [["ਸ","sassaa"],["ਹ","haahaa"],["ਕ","kakkaa"],["ਖ","khakhkhaa"]] }, 
+            { type: "choose", question: "Which is the base letter for the 'h' sound?", options: ["ਸ","ਹ","ਕ","ਗ"], correct: 1 } 
+          ] 
+        })
+      },
+      { 
+        order: 2,
+        title: "The Middle Rows (ਚ - ਣ)", 
+        title_punjabi: "ਵਿਚਕਾਰਲੀਆਂ ਪੰਕਤੀਆਂ", 
+        description: "Continuing through the third and fourth rows", 
+        content: JSON.stringify({ 
+          intro: "Let's learn the next two rows, including the retroflex sounds where the tongue curves back.", 
+          items: [ 
+            { gurmukhi: "ਚ", romanized: "chachchaa", english: "ch — as in 'chat'" }, 
+            { gurmukhi: "ਛ", romanized: "chhachhchhaa", english: "chh — aspirated ch" }, 
+            { gurmukhi: "ਜ", romanized: "jajjaa", english: "j — as in 'jam'" }, 
+            { gurmukhi: "ਝ", romanized: "jhajjaa", english: "jh — aspirated j" }, 
+            { gurmukhi: "ਞ", romanized: "nyannyaa", english: "ny — as in 'canyon'" }, 
+            { gurmukhi: "ਟ", romanized: "tainkaa", english: "retroflex t — tongue curves back" }, 
+            { gurmukhi: "ਠ", romanized: "thaththaa", english: "aspirated retroflex t" }, 
+            { gurmukhi: "ਡ", romanized: "daddaa", english: "retroflex d — tongue curves back" }, 
+            { gurmukhi: "ਢ", romanized: "dhaddaa", english: "aspirated retroflex d" }, 
+            { gurmukhi: "ਣ", romanized: "naannaa", english: "retroflex n" } 
+          ], 
+          exercises: [ 
+            { type: "match", question: "Match the middle row letters", pairs: [["ਚ","chachchaa"],["ਜ","jajjaa"],["ਟ","tainkaa"],["ਡ","daddaa"]] }, 
+            { type: "choose", question: "ਟ — How is this 't' sound made?", options: ["Softly behind teeth","With tongue curved back (retroflex)","With lips only","It is silent"], correct: 1 } 
+          ] 
+        })
+      },
+      { 
+        order: 3,
+        title: "The Final Rows (ਤ - ੜ)", 
+        title_punjabi: "ਆਖਰੀ ਪੰਕਤੀਆਂ", 
+        description: "Completing the core 35 letters of Gurmukhi", 
+        content: JSON.stringify({ 
+          intro: "Finish the alphabet with the dental row and the final set of consonants.", 
+          items: [ 
+            { gurmukhi: "ਤ", romanized: "tattaa", english: "t — soft dental t" }, 
+            { gurmukhi: "ਥ", romanized: "thaththaa", english: "th — aspirated dental t" }, 
+            { gurmukhi: "ਦ", romanized: "daddaa", english: "d — dental d" }, 
+            { gurmukhi: "ਧ", romanized: "dhaddaa", english: "dh — aspirated dental d" }, 
+            { gurmukhi: "ਨ", romanized: "nannaa", english: "n — as in 'net'" }, 
+            { gurmukhi: "ਪ", romanized: "pappaa", english: "p — as in 'pen'" }, 
+            { gurmukhi: "ਫ", romanized: "phaphphaa", english: "ph — aspirated p" }, 
+            { gurmukhi: "ਬ", romanized: "babbaa", english: "b — as in 'bed'" }, 
+            { gurmukhi: "ਭ", romanized: "bhabbaa", english: "bh — aspirated b" }, 
+            { gurmukhi: "ਮ", romanized: "mammaa", english: "m — as in 'mat'" }, 
+            { gurmukhi: "ਯ", romanized: "yayyaa", english: "y — as in 'yes'" }, 
+            { gurmukhi: "ਰ", romanized: "raaraa", english: "r — as in 'run'" }, 
+            { gurmukhi: "ਲ", romanized: "lallaa", english: "l — as in 'love'" }, 
+            { gurmukhi: "ਵ", romanized: "vaavaa", english: "v — as in 'vet'" }, 
+            { gurmukhi: "ੜ", romanized: "rhaarhaa", english: "retroflex r — tongue flips" } 
+          ], 
+          exercises: [ 
+            { type: "match", question: "Match the letters", pairs: [["ਤ","tattaa"],["ਨ","nannaa"],["ਪ","pappaa"],["ਮ","mammaa"]] }, 
+            { type: "choose", question: "ਮ — Which letter matches the 'm' sound?", options: ["ਪ","ਬ","ਮ","ੜ"], correct: 2 } 
+          ] 
+        })
+      },
+      { 
+        order: 4,
+        title: "Extra Letters & Matras", 
+        title_punjabi: "ਹੋਰ ਅੱਖਰ ਅਤੇ ਮਾਤਰਾਵਾਂ", 
+        description: "Borrowed sounds and vowel signs", 
+        content: JSON.stringify({ 
+          intro: "Now learn the 6 extra letters for borrowed sounds and the 10 Matra signs (vowel markers).", 
+          items: [ 
+            { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "sh — as in 'shop'" }, 
+            { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "ḵh — guttural kh" }, 
+            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "ġ — voiced velar fricative" }, 
+            { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "z — as in 'zebra'" }, 
+            { gurmukhi: "ਫ਼", romanized: "faffaa", english: "f — as in 'fan'" }, 
+            { gurmukhi: "ਲ਼", romanized: "lallaa", english: "ḷ — retroflex l" }, 
+            { gurmukhi: "ਾ", romanized: "kannaa", english: "long 'aa' — as in 'father'" }, 
+            { gurmukhi: "ਿ", romanized: "sihaaree", english: "short 'i' — as in 'it'" }, 
+            { gurmukhi: "ੀ", romanized: "bihaaree", english: "long 'ee' — as in 'see'" }, 
+            { gurmukhi: "ੁ", romanized: "aunkarh", english: "short 'u' — as in 'put'" }, 
+            { gurmukhi: "ੂ", romanized: "dulainkarh", english: "long 'oo' — as in 'food'" }, 
+            { gurmukhi: "ੇ", romanized: "laavaan", english: "'e' — as in 'play'" }, 
+            { gurmukhi: "ੈ", romanized: "dulaavaan", english: "'ai' — as in 'man'" }, 
+            { gurmukhi: "ੋ", romanized: "horhaa", english: "'o' — as in 'go'" }, 
+            { gurmukhi: "ੌ", romanized: "kanaurhaa", english: "'au' — as in 'caught'" } 
+          ], 
+          exercises: [ 
+            { type: "match", question: "Match symbols to names", pairs: [["ਸ਼","shashashaa"],["ਾ","kannaa"],["ਿ","sihaaree"],["ੁ","aunkarh"]] }, 
+            { type: "choose", question: "ਜ਼ — What sound does this letter with a dot make?", options: ["sh","f","z","l"], correct: 2 } 
+          ] 
+        })
+      },
+      { 
+        order: 5,
+        title: "Fundamental Symbols", 
+        title_punjabi: "ਮੂਲ ਚਿੰਨ੍ਹ", 
+        description: "Recognize high-frequency words and the One God symbol", 
+        content: JSON.stringify({ 
+          intro: "Practice identifying Gurmukhi characters in sacred and common words.", 
+          items: [ 
+            { gurmukhi: "ੴ", romanized: "Ik Onkar", english: "The sacred symbol — 'One God'" }, 
+            { gurmukhi: "ਸਤ", romanized: "sat", english: "Truth" }, 
+            { gurmukhi: "ਨਾਮ", romanized: "naam", english: "Name / Identity" }, 
+            { gurmukhi: "ਸਿੱਖ", romanized: "Sikh", english: "Sikh / Learner" }, 
+            { gurmukhi: "ਪੰਜਾਬ", romanized: "panjaab", english: "Punjab — Land of Five Rivers" }, 
+            { gurmukhi: "ਗੁਰਮੁਖੀ", romanized: "Gurmukhi", english: "The Punjabi script — 'from the Guru\\'s mouth'" } 
+          ], 
+          exercises: [ 
+            { type: "choose", question: "ਸਤ (sat) — What does this word mean?", options: ["Name","Truth","God","Land"], correct: 1 }, 
+            { type: "choose", question: "ਪੰਜਾਬ (panjaab) — What does Punjab mean?", options: ["Five Rivers","Holy Land","Sacred Place","Golden Temple"], correct: 0 }, 
+            { type: "choose", question: "ਗੁਰਮੁਖੀ (Gurmukhi) — What does the script name mean?", options: ["From God","Five sounds","From the Guru\\'s mouth","Sacred writing"], correct: 2 }, 
+            { type: "match", question: "Match the words to their meanings", pairs: [["ਸਤ","Truth"],["ਨਾਮ","Name"],["ਸਿੱਖ","Learner"],["ਪੰਜਾਬ","Punjab"]] } 
+          ] 
+        })
+      }
     ];
 
     for (let i = 0; i < newUnit1Lessons.length; i++) {
@@ -127,8 +261,8 @@ async function migrateUnit1Content() {
         if (existing) {
             await db.from('lessons').update(newData).eq('id', existing.id);
         } else {
-            // Insert missing lesson (e.g. if previous Unit 1 only had 4 lessons)
-            await db.from('lessons').insert({ ...newData, unit_id: unit1.id, type: i === 4 ? 'practice' : 'vocabulary', content: '{}' });
+            // Insert missing lesson
+            await db.from('lessons').insert({ ...newData, unit_id: unit1.id, type: i === 4 ? 'practice' : 'vocabulary' });
         }
     }
     console.log('[Migration] Unit 1 lesson metadata updated. Reseed recommended for full content sync.');
