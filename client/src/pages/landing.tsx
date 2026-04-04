@@ -18,7 +18,7 @@ const lessonCards = [
     desc: "Learn the 35 letters of the Punjabi script",
     accent: "text-violet-500",
     border: "border-violet-500/20",
-    chars: ["ਸ", "ਹ", "ਕ", "ਖ", "ਗ"],
+    chars: ["ੳ", "ਅ", "ੲ", "ਸ", "ਹ"],
   },
   {
     emoji: "👋",
