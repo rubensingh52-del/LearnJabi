@@ -34,7 +34,8 @@ export default function LessonPage() {
 
   // Unit 1 = Gurmukhi Script — test symbol → romanized name.
   // All other units = speaking/vocab — test Gurmukhi+romanized → English meaning.
-  const isScriptUnit = unitId === 1;
+  // Use unit.order rather than bare unitId to prevent db sequence shifting bugs. 
+  const isScriptUnit = unit?.order === 1;
 
   const [step, setStep] = useState<LessonStep>("learn");
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
@@ -91,7 +92,7 @@ export default function LessonPage() {
   const gurmukhiLookup = useMemo(() => {
     const map = new Map<string, string>();
     (content?.items || []).forEach(item => {
-      if (item.gurmukhi && item.romanized) map.set(item.gurmukhi.trim(), item.romanized.trim());
+      if (item.gurmukhi && item.romanized) map.set(item.gurmukhi.trim().normalize("NFC"), item.romanized.trim());
     });
     return map;
   }, [content]);
@@ -210,25 +211,25 @@ export default function LessonPage() {
   };
 
   const resolveRomanized = (text: string): { display: string; romanized: string | null } => {
-    const trimmed = text.trim();
+    const trimmed = text.trim().normalize("NFC");
     const parenMatch = trimmed.match(/^(.+?)\s*\((.+?)\)/);
     if (parenMatch) return { display: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
     const fromExact = gurmukhiLookup.get(trimmed);
-    if (fromExact) return { display: trimmed, romanized: fromExact };
+    if (fromExact) return { display: text.trim(), romanized: fromExact };
     const gurmukhiWordMatch = trimmed.match(/[\u0A00-\u0A7F][\u0A00-\u0A7F\s]*/g);
     if (gurmukhiWordMatch) {
       for (const seg of gurmukhiWordMatch) {
-        const clean = seg.trim();
+        const clean = seg.trim().normalize("NFC");
         const fromSeg = gurmukhiLookup.get(clean);
-        if (fromSeg) return { display: trimmed, romanized: fromSeg };
+        if (fromSeg) return { display: text.trim(), romanized: fromSeg };
       }
       for (const [key, roman] of gurmukhiLookup.entries()) {
         if (key.includes(trimmed) || trimmed.includes(key)) {
-          return { display: trimmed, romanized: roman };
+          return { display: text.trim(), romanized: roman };
         }
       }
     }
-    return { display: trimmed, romanized: null };
+    return { display: text.trim(), romanized: null };
   };
 
   // In exercise questions: script unit shows Gurmukhi alone (answer IS the romanization).
