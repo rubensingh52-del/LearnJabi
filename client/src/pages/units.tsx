@@ -25,10 +25,15 @@ const iconMap: Record<string, any> = {
 };
 
 export default function Units() {
-  const { data: units, isLoading: unitsLoading } = useQuery<Unit[]>({ queryKey: ["/api/units"] });
-  const { data: progress } = useQuery<UserProgress[]>({ queryKey: ["/api/progress"] });
   const { user } = useAuth();
   const [, navigate] = useLocation();
+
+  const { data: units, isLoading: unitsLoading } = useQuery<Unit[]>({ queryKey: ["/api/units"] });
+  // Only fetch progress when logged in — prevents a 401 for guests
+  const { data: progress } = useQuery<UserProgress[]>({
+    queryKey: ["/api/progress"],
+    enabled: !!user,
+  });
 
   const completedLessons = new Set(progress?.filter(p => p.completed).map(p => p.lessonId) || []);
 
