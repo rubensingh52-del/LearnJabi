@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
-import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn, Mail, CheckCircle } from "lucide-react";
+import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn, Mail, CheckCircle, Coffee } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -89,6 +89,18 @@ export function NavHeader() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {/* Support Project */}
+            <a
+              href="https://buymeacoffee.com/rubensingh3"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+              data-testid="link-support"
+            >
+              <Coffee className="h-3.5 w-3.5" />
+              Support LearnJabi
+            </a>
+
             {/* Contact Us — always visible */}
             <button
               onClick={() => { setShowContact(true); setContactState("idle"); }}
@@ -160,6 +172,19 @@ export function NavHeader() {
                 AI Tutor
                 <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary leading-none">Soon</span>
               </button>
+
+              {/* Support Project — mobile */}
+              <a
+                href="https://buymeacoffee.com/rubensingh3"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-amber-600 dark:text-amber-400 cursor-pointer text-left"
+                data-testid="link-mobile-support"
+              >
+                <Coffee className="h-3.5 w-3.5" />
+                Support LearnJabi
+              </a>
 
               {/* Contact Us — mobile */}
               <button

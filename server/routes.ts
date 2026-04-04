@@ -97,10 +97,11 @@ async function seedData(force = false) {
 // ── Unit 1 content migration — fixes romanized names if old seed is present ───
 async function migrateUnit1Content() {
   // Detect if migration is needed: vowel lesson ਅ should have romanized "aira" not "a"
-  const { data: units, error: unitsErr } = await db.from('units').select('id').eq('order', 1).limit(1);
+  const { data: allUnits, error: unitsErr } = await db.from('units').select('id, order');
   if (unitsErr) { console.error('[Migration] units query error:', unitsErr); return; }
-  if (!units || units.length === 0) { console.log('[Migration] No unit 1 found, skipping'); return; }
-  const unit1Id = units[0].id;
+  const unit1 = allUnits?.find((u: any) => u.order === 1);
+  if (!unit1) { console.log('[Migration] No unit 1 found, skipping'); return; }
+  const unit1Id = unit1.id;
   console.log('[Migration] Unit 1 ID:', unit1Id);
 
   const { data: lessons, error: lessonsErr } = await db.from('lessons').select('id, order, content').eq('unit_id', unit1Id).order('order');
@@ -293,11 +294,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/progress", requireAuth, async (req, res) => {
     try {
-      const userId = (req as any).user.id;
-      const progress = await storage.upsertProgress({ ...req.body, user_id: userId });
+      const authUser = (req as any).user;
+      const userId = authUser.id;
+      
+      // Auto-upsert into public.users to ensure the FK constraint always passes
+      await storage.createUser({ 
+        id: userId, 
+        username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || "User" 
+      });
+
+      const progress = await storage.upsertProgress({ ...req.body, userId });
       res.json(progress);
-    } catch {
-      res.status(500).json({ message: "Failed to save progress" });
+    } catch (e) {
+      console.error("[POST /api/progress] Error:", e);
+      res.status(500).json({ message: "Failed to save progress", error: String(e) });
     }
   });
 
@@ -315,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat", requireAuth, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const message = await storage.addChatMessage({ ...req.body, user_id: userId });
+      const message = await storage.addChatMessage({ ...req.body, userId });
       res.json(message);
     } catch {
       res.status(500).json({ message: "Failed to save message" });

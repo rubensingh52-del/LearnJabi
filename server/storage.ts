@@ -107,23 +107,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertProgress(progress: InsertProgress): Promise<UserProgress> {
-    const { data, error } = await db
+    const { data: existing } = await db
       .from('user_progress')
-      .upsert(
-        {
+      .select('id')
+      .eq('user_id', progress.userId)
+      .eq('lesson_id', progress.lessonId)
+      .maybeSingle();
+
+    if (existing) {
+      const { data, error } = await db
+        .from('user_progress')
+        .update({
+          completed: progress.completed,
+          score: progress.score,
+          last_accessed: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (error) throw new Error(`Update error: ${error.message}`);
+      return mapProgress(data);
+    } else {
+      const { data, error } = await db
+        .from('user_progress')
+        .insert({
           user_id: progress.userId,
           lesson_id: progress.lessonId,
           completed: progress.completed,
           score: progress.score,
-          completed_at: progress.completedAt ?? null,
           last_accessed: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,lesson_id' }
-      )
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return mapProgress(data);
+        })
+        .select()
+        .single();
+      if (error) throw new Error(`Insert error: ${error.message}`);
+      return mapProgress(data);
+    }
   }
 
   async getChatMessages(userId: string): Promise<ChatMessage[]> {

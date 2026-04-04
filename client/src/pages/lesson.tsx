@@ -34,8 +34,8 @@ export default function LessonPage() {
 
   // Unit 1 = Gurmukhi Script — test symbol → romanized name.
   // All other units = speaking/vocab — test Gurmukhi+romanized → English meaning.
-  // Use unit.order rather than bare unitId to prevent db sequence shifting bugs. 
-  const isScriptUnit = unit?.order === 1;
+  // Fallback to unitId from URL if unit data is still hydrating.
+  const isScriptUnit = (unit?.order === 1) || (!unit && unitId === 1);
 
   const [step, setStep] = useState<LessonStep>("learn");
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
@@ -104,13 +104,7 @@ export default function LessonPage() {
     return shuffleArray(currentExercise.pairs.map((_, i) => i));
   }, [exerciseIndex, currentExercise?.type]);
 
-  // For a match exercise: if ALL right-side items are plain English (no Gurmukhi),
-  // then the romanized on the left IS the answer — hide it.
-  // If the right side contains Gurmukhi (word↔word or letter↔letter), keep romanized as a pronunciation aid.
-  const matchHidesRomanized = useMemo(() => {
-    if (currentExercise?.type !== "match" || !currentExercise.pairs) return false;
-    return currentExercise.pairs.every(pair => !hasGurmukhi(pair[1]));
-  }, [currentExercise]);
+
 
   // For the speaker button: only show if the question string contains speakable Gurmukhi.
   const questionHasSpeakableGurmukhi = useMemo(() => {
@@ -210,7 +204,7 @@ export default function LessonPage() {
     setMatchSelection(null);
   };
 
-  const resolveRomanized = (text: string): { display: string; romanized: string | null } => {
+  const resolveRomanized = useCallback((text: string): { display: string; romanized: string | null } => {
     const trimmed = text.trim().normalize("NFC");
     const parenMatch = trimmed.match(/^(.+?)\s*\((.+?)\)/);
     if (parenMatch) return { display: parenMatch[1].trim(), romanized: parenMatch[2].trim() };
@@ -230,7 +224,18 @@ export default function LessonPage() {
       }
     }
     return { display: text.trim(), romanized: null };
-  };
+  }, [gurmukhiLookup]);
+
+  // Robust check: hide romanized hints on the left if the MATCH answers are purely the romanized text.
+  // This correctly hides 'ikk' if the answer is 'ikk', but shows 'Shukriya' if the answer is 'Thank you'.
+  const matchHidesRomanized = useMemo(() => {
+    if (currentExercise?.type !== "match" || !currentExercise.pairs) return false;
+    return currentExercise.pairs.every((p: string[]) => {
+      const leftRoman = resolveRomanized(p[0]).romanized;
+      if (!leftRoman) return false;
+      return p[1].trim().toLowerCase() === leftRoman.trim().toLowerCase();
+    });
+  }, [currentExercise, resolveRomanized]);
 
   // In exercise questions: script unit shows Gurmukhi alone (answer IS the romanization).
   // Vocab units show Gurmukhi with romanized inline (the test is the English meaning).
@@ -242,10 +247,13 @@ export default function LessonPage() {
           if (!hasGurmukhi(part)) return <span key={idx}>{part}</span>;
           const trimmed = part.trim();
           const romanized = !isScriptUnit ? gurmukhiLookup.get(trimmed) : undefined;
+          const nextPart = parts[idx + 1] || "";
+          const alreadyHasRoman = /^\s*\(/.test(nextPart);
+
           return (
             <span key={idx} className="inline-flex items-baseline gap-1.5 flex-wrap">
               <span className="gurmukhi font-semibold">{part}</span>
-              {romanized && (
+              {romanized && !alreadyHasRoman && (
                 <span className="text-primary font-semibold text-sm">({romanized})</span>
               )}
             </span>
@@ -475,9 +483,8 @@ export default function LessonPage() {
                     const { display, romanized } = resolveRomanized(pair[0]);
                     const isMatched = matchedPairs.has(i);
                     const isSelected = matchSelection?.side === "left" && matchSelection.index === i;
-                    // Script unit left: show Gurmukhi alone (romanized IS the answer on the right)
-                    // Vocab units left: show Gurmukhi + romanized together (answer is English on right)
-                    const showRomanizedOnLeft = !isScriptUnit && !!romanized;
+                    // Intelligently hide romanization if the game is testing exact pronunciation
+                    const showRomanizedOnLeft = !matchHidesRomanized && !!romanized;
                     return (
                       <button
                         key={i}
@@ -576,8 +583,8 @@ export default function LessonPage() {
 
           {/* Progress save status */}
           {saveMutation.isError ? (
-            <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              <span>⚠️ Log in to save your progress</span>
+            <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-destructive/10 text-destructive border border-destructive/20">
+              <span className="font-semibold">⚠️ Failed to save: {saveMutation.error?.message || "Unknown"}</span>
             </div>
           ) : saveMutation.isSuccess ? (
             <div className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300">
