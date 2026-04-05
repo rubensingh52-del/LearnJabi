@@ -178,10 +178,10 @@ export default function Landing() {
               {/* Stats row */}
               <div className="flex flex-wrap gap-5 mb-8">
                 {[
-                  { icon: BookOpen, val: "15+",  label: "Lessons" },
-                  { icon: Volume2,  val: "400+", label: "Words with pronunciation" },
-                  { icon: Zap,      val: "8",    label: "Units" },
-                  { icon: Star,     val: "Free", label: "Always" },
+                  { icon: BookOpen, val: "15+", label: "Lessons" },
+                  { icon: Volume2, val: "400+", label: "Words with pronunciation" },
+                  { icon: Zap, val: "8", label: "Units" },
+                  { icon: Star, val: "Free", label: "Always" },
                 ].map(s => (
                   <div key={s.label} className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
@@ -267,9 +267,8 @@ export default function Landing() {
                     <button
                       key={i}
                       onClick={() => setActiveCard(i)}
-                      className={`rounded-full transition-all duration-300 ${
-                        i === activeCard ? "w-5 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-border"
-                      }`}
+                      className={`rounded-full transition-all duration-300 ${i === activeCard ? "w-5 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-border"
+                        }`}
                       aria-label={`Show lesson ${i + 1}`}
                     />
                   ))}
@@ -288,22 +287,29 @@ export default function Landing() {
             <h2 className="text-xl font-bold mb-2">The Beauty of Gurmukhi</h2>
             <p className="text-sm text-muted-foreground">The script used to write Punjabi — elegant, phonetic, and deeply cultural. Don't worry about reading it fluently; every lesson includes the romanised pronunciation.</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
             {[
-              { ch: "ਸ", r: "Sa" }, { ch: "ਹ", r: "Ha" }, { ch: "ਕ", r: "Ka" }, { ch: "ਖ", r: "Kha" },
-              { ch: "ਗ", r: "Ga" }, { ch: "ਘ", r: "Gha" }, { ch: "ਚ", r: "Cha" }, { ch: "ਛ", r: "Chha" },
-              { ch: "ਜ", r: "Ja" }, { ch: "ਝ", r: "Jha" }, { ch: "ਟ", r: "Ta" }, { ch: "ਠ", r: "Tha" },
-              { ch: "ਡ", r: "Da" }, { ch: "ਢ", r: "Dha" }, { ch: "ਣ", r: "Na" },
-            ].map(({ ch, r }, i) => (
+              { w: "ੴ", r: "Ik Onkar", e: "One Creator" },
+              { w: "ਪੰਜਾਬ", r: "Punjab", e: "The Land of Five Rivers" },
+              { w: "ਭੰਗੜਾ", r: "Bhangra", e: "Punjabi Folk Dance" },
+              { w: "ਪੰਜਾਬੀ", r: "Punjabi", e: "The Tongue of Punjab" },
+              { w: "ਪਿਆਰ", r: "Pyaar", e: "Love" },
+              { w: "ਸ਼ਾਂਤੀ", r: "Shaanti", e: "Peace" },
+              { w: "ਖੁਸ਼ੀ", r: "Khushi", e: "Happiness" },
+              { w: "ਰੋਟੀ", r: "Roti", e: "Bread / Food" },
+            ].map(({ w, r, e }, i) => (
               <div
-                key={ch}
-                className="flex flex-col items-center gap-0.5 w-12 sm:w-14 transition-all duration-200 hover:scale-105 group"
-                style={{ animationDelay: `${i * 50}ms` }}
+                key={w}
+                className="flex flex-col items-center gap-1.5 transition-all duration-200 hover:scale-105 group"
+                style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="gurmukhi w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background border border-border/60 flex items-center justify-center text-lg sm:text-xl font-semibold text-foreground/80 transition-all group-hover:border-primary/40 group-hover:text-primary">
-                  {ch}
+                <div className="gurmukhi min-w-[3.5rem] h-12 sm:h-14 px-4 rounded-xl bg-background border border-border/60 flex items-center justify-center text-lg sm:text-xl font-bold text-foreground/90 transition-all group-hover:border-primary/50 group-hover:bg-primary/5 shadow-sm group-hover:shadow-md">
+                  {w}
                 </div>
-                <span className="text-[10px] text-muted-foreground italic">{r}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-primary italic tracking-tight">{r}</span>
+                  <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">{e}</span>
+                </div>
               </div>
             ))}
           </div>
