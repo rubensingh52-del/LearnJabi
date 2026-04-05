@@ -28,17 +28,16 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 }
 
 // Lesson route: unit 1 is free, all others require login.
-// Unit 1 check runs BEFORE the loading guard so guests never get
-// redirected to /login while Supabase is still resolving the session.
+// We let the LessonPage handle the redirect after fetching the unit order
+// to avoid assuming that the database ID always equals 1.
 function LessonRoute({ unitId }: { unitId: string }) {
   const { user, loading } = useAuth();
-  const parsedUnitId = parseInt(unitId ?? "1", 10);
 
-  // Unit 1 is always free — render immediately, no auth check needed
-  if (parsedUnitId === 1) return <LessonPage />;
-  // For all other units, wait for auth to resolve before deciding
   if (loading) return <div className="min-h-screen" />;
-  if (!user) return <Redirect to="/login" />;
+  
+  // If user is logged in, they can see everything.
+  // If guest, we let them proceed to the page for now;
+  // LessonPage will redirect if the unit's order is > 1.
   return <LessonPage />;
 }
 

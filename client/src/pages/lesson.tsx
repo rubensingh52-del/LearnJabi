@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 import { type Lesson, type Unit } from "@shared/schema";
 import { type LessonContent, type Exercise } from "@/lib/curriculum";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -25,12 +26,20 @@ function shuffleArray<T>(arr: T[]): T[] {
 export default function LessonPage() {
   const params = useParams<{ unitId: string; lessonId: string }>();
   const [, navigate] = useLocation();
+  const { user, loading: authLoading } = useAuth();
   const unitId = parseInt(params.unitId || "1");
   const lessonId = parseInt(params.lessonId || "1");
 
   const { data: lesson, isLoading } = useQuery<Lesson>({ queryKey: ["/api/lessons", lessonId] });
-  const { data: unit } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
+  const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
   const { data: allLessons } = useQuery<Lesson[]>({ queryKey: ["/api/units", unitId, "lessons"] });
+
+  // Guest Redirect: if auth resolved, unit metadata loaded, no user, and it's not Unit 1 — kick them out!
+  useEffect(() => {
+    if (!authLoading && !unitLoading && !user && unit && unit.order > 1) {
+      navigate("/login");
+    }
+  }, [authLoading, unitLoading, user, unit, navigate]);
 
   // Unit 1 = Gurmukhi Script — test symbol → romanized name.
   // All other units = speaking/vocab — test Gurmukhi+romanized → English meaning.

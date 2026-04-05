@@ -44,18 +44,19 @@ export default function UnitLessons() {
     );
   }
 
-  // Auth resolved: if still no user and unit is locked, send to login
-  if (!user && unitId > 1) {
-    navigate("/login");
-    return null;
-  }
-
+  // We proceed to UnitLessonsContent; it will check unit.order and redirect guests if order > 1.
   return <UnitLessonsContent unitId={unitId} user={user} navigate={navigate} />;
 }
 
 function UnitLessonsContent({ unitId, user, navigate }: { unitId: number; user: any; navigate: any }) {
   const { data: unit, isLoading: unitLoading } = useQuery<Unit>({ queryKey: ["/api/units", unitId] });
   const { data: lessons, isLoading: lessonsLoading } = useQuery<Lesson[]>({ queryKey: ["/api/units", unitId, "lessons"] });
+
+  // Guest Redirect Logic — wait until unit metadata is available
+  if (!unitLoading && !user && unit && unit.order > 1) {
+    navigate("/login");
+    return null;
+  }
   // Only fetch progress when the user is logged in — prevents a 401 for guests
   // browsing the free Unit 1 lesson list.
   const { data: progress } = useQuery<UserProgress[]>({
