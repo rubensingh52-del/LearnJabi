@@ -28,16 +28,16 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 }
 
 // Lesson route: unit 1 is free, all others require login.
-// Uses wouter params rather than parsing window.location.hash directly
-// to avoid a stale-hash race that caused an infinite redirect loop.
+// Unit 1 check runs BEFORE the loading guard so guests never get
+// redirected to /login while Supabase is still resolving the session.
 function LessonRoute({ unitId }: { unitId: string }) {
   const { user, loading } = useAuth();
   const parsedUnitId = parseInt(unitId ?? "1", 10);
 
-  if (loading) return <div className="min-h-screen" />;
-  // Unit 1 is always free
+  // Unit 1 is always free — render immediately, no auth check needed
   if (parsedUnitId === 1) return <LessonPage />;
-  // All other units require login
+  // For all other units, wait for auth to resolve before deciding
+  if (loading) return <div className="min-h-screen" />;
   if (!user) return <Redirect to="/login" />;
   return <LessonPage />;
 }
