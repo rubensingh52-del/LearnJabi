@@ -257,9 +257,9 @@ export default function AuthPage() {
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           By continuing you agree to LearnJabi's{" "}
-          <a href="/#/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">terms of service</a>
+          <a href="/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">terms of service</a>
           {" "}and{" "}
-          <a href="/#/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">privacy policy</a>.
+          <a href="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">privacy policy</a>.
         </p>
       </div>
     </div>

@@ -1,5 +1,4 @@
-import { Link } from "wouter";
-import { useHashLocation } from "wouter/use-hash-location";
+import { useLocation, Link } from "wouter";
 import { Sun, Moon, Menu, X, Sparkles, LogOut, LogIn, Mail, CheckCircle, Coffee } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ const navLinks = [
 
 export function NavHeader() {
   const { theme, toggle } = useTheme();
-  const [location] = useHashLocation();
+  const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showTutorToast, setShowTutorToast] = useState(false);
   const { user, loading, signOut } = useAuth();
