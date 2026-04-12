@@ -13,7 +13,7 @@ export default function TermsPage() {
       <h1 className="text-2xl font-bold mb-2">Terms of Service</h1>
       <p className="text-sm text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
 
-      <div className="prose prose-sm max-w-none space-y-6 text-sm text-foreground leading-relaxed">
+      <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed">
         <section>
           <h2 className="text-base font-semibold mb-2">1. Acceptance of Terms</h2>
           <p>By accessing or using LearnJabi ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service.</p>

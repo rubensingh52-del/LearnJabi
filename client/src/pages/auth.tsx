@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, BookOpen } from "lucide-react";
+import { Loader2, BookOpen, ArrowLeft, RotateCcw, CheckCircle2 } from "lucide-react";
 
-// Accept either a valid email OR a username (3+ chars, no @)
+// ── Schemas ───────────────────────────────────────────────────────────────────
 const loginSchema = z.object({
   identifier: z
     .string()
@@ -34,13 +34,17 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const forgotSchema = z.object({
+  email: z.string().email("Enter a valid email"),
+});
+
 type LoginData = z.infer<typeof loginSchema>;
 type RegisterData = z.infer<typeof registerSchema>;
+type ForgotData = z.infer<typeof forgotSchema>;
 
-// Resolve a username to an email by looking up the profiles table
+// ── Username → email lookup ───────────────────────────────────────────────────
 async function resolveEmail(identifier: string): Promise<string | null> {
   if (identifier.includes("@")) return identifier;
-  // Look up by username stored in auth.users user_metadata or a profiles table
   const { data, error } = await supabase
     .from("profiles")
     .select("email")
@@ -50,90 +54,288 @@ async function resolveEmail(identifier: string): Promise<string | null> {
   return data.email as string;
 }
 
+// ── Brand header shared across all screens ────────────────────────────────────
+function Brand() {
+  return (
+    <div className="flex flex-col items-center gap-2 mb-8">
+      <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/30">
+        <BookOpen className="w-7 h-7" />
+      </div>
+      <h1 className="text-2xl font-bold tracking-tight">LearnJabi</h1>
+      <p className="text-sm text-muted-foreground">Your journey into Punjabi starts here.</p>
+    </div>
+  );
+}
+
+// ── Email sent screen ─────────────────────────────────────────────────────────
+function EmailSentScreen({ email, onResend, onBack }: {
+  email: string;
+  onResend: () => Promise<void>;
+  onBack: () => void;
+}) {
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  async function handleResend() {
+    setResending(true);
+    await onResend();
+    setResending(false);
+    setResent(true);
+    setTimeout(() => setResent(false), 4000);
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <Brand />
+        <Card className="border-border/60">
+          <CardContent className="pt-8 pb-8 px-8 text-center space-y-6">
+
+            {/* Animated envelope */}
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full bg-amber-500/10 animate-ping opacity-30" />
+              <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-amber-500/15 border border-amber-500/30">
+                <svg className="w-9 h-9 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-9.75 6.75L2.25 6.75" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <CardTitle className="text-xl">Check your inbox</CardTitle>
+              <CardDescription className="text-sm">
+                We sent a confirmation link to
+              </CardDescription>
+              <p className="font-semibold text-foreground text-sm break-all">{email}</p>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Click the link in the email to verify your account, then come back here to log in. It may take a minute to arrive.
+            </p>
+
+            {/* Tips box */}
+            <div className="text-left rounded-lg bg-muted/50 border border-border/50 p-4 space-y-1.5">
+              <p className="text-xs font-semibold text-foreground">Can't find it?</p>
+              <p className="text-xs text-muted-foreground">• Check your spam or junk folder</p>
+              <p className="text-xs text-muted-foreground">• Make sure <span className="font-mono text-foreground/70">{email}</span> is correct</p>
+              <p className="text-xs text-muted-foreground">• Wait a minute — sometimes email is slow</p>
+            </div>
+
+            {/* Resend button */}
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={handleResend}
+              disabled={resending || resent}
+            >
+              {resending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : resent ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <RotateCcw className="h-4 w-4" />
+              )}
+              {resent ? "Email resent!" : "Resend confirmation email"}
+            </Button>
+
+            {/* Back link */}
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center gap-1.5 mx-auto text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to login
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Forgot password screen ────────────────────────────────────────────────────
+function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
+  const { toast } = useToast();
+  const [pending, setPending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const form = useForm<ForgotData>({ resolver: zodResolver(forgotSchema) });
+
+  async function onSubmit(data: ForgotData) {
+    setPending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    setPending(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setSent(true);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <Brand />
+        <Card className="border-border/60">
+          <CardHeader className="pb-4">
+            <CardTitle>Reset your password</CardTitle>
+            <CardDescription>
+              {sent
+                ? "Check your inbox for a reset link."
+                : "Enter your email and we'll send you a link to reset your password."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {sent ? (
+              <div className="text-center space-y-4 py-4">
+                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-green-500/10 border border-green-500/20 mx-auto">
+                  <CheckCircle2 className="w-7 h-7 text-green-500" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  If that email is registered, you'll receive a reset link shortly. Check your spam folder too.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="forgot-email">Email address</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    {...form.register("email")}
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full" disabled={pending}>
+                  {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send reset link
+                </Button>
+              </form>
+            )}
+
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center gap-1.5 mx-auto text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to login
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Main auth page ────────────────────────────────────────────────────────────
+type View = "auth" | "email-sent" | "forgot";
+
 export default function AuthPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const [view, setView] = useState<View>("auth");
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const [loginPending, setLoginPending] = useState(false);
-  const [registerPending, setRegisterPending] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const loginForm = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
   const registerForm = useForm<RegisterData>({ resolver: zodResolver(registerSchema) });
 
   async function onLogin(data: LoginData) {
-    setLoginPending(true);
-
-    // Resolve username → email if needed
+    setPending(true);
     let email = data.identifier.trim();
     if (!email.includes("@")) {
       const resolved = await resolveEmail(email);
       if (!resolved) {
-        setLoginPending(false);
+        setPending(false);
         loginForm.setError("identifier", { message: "Username not found" });
         return;
       }
       email = resolved;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: data.password,
-    });
-    setLoginPending(false);
+    const { error } = await supabase.auth.signInWithPassword({ email, password: data.password });
+    setPending(false);
     if (error) {
-      toast({ title: "Login failed", description: error.message, variant: "destructive" });
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        toast({
+          title: "Email not verified",
+          description: "Click the confirmation link we sent to your email before logging in.",
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+      }
     } else {
-      toast({ title: "Welcome back!", description: "You have logged in successfully." });
       navigate("/learn");
     }
   }
 
   async function onRegister(data: RegisterData) {
-    setRegisterPending(true);
-
+    setPending(true);
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { username: data.username },
-        emailRedirectTo: undefined,
+        emailRedirectTo: `${window.location.origin}/login`,
       },
     });
-
-    setRegisterPending(false);
-
+    setPending(false);
     if (error) {
       toast({ title: "Registration failed", description: error.message, variant: "destructive" });
       return;
     }
-
     if (authData.session) {
-      toast({ title: "Welcome to LearnJabi!", description: "Your account is ready. Let's start learning!" });
+      // Email confirmation disabled — log straight in
       navigate("/learn");
       return;
     }
-
-    toast({
-      title: "Almost there!",
-      description: "Check your email and click the confirmation link, then come back to log in.",
-    });
-    setActiveTab("login");
-    loginForm.setValue("identifier", data.email);
+    setRegisteredEmail(data.email);
+    setView("email-sent");
   }
 
+  async function handleResend() {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: registeredEmail,
+      options: { emailRedirectTo: `${window.location.origin}/login` },
+    });
+    if (error) {
+      toast({ title: "Couldn't resend", description: error.message, variant: "destructive" });
+    }
+  }
+
+  // ── Overlay screens ──────────────────────────────────────────────────────
+  if (view === "email-sent") {
+    return (
+      <EmailSentScreen
+        email={registeredEmail}
+        onResend={handleResend}
+        onBack={() => {
+          setView("auth");
+          setActiveTab("login");
+          loginForm.setValue("identifier", registeredEmail);
+        }}
+      />
+    );
+  }
+
+  if (view === "forgot") {
+    return <ForgotPasswordScreen onBack={() => setView("auth")} />;
+  }
+
+  // ── Login / Register tabs ────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        {/* Brand */}
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 text-white shadow-lg">
-            <BookOpen className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">LearnJabi</h1>
-          <p className="text-sm text-muted-foreground text-center">
-            Your journey into Punjabi starts here.
-          </p>
-        </div>
+        <Brand />
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
           <TabsList className="grid grid-cols-2 w-full mb-6">
@@ -141,10 +343,10 @@ export default function AuthPage() {
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
 
-          {/* LOGIN */}
+          {/* ── LOGIN ── */}
           <TabsContent value="login">
-            <Card>
-              <CardHeader>
+            <Card className="border-border/60">
+              <CardHeader className="pb-4">
                 <CardTitle>Welcome back</CardTitle>
                 <CardDescription>Enter your details to continue learning.</CardDescription>
               </CardHeader>
@@ -164,7 +366,16 @@ export default function AuthPage() {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="login-password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">Password</Label>
+                      <button
+                        type="button"
+                        onClick={() => setView("forgot")}
+                        className="text-xs text-amber-500 hover:text-amber-400 transition-colors font-medium"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                     <Input
                       id="login-password"
                       type="password"
@@ -176,8 +387,8 @@ export default function AuthPage() {
                       <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={loginPending}>
-                    {loginPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full" disabled={pending}>
+                    {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Log In
                   </Button>
                 </form>
@@ -185,10 +396,10 @@ export default function AuthPage() {
             </Card>
           </TabsContent>
 
-          {/* REGISTER */}
+          {/* ── REGISTER ── */}
           <TabsContent value="register">
-            <Card>
-              <CardHeader>
+            <Card className="border-border/60">
+              <CardHeader className="pb-4">
                 <CardTitle>Create an account</CardTitle>
                 <CardDescription>Start learning Punjabi for free.</CardDescription>
               </CardHeader>
@@ -245,8 +456,8 @@ export default function AuthPage() {
                       <p className="text-xs text-destructive">{registerForm.formState.errors.confirmPassword.message}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={registerPending}>
-                    {registerPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full" disabled={pending}>
+                    {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Account
                   </Button>
                 </form>
