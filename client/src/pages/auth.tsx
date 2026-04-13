@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation, Link } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, BookOpen, ArrowLeft, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Loader2, BookOpen, ArrowLeft, RotateCcw, CheckCircle2, Sparkles } from "lucide-react";
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const loginSchema = z.object({
@@ -67,11 +67,58 @@ function Brand() {
   );
 }
 
+// ── Email verified success screen ────────────────────────────────────────────
+function EmailVerifiedScreen() {
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    const timer = setTimeout(() => navigate("/learn"), 3000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <Brand />
+        <Card className="border-border/60 overflow-hidden">
+          <CardContent className="pt-10 pb-10 px-8 text-center space-y-6">
+            {/* Success icon */}
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping opacity-30" />
+              <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-foreground">Email verified!</h2>
+              <p className="text-sm text-muted-foreground">
+                Your account is confirmed. Taking you to your lessons&hellip;
+              </p>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 rounded-full animate-[grow_3s_ease-in-out_forwards]" style={{ width: '100%', transformOrigin: 'left', animation: 'grow 3s ease-in-out forwards' }} />
+            </div>
+
+            <Button className="w-full gap-2" onClick={() => navigate("/learn")}>
+              <Sparkles className="h-4 w-4" />
+              Start Learning Now
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ── Email sent screen ─────────────────────────────────────────────────────────
-function EmailSentScreen({ email, onResend, onBack }: {
+function EmailSentScreen({ email, onResend, onBack, onLogin }: {
   email: string;
   onResend: () => Promise<void>;
   onBack: () => void;
+  onLogin: () => void;
 }) {
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
@@ -138,13 +185,18 @@ function EmailSentScreen({ email, onResend, onBack }: {
               {resent ? "Email resent!" : "Resend confirmation email"}
             </Button>
 
+            {/* Log in button */}
+            <Button className="w-full gap-2" onClick={onLogin}>
+              Log in
+            </Button>
+
             {/* Back link */}
             <button
               onClick={onBack}
               className="flex items-center justify-center gap-1.5 mx-auto text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Back to login
+              Back to sign up
             </button>
           </CardContent>
         </Card>
@@ -234,13 +286,25 @@ function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
 }
 
 // ── Main auth page ────────────────────────────────────────────────────────────
-type View = "auth" | "email-sent" | "forgot";
+type View = "auth" | "email-sent" | "forgot" | "verified";
 
 export default function AuthPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [view, setView] = useState<View>("auth");
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+
+  // Detect Supabase email-verification redirect (hash contains access_token + type=signup)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("access_token") && hash.includes("type=signup")) {
+      // Supabase JS will pick up the session from the hash automatically;
+      // we just show the success screen.
+      setView("verified");
+      // Clean up the hash so it doesn't persist if the user goes back
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
   const [pending, setPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
 
@@ -313,15 +377,23 @@ export default function AuthPage() {
   }
 
   // ── Overlay screens ──────────────────────────────────────────────────────
+  if (view === "verified") {
+    return <EmailVerifiedScreen />;
+  }
+
   if (view === "email-sent") {
     return (
       <EmailSentScreen
         email={registeredEmail}
         onResend={handleResend}
-        onBack={() => {
+        onLogin={() => {
           setView("auth");
           setActiveTab("login");
           loginForm.setValue("identifier", registeredEmail);
+        }}
+        onBack={() => {
+          setView("auth");
+          setActiveTab("register");
         }}
       />
     );
