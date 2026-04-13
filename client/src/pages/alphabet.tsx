@@ -223,7 +223,7 @@ export default function AlphabetPage() {
           <p className="text-xs text-muted-foreground">Head to Unit 1 to test your Gurmukhi knowledge with exercises.</p>
         </div>
         <button
-          onClick={() => navigate("/learn/1")}
+          onClick={() => navigate("/learn")}
           className="flex-shrink-0 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
         >
           Unit 1 →
