@@ -12,6 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, BookOpen, ArrowLeft, RotateCcw, CheckCircle2, Sparkles } from "lucide-react";
 
+// Capture the hash IMMEDIATELY at module load — before the Supabase client
+// can process and clear it from the URL during its own initialisation.
+const INITIAL_HASH = typeof window !== "undefined" ? window.location.hash : "";
+
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const loginSchema = z.object({
   identifier: z
@@ -294,14 +298,12 @@ export default function AuthPage() {
   const [view, setView] = useState<View>("auth");
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
-  // Detect Supabase email-verification redirect (hash contains access_token + type=signup)
+  // Detect Supabase email-verification redirect.
+  // We use INITIAL_HASH (captured at module load) because the Supabase client
+  // wipes window.location.hash before our useEffect can read it.
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.includes("access_token") && hash.includes("type=signup")) {
-      // Supabase JS will pick up the session from the hash automatically;
-      // we just show the success screen.
+    if (INITIAL_HASH.includes("access_token") && INITIAL_HASH.includes("type=signup")) {
       setView("verified");
-      // Clean up the hash so it doesn't persist if the user goes back
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
