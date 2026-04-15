@@ -1,0 +1,1 @@
+import { db } from './server/storage.ts'; async function run() { const { data } = await db.from('users').select('*'); console.log('users table:', data); const { data: d2 } = await db.auth.admin.listUsers(); console.log('auth users:', d2.users.map(u => ({ email: u.email, meta: u.user_metadata }))); } run();

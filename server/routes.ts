@@ -304,8 +304,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!username || typeof username !== "string") {
         return res.status(400).json({ error: "Invalid username parameter" });
       }
-      const user = await storage.getUserByUsername(username);
-      return res.json({ available: !user });
+
+      // Check public.users first
+      const publicUser = await storage.getUserByUsername(username);
+      if (publicUser) return res.json({ available: false });
+
+      // Because public.users might lag behind auth.users (inserted only on first progress),
+      // we must also verify against all auth users directly.
+      const { data: authData, error } = await db.auth.admin.listUsers();
+      if (!error && authData?.users) {
+        const isTakenInAuth = authData.users.some(u => 
+          u.user_metadata?.username?.toLowerCase() === username.toLowerCase()
+        );
+        if (isTakenInAuth) return res.json({ available: false });
+      }
+
+      return res.json({ available: true });
     } catch (e) {
       return res.status(500).json({ error: "Failed to check username" });
     }
