@@ -458,9 +458,11 @@ export default function AuthPage() {
     });
     setPending(false);
 
-    // Supabase returns no error but an empty identities array if the email is already taken
+    // Supabase returns no error but either an empty identities array or null identities if the email is already taken
     // (This is an anti-enumeration security feature)
-    if (authData.user?.identities?.length === 0) {
+    const isFakeUser = authData.user && (!authData.user.identities || authData.user.identities.length === 0);
+    
+    if (isFakeUser) {
       registerForm.setError("email", { message: "This email is already registered" });
       return;
     }
