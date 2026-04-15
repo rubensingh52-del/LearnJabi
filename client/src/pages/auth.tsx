@@ -428,16 +428,24 @@ export default function AuthPage() {
 
     try {
       const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(data.username)}`);
-      if (res.ok) {
-        const { available } = await res.json();
-        if (!available) {
-          registerForm.setError("username", { message: "This username is already taken" });
-          setPending(false);
-          return;
-        }
+      if (!res.ok) throw new Error("API check failed");
+      
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Endpoint returned non-JSON. Dev server might need a restart.");
       }
-    } catch (e) {
+      
+      const { available } = await res.json();
+      if (!available) {
+        registerForm.setError("username", { message: "This username is already taken" });
+        setPending(false);
+        return;
+      }
+    } catch (e: any) {
       console.error("Error checking username:", e);
+      registerForm.setError("username", { message: "Failed to verify username. Usually fixed by restarting your dev server." });
+      setPending(false);
+      return;
     }
 
     const { data: authData, error } = await supabase.auth.signUp({
@@ -449,6 +457,14 @@ export default function AuthPage() {
       },
     });
     setPending(false);
+
+    // Supabase returns no error but an empty identities array if the email is already taken
+    // (This is an anti-enumeration security feature)
+    if (authData.user?.identities?.length === 0) {
+      registerForm.setError("email", { message: "This email is already registered" });
+      return;
+    }
+
     if (error) {
       toast({ title: "Registration failed", description: error.message, variant: "destructive" });
       return;
