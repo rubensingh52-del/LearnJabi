@@ -14,17 +14,12 @@ import { Loader2, BookOpen, ArrowLeft, RotateCcw, CheckCircle2, Sparkles } from 
 
 // Capture the hash IMMEDIATELY at module load — before the Supabase client
 // can process and clear it from the URL during its own initialisation.
-const INITIAL_HASH = typeof window !== "undefined" ? window.location.hash : "";
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const loginSchema = z.object({
   identifier: z
     .string()
-    .min(1, "Enter your email or username")
-    .refine(
-      (v) => v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : v.length >= 3,
-      "Enter a valid email or username (min 3 characters)"
-    ),
+    .email("Enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -42,21 +37,18 @@ const forgotSchema = z.object({
   email: z.string().email("Enter a valid email"),
 });
 
+const updatePasswordSchema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
 type LoginData = z.infer<typeof loginSchema>;
 type RegisterData = z.infer<typeof registerSchema>;
 type ForgotData = z.infer<typeof forgotSchema>;
-
-// ── Username → email lookup ───────────────────────────────────────────────────
-async function resolveEmail(identifier: string): Promise<string | null> {
-  if (identifier.includes("@")) return identifier;
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("email")
-    .eq("username", identifier)
-    .single();
-  if (error || !data) return null;
-  return data.email as string;
-}
+type UpdatePasswordData = z.infer<typeof updatePasswordSchema>;
 
 // ── Brand header shared across all screens ────────────────────────────────────
 function Brand() {
@@ -289,8 +281,77 @@ function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+// ── Update password screen ────────────────────────────────────────────────────
+function UpdatePasswordScreen() {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [pending, setPending] = useState(false);
+
+  const form = useForm<UpdatePasswordData>({ resolver: zodResolver(updatePasswordSchema) });
+
+  async function onSubmit(data: UpdatePasswordData) {
+    setPending(true);
+    const { error } = await supabase.auth.updateUser({ password: data.password });
+    setPending(false);
+    if (error) {
+      toast({ title: "Failed to update", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Password updated", description: "Your password has been changed successfully." });
+      navigate("/learn");
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <Brand />
+        <Card className="border-border/60">
+          <CardHeader className="pb-4">
+            <CardTitle>Set new password</CardTitle>
+            <CardDescription>Enter your new password below.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="upd-password">New Password</Label>
+                <Input
+                  id="upd-password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  {...form.register("password")}
+                />
+                {form.formState.errors.password && (
+                  <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="upd-confirm">Confirm Password</Label>
+                <Input
+                  id="upd-confirm"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  {...form.register("confirmPassword")}
+                />
+                {form.formState.errors.confirmPassword && (
+                  <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={pending}>
+                {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update Password
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ── Main auth page ────────────────────────────────────────────────────────────
-type View = "auth" | "email-sent" | "forgot" | "verified";
+type View = "auth" | "email-sent" | "forgot" | "verified" | "update-password";
 
 export default function AuthPage() {
   const [, navigate] = useLocation();
@@ -298,14 +359,42 @@ export default function AuthPage() {
   const [view, setView] = useState<View>("auth");
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
-  // Detect Supabase email-verification redirect.
-  // We use INITIAL_HASH (captured at module load) because the Supabase client
-  // wipes window.location.hash before our useEffect can read it.
+  // Detect Supabase email-verification redirect via sessionStorage
+  // (Captured in main.tsx before Supabase wipes the URL hash)
   useEffect(() => {
-    if (INITIAL_HASH.includes("access_token") && INITIAL_HASH.includes("type=signup")) {
-      setView("verified");
-      window.history.replaceState(null, "", window.location.pathname);
+    async function checkVerification() {
+      if (sessionStorage.getItem("justVerified") === "true") {
+        sessionStorage.removeItem("justVerified");
+        
+        // Ensure the token actually worked (Supabase logs them in synchronously if valid)
+        // If it's an old/reused link, getSession will not return a session, and we shouldn't show the verified screen.
+        const { data } = await supabase.auth.getSession();
+        
+        if (data.session) {
+          setView("verified");
+        } else {
+          // Token is expired or was already used.
+          // Supabase often leaves the hash in the URL if it fails to process it.
+          // We must strip it ourselves so a refresh doesn't trigger this again.
+          if (window.location.hash.includes("access_token")) {
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
+        }
+      } else if (sessionStorage.getItem("needsPasswordUpdate") === "true") {
+        sessionStorage.removeItem("needsPasswordUpdate");
+        
+        const { data } = await supabase.auth.getSession();
+        
+        if (data.session) {
+          setView("update-password");
+        } else {
+          if (window.location.hash.includes("access_token")) {
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
+        }
+      }
     }
+    checkVerification();
   }, []);
   const [pending, setPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
@@ -315,16 +404,7 @@ export default function AuthPage() {
 
   async function onLogin(data: LoginData) {
     setPending(true);
-    let email = data.identifier.trim();
-    if (!email.includes("@")) {
-      const resolved = await resolveEmail(email);
-      if (!resolved) {
-        setPending(false);
-        loginForm.setError("identifier", { message: "Username not found" });
-        return;
-      }
-      email = resolved;
-    }
+    const email = data.identifier.trim();
 
     const { error } = await supabase.auth.signInWithPassword({ email, password: data.password });
     setPending(false);
@@ -345,6 +425,21 @@ export default function AuthPage() {
 
   async function onRegister(data: RegisterData) {
     setPending(true);
+
+    try {
+      const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(data.username)}`);
+      if (res.ok) {
+        const { available } = await res.json();
+        if (!available) {
+          registerForm.setError("username", { message: "This username is already taken" });
+          setPending(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Error checking username:", e);
+    }
+
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -405,6 +500,10 @@ export default function AuthPage() {
     return <ForgotPasswordScreen onBack={() => setView("auth")} />;
   }
 
+  if (view === "update-password") {
+    return <UpdatePasswordScreen />;
+  }
+
   // ── Login / Register tabs ────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -427,11 +526,11 @@ export default function AuthPage() {
               <CardContent>
                 <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
                   <div className="space-y-1">
-                    <Label htmlFor="login-identifier">Email or Username</Label>
+                    <Label htmlFor="login-identifier">Email Address</Label>
                     <Input
                       id="login-identifier"
                       type="text"
-                      placeholder="you@example.com or yourname"
+                      placeholder="you@example.com"
                       autoComplete="username"
                       {...loginForm.register("identifier")}
                     />

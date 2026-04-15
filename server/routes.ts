@@ -297,7 +297,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ PUBLIC — lesson content is not sensitive
+  // ✅ PUBLIC — unit check and user checks
+  app.get("/api/users/check-username", async (req, res) => {
+    try {
+      const username = req.query.username;
+      if (!username || typeof username !== "string") {
+        return res.status(400).json({ error: "Invalid username parameter" });
+      }
+      const user = await storage.getUserByUsername(username);
+      return res.json({ available: !user });
+    } catch (e) {
+      return res.status(500).json({ error: "Failed to check username" });
+    }
+  });
+
   app.get("/api/units", async (_req, res) => {
     try {
       const units = await storage.getUnits();
