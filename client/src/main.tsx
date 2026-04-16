@@ -9,10 +9,10 @@ if (initialHash.includes("access_token") && initialHash.includes("type=signup"))
   sessionStorage.setItem("needsPasswordUpdate", "true");
 }
 
-// Handle legacy hash-based URLs (e.g. /#/learn) and redirect to clean paths (/learn)
+// Handle legacy hash-based URLs (e.g. /#/learn) and gracefully upgrade them to standard routing
 if (window.location.hash.startsWith("#/")) {
-  const cleanPath = window.location.hash.slice(2) || "/";
-  window.location.replace(cleanPath);
-} else {
-  createRoot(document.getElementById("root")!).render(<App />);
+  const cleanPath = window.location.hash.slice(1); // keeps the leading slash! e.g. "/learn"
+  window.history.replaceState(null, "", cleanPath || "/");
 }
+
+createRoot(document.getElementById("root")!).render(<App />);
