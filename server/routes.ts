@@ -208,7 +208,7 @@ async function migrateUnit1Content() {
           items: [ 
             { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "Look at the little dot at the bottom of 'ਸ' — that dot turns the 's' sound into 'sh' (like in 'Shop')" }, 
             { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "Look at the little dot at the bottom of 'ਖ' — that dot makes a scratchy 'kh' sound (like 'ch' in 'Loch')" }, 
-            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Look at the little dot at the bottom of 'ਗ' — that dot makes a deep 'g' sound (like the French 'r')" }, 
+            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Look at the little dot at the bottom of 'ਗ' — that dot makes a deep 'g' sound, almost like a gurgle in your throat" }, 
             { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "Look at the little dot at the bottom of 'ਜ' — that dot turns the 'j' sound into 'z' (like in 'Zebra')" }, 
             { gurmukhi: "ਫ਼", romanized: "faffaa", english: "Look at the little dot at the bottom of 'ਫ' — that dot turns the 'p' sound into 'f' (like in 'Fan')" }, 
             { gurmukhi: "ਲ਼", romanized: "lallaa", english: "Look at the little dot at the bottom of 'ਲ' — that dot makes a special 'l' sound where you curl your tongue back" }, 
