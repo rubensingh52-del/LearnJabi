@@ -206,12 +206,12 @@ async function migrateUnit1Content() {
         content: JSON.stringify({ 
           intro: "Now learn the 6 extra letters — these are 'addons' created by adding a dot (pair bindī) to base letters to create new sounds. You'll also learn the 10 Matra signs (vowel markers).", 
           items: [ 
-            { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "Addon of Sassa | Action: 'sh' sound — like 'sh' in 'Shop'" }, 
-            { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "Addon of Khakha | Action: Guttural 'kh' — like 'ch' in Scottish 'Loch'" }, 
-            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Addon of Gagga | Action: Deep 'g' — like the French 'r' sound" }, 
-            { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "Addon of Jajja | Action: 'z' sound — like 'z' in 'Zebra'" }, 
-            { gurmukhi: "ਫ਼", romanized: "faffaa", english: "Addon of Phaphpha | Action: 'f' sound — like 'f' in 'Fan'" }, 
-            { gurmukhi: "ਲ਼", romanized: "lallaa", english: "Addon of Lalla | Action: Retroflex 'l' — tongue curves back" }, 
+            { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "Start with 'ਸ' and add a Dot! This makes the 'sh' sound (like in 'Shop')" }, 
+            { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "Start with 'ਖ' and add a Dot! This makes a scratchy 'kh' sound (like the 'ch' in 'Loch')" }, 
+            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Start with 'ਗ' and add a Dot! This makes a deep 'g' sound (like the French 'r')" }, 
+            { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "Start with 'ਜ' and add a Dot! This makes the 'z' sound (like in 'Zebra')" }, 
+            { gurmukhi: "ਫ਼", romanized: "faffaa", english: "Start with 'ਫ' and add a Dot! This makes the 'f' sound (like in 'Fan')" }, 
+            { gurmukhi: "ਲ਼", romanized: "lallaa", english: "Start with 'ਲ' and add a Dot! It's a special 'l' sound where you curl your tongue back" }, 
             { gurmukhi: "ਾ", romanized: "kannaa", english: "Name: Kannaa | Action: Adds an 'aa' sound (like 'a' in Father)" }, 
             { gurmukhi: "ਿ", romanized: "sihaaree", english: "Name: Sihaaree | Action: Adds a short 'i' sound (like 'i' in It)" }, 
             { gurmukhi: "ੀ", romanized: "bihaaree", english: "Name: Bihaaree | Action: Adds a long 'ee' sound (like 'ee' in See)" }, 
