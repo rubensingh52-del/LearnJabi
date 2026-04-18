@@ -206,12 +206,12 @@ async function migrateUnit1Content() {
         content: JSON.stringify({ 
           intro: "Now learn the 6 extra letters — these are 'addons' created by adding a dot (pair bindī) to base letters to create new sounds. You'll also learn the 10 Matra signs (vowel markers).", 
           items: [ 
-            { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "Addon: Sassa + Dot (sh sound as in shop)" }, 
-            { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "Addon: Khakha + Dot (guttural kh sound)" }, 
-            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Addon: Gagga + Dot (gh sound)" }, 
-            { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "Addon: Jajja + Dot (z sound as in zebra)" }, 
-            { gurmukhi: "ਫ਼", romanized: "faffaa", english: "Addon: Phaphpha + Dot (f sound as in fan)" }, 
-            { gurmukhi: "ਲ਼", romanized: "lallaa", english: "Addon: Lalla + Dot (retroflex l sound)" }, 
+            { gurmukhi: "ਸ਼", romanized: "shashashaa", english: "Addon of Sassa | Action: 'sh' sound — like 'sh' in 'Shop'" }, 
+            { gurmukhi: "ਖ਼", romanized: "khhakhhkhha", english: "Addon of Khakha | Action: Guttural 'kh' — like 'ch' in Scottish 'Loch'" }, 
+            { gurmukhi: "ਗ਼", romanized: "ghagghaa", english: "Addon of Gagga | Action: Deep 'g' — like the French 'r' sound" }, 
+            { gurmukhi: "ਜ਼", romanized: "zazzaa", english: "Addon of Jajja | Action: 'z' sound — like 'z' in 'Zebra'" }, 
+            { gurmukhi: "ਫ਼", romanized: "faffaa", english: "Addon of Phaphpha | Action: 'f' sound — like 'f' in 'Fan'" }, 
+            { gurmukhi: "ਲ਼", romanized: "lallaa", english: "Addon of Lalla | Action: Retroflex 'l' — tongue curves back" }, 
             { gurmukhi: "ਾ", romanized: "kannaa", english: "Name: Kannaa | Action: Adds an 'aa' sound (like 'a' in Father)" }, 
             { gurmukhi: "ਿ", romanized: "sihaaree", english: "Name: Sihaaree | Action: Adds a short 'i' sound (like 'i' in It)" }, 
             { gurmukhi: "ੀ", romanized: "bihaaree", english: "Name: Bihaaree | Action: Adds a long 'ee' sound (like 'ee' in See)" }, 
