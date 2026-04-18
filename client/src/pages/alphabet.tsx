@@ -14,9 +14,9 @@ interface AlphaChar {
 // The 35-letter Gurmukhi alphabet (paiṇṭī) — data from discoversikhism.com
 // Each entry: character | full name | short sound | description
 const ALPHABET: AlphaChar[] = [
-  { g: "ੳ", name: "oorhaa",       sound: "Ou",   e: "Vowel carrier for ਉ ਊ ਓ ਔ" },
-  { g: "ਅ", name: "airhaa",       sound: "Aa",   e: "Vowel carrier — also the inherent 'a' sound" },
-  { g: "ੲ", name: "eerhee",       sound: "Ie",   e: "Vowel carrier for ਇ ਈ ਏ" },
+  { g: "ੳ", name: "oorhaa",       sound: "Ou",   e: "Vowel carrier (silent): Placeholder for 'u' and 'o' sounds" },
+  { g: "ਅ", name: "airhaa",       sound: "Aa",   e: "Vowel carrier (silent): Placeholder for 'a' sounds" },
+  { g: "ੲ", name: "eerhee",       sound: "Ie",   e: "Vowel carrier (silent): Placeholder for 'i' and 'e' sounds" },
   { g: "ਸ", name: "sassaa",       sound: "Sa",   e: "s — as in sun" },
   { g: "ਹ", name: "haahaa",       sound: "Ha",   e: "h — as in hat" },
   { g: "ਕ", name: "kakkaa",       sound: "Ka",   e: "k — as in kit" },
@@ -62,15 +62,15 @@ const EXTRA_LETTERS: AlphaChar[] = [
 ];
 
 const MATRAS = [
-  { g: "ਾ",  name: "kannaa",      sound: "aa",  e: "long 'aa' — as in part" },
-  { g: "ਿ",  name: "sihaaree",    sound: "i",   e: "short 'i' — as in it (written before the letter)" },
-  { g: "ੀ",  name: "bihaaree",    sound: "ee",  e: "long 'ee' — as in see" },
-  { g: "ੁ",  name: "aunkarh",     sound: "u",   e: "short 'u' — as in put" },
-  { g: "ੂ",  name: "dulainkarh",  sound: "oo",  e: "long 'oo' — as in food" },
-  { g: "ੇ",  name: "laavaan",     sound: "e",   e: "'e' — as in cake" },
-  { g: "ੈ",  name: "dulaavaan",   sound: "ai",  e: "'ai' — as in man" },
-  { g: "ੋ",  name: "horhaa",      sound: "o",   e: "'o' — as in go" },
-  { g: "ੌ",  name: "kanaurhaa",   sound: "au",  e: "'au' — as in caught" },
+  { g: "ਾ",  name: "kannaa",      sound: "aa",  e: "Adds a long 'aa' sound — like the 'a' in Father" },
+  { g: "ਿ",  name: "sihaaree",    sound: "i",   e: "Adds a short 'i' sound — like the 'i' in It (written before the letter)" },
+  { g: "ੀ",  name: "bihaaree",    sound: "ee",  e: "Adds a long 'ee' sound — like the 'ee' in See" },
+  { g: "ੁ",  name: "aunkarh",     sound: "u",   e: "Adds a short 'u' sound — like the 'u' in Put" },
+  { g: "ੂ",  name: "dulainkarh",  sound: "oo",  e: "Adds a long 'oo' sound — like the 'oo' in Food" },
+  { g: "ੇ",  name: "laavaan",     sound: "ay",  e: "Adds the 'ay' sound to a letter — like the 'ay' in Play" },
+  { g: "ੈ",  name: "dulaavaan",   sound: "a",   e: "Adds the 'a' sound to a letter — like the 'a' in Man" },
+  { g: "ੋ",  name: "horhaa",      sound: "o",   e: "Adds an 'o' sound — like the 'o' in Go" },
+  { g: "ੌ",  name: "kanaurhaa",   sound: "au",  e: "Adds an 'au' sound — like the 'au' in Caught" },
 ];
 
 const EXAMPLES = [
