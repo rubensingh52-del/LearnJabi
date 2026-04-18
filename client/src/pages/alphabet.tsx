@@ -157,19 +157,25 @@ export default function AlphabetPage() {
         <div className="mb-6 p-5 rounded-2xl border-2 border-primary/40 bg-primary/5 flex items-center gap-5 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="gurmukhi text-6xl font-bold leading-none w-20 text-center flex-shrink-0">{selected.g}</div>
           <div>
-            <div className="flex items-baseline gap-3 mb-0.5 flex-wrap">
+            <div className="flex flex-col gap-1 mb-2">
               {selected.sound && (
-                <span className="text-2xl font-bold text-primary">{selected.sound}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-12">Sound</span>
+                  <span className="text-2xl font-bold text-primary leading-none">{selected.sound}</span>
+                </div>
               )}
-              <span className="text-base font-semibold text-foreground/80 italic">{selected.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-12">Name</span>
+                <span className="text-base font-semibold text-foreground/80 italic leading-none">{selected.name}</span>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">{selected.e}</div>
+            <div className="text-sm text-muted-foreground leading-snug">{selected.e}</div>
             <button
               onClick={() => speakPunjabi(selected.g, selected.name)}
-              className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors bg-primary/10 px-2 py-1 rounded-md"
             >
               <Volume2 className="h-3.5 w-3.5" />
-              Tap to hear again
+              Listen again
             </button>
           </div>
         </div>
