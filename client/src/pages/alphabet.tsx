@@ -157,25 +157,29 @@ export default function AlphabetPage() {
         <div className="mb-6 p-5 rounded-2xl border-2 border-primary/40 bg-primary/5 flex items-center gap-5 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="gurmukhi text-6xl font-bold leading-none w-20 text-center flex-shrink-0">{selected.g}</div>
           <div>
-            <div className="flex flex-col gap-1 mb-2">
-              {selected.sound && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-12">Sound</span>
-                  <span className="text-2xl font-bold text-primary leading-none">{selected.sound}</span>
-                </div>
-              )}
+            <div className="flex flex-col gap-1.5 mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-12">Name</span>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-20">Name</span>
                 <span className="text-base font-semibold text-foreground/80 italic leading-none">{selected.name}</span>
               </div>
+              {selected.sound && (
+                <div className="flex items-start gap-2">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-20 shrink-0 mt-1">Pronunciation</span>
+                  <span className="text-sm font-bold text-primary leading-tight">
+                    {activeTab === "matras" ? `Adds an '${selected.sound}' sound to the letter` : selected.sound}
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="text-sm text-muted-foreground leading-snug">{selected.e}</div>
+            <div className="text-sm text-muted-foreground leading-snug bg-muted/30 p-2 rounded-lg border border-border/40">
+              {selected.e}
+            </div>
             <button
               onClick={() => speakPunjabi(selected.g, selected.name)}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors bg-primary/10 px-2 py-1 rounded-md"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors bg-primary/10 px-2.5 py-1.5 rounded-md border border-primary/20"
             >
               <Volume2 className="h-3.5 w-3.5" />
-              Listen again
+              Listen to the name
             </button>
           </div>
         </div>
