@@ -7,6 +7,30 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 
+// ---------------------------------------------------------------------------
+// Canonical redirect: www → non-www  AND  http → https
+// Must be the very first middleware so nothing else runs on non-canonical URLs.
+// `x-forwarded-proto` is set by Render (and most PaaS proxies) to the
+// original protocol, so we can detect http even though the server itself
+// receives plain TCP.
+// ---------------------------------------------------------------------------
+if (process.env.NODE_ENV === "production") {
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const host = req.headers.host ?? "";
+    const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? "https";
+
+    const isWww = host.startsWith("www.");
+    const isHttp = proto === "http";
+
+    if (isWww || isHttp) {
+      const canonicalHost = isWww ? host.replace(/^www\./, "") : host;
+      const url = `https://${canonicalHost}${req.originalUrl}`;
+      return res.redirect(301, url);
+    }
+    next();
+  });
+}
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
